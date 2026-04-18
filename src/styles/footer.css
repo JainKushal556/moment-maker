@@ -1,0 +1,341 @@
+/* ================================================================
+   INTERACTIVE FOOTER — Full Overlay on Playground
+   ================================================================ */
+
+/* ===== FOOTER WRAPPER ===== */
+.footer-section {
+    position: relative;
+    width: 100%;
+    background: #f0efeb;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    display: block;
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* ================================================================
+   PLAYGROUND AREA — the single footer canvas
+   ================================================================ */
+.footer-playground {
+    position: relative;
+    width: 100%;
+    height: 700px;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    background: #f0efeb;
+}
+
+.footer-playground:active {
+    cursor: grabbing;
+}
+
+/* ===== BLOB SHAPES ===== */
+.footer-blob {
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    will-change: transform;
+    transition: filter 0.3s ease;
+    pointer-events: all;
+    cursor: grab;
+}
+
+.footer-blob:active {
+    cursor: grabbing;
+}
+
+.footer-blob:hover {
+    filter: brightness(1.08) saturate(1.15);
+}
+
+.footer-blob svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* ===== GREEN PILL BUTTONS ===== */
+.footer-pill {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    background: #47E68F;
+    color: #111;
+    font-family: 'Inter', 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 50px;
+    white-space: nowrap;
+    cursor: pointer;
+    will-change: transform;
+    transition: background 0.25s ease, box-shadow 0.25s ease;
+    overflow: hidden;
+    pointer-events: all;
+    z-index: 2;
+}
+
+.footer-pill:hover {
+    background: #3BD87F;
+    box-shadow: 0 4px 15px rgba(71, 230, 143, 0.4);
+}
+
+.footer-pill .pill-text,
+.footer-pill .pill-hover-text {
+    display: block;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.footer-pill .pill-hover-text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, 100%);
+    opacity: 0;
+}
+
+.footer-pill:hover .pill-text {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+.footer-pill:hover .pill-hover-text {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+}
+
+/* ================================================================
+   FOOTER OVERLAY — rich glassmorphism panel anchored to bottom
+   ================================================================ */
+.footer-playground-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    pointer-events: none;
+
+    /* Rich glass effect */
+    background: rgba(255, 255, 255, 0.48);
+    backdrop-filter: blur(28px) saturate(1.8) brightness(1.05);
+    -webkit-backdrop-filter: blur(28px) saturate(1.8) brightness(1.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow:
+        0 -12px 40px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+    padding: 2.6rem 4.5rem 1.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Re-enable pointer events on all interactive children */
+.footer-playground-overlay * {
+    pointer-events: auto;
+}
+
+/* ================================================================
+   TOP ROW: brand left + nav columns right
+   ================================================================ */
+.fpo-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 15rem;
+}
+
+/* ---- Brand ---- */
+.fpo-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    min-width: 160px;
+    flex-shrink: 0;
+}
+
+.footer-logo-link {
+    display: inline-block;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.footer-logo-link:hover {
+    opacity: 0.7;
+}
+
+.footer-logo-svg {
+    width: 160px;
+    height: auto;
+    display: block;
+}
+
+.fpo-tagline {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    color: #555;
+    line-height: 1.7;
+    margin: 0;
+    letter-spacing: 0.01em;
+}
+
+/* ---- Nav columns wrapper ---- */
+.fpo-nav-cols {
+    display: flex;
+    gap: 8.5rem;
+    /* increased gap between 4 columns slightly */
+    flex: 1;
+    justify-content: flex-start;
+    /* keep group near logo block instead of flushing right */
+    align-items: flex-start;
+    padding-left: 0;
+}
+
+/* ---- Single column ---- */
+.fpo-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+/* First link in each column acts as a heading — slightly more prominent */
+.fpo-col a:first-child {
+    font-weight: 700;
+    color: #111;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.15rem;
+}
+
+.fpo-col a {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #3a3a3a;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    transition: color 0.18s ease, transform 0.18s ease;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.fpo-col a:hover {
+    color: #000;
+    transform: translateX(3px);
+}
+
+/* ================================================================
+   DIVIDER
+   ================================================================ */
+.fpo-divider {
+    width: 100%;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.12);
+}
+
+/* ================================================================
+   BOTTOM ROW: centered socials + copyright (matching reference)
+   ================================================================ */
+.fpo-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+/* Social icons row — outlined circles like reference */
+.fpo-socials {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.fpo-social-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid rgba(0, 0, 0, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    font-size: 0.78rem;
+    text-decoration: none;
+    transition: all 0.22s ease;
+    cursor: pointer;
+}
+
+.fpo-social-icon:hover {
+    background: #111;
+    border-color: #111;
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+/* Copyright text — centered below icons */
+.fpo-copy {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.74rem;
+    color: #666;
+    letter-spacing: 0.03em;
+    text-align: center;
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 960px) {
+    .footer-playground {
+        height: 580px;
+    }
+
+    .footer-blob {
+        transform: scale(0.75);
+    }
+
+    .footer-playground-overlay {
+        padding: 2rem 2.5rem 1.4rem;
+        gap: 1.2rem;
+    }
+
+    .fpo-top {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .fpo-nav-cols {
+        justify-content: flex-start;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 640px) {
+    .footer-playground {
+        height: 700px;
+    }
+
+    .footer-blob {
+        transform: scale(0.55);
+    }
+
+    .footer-pill {
+        font-size: 0.75rem;
+        padding: 10px 18px;
+    }
+
+    .footer-playground-overlay {
+        padding: 1.5rem 1.25rem 1.2rem;
+    }
+
+    .fpo-nav-cols {
+        gap: 1.5rem;
+    }
+}

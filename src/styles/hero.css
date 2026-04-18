@@ -1,0 +1,879 @@
+/* =========================================
+   Reset & Base
+   ========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #111;
+    color: #f0f0f0;
+    overflow-x: hidden;
+}
+
+
+/* =========================================
+   Noise / Grain Overlay
+   ========================================= */
+.noise-overlay {
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+}
+
+
+
+/* =========================================
+   Main Sections
+   ========================================= */
+section {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    color: #f0f0f0;
+    overflow: hidden;
+    position: relative;
+}
+
+.hero {
+    flex-direction: column;
+    background-color: transparent;
+    transition: background-color 0.5s ease;
+    z-index: 1;
+    position: relative;
+    contain: layout style;
+}
+
+
+/* =========================================
+   Hero Elements
+   ========================================= */
+.header-block {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -140%);
+    width: 100%;
+    max-width: 900px;
+    text-align: center;
+    will-change: transform, opacity;
+    z-index: 10;
+    opacity: 0;
+    /* Animated in via JS */
+}
+
+.header-block h2 {
+    font-weight: 900;
+    font-size: clamp(3rem, 8vw, 7.5rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+    /* Animated gradient text */
+    background-image: linear-gradient(to right, #5227FF, #FF9FFC, #B19EEF, #5227FF);
+    background-size: 300% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: gradientSweep 8s ease-in-out infinite alternate;
+}
+
+@keyframes gradientSweep {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 100% 50%;
+    }
+}
+
+.subtitle {
+    font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+    margin-bottom: 28px;
+    opacity: 0;
+    /* Animated in via JS */
+}
+
+
+
+/* =========================================
+   Icon Container & Icons
+   ========================================= */
+.icon-container {
+    position: fixed;
+    bottom: 7px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: flex-end;
+    gap: 0;
+    padding: 0 1vw;
+    will-change: transform;
+    z-index: 5;
+}
+
+.icon {
+    aspect-ratio: 1 / 1;
+    width: 20vw;
+    /* 5 icons × 20vw = 100% width, edge to edge */
+    max-width: 280px;
+    object-fit: contain;
+    opacity: 0;
+    transform: scale(0);
+    will-change: transform, opacity;
+}
+
+/* Specific icon shapes to match nvg8.io */
+.icon-square {
+    border-radius: 22%;
+}
+
+.icon-circle {
+    border-radius: 50%;
+}
+
+.icon-tag {
+    /* Tag shape with a point on the right */
+    border-radius: 22% 50% 50% 22%;
+}
+
+/* =========================================
+   Animated Headline
+   ========================================= */
+.headline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    /* space between the 4 lines */
+    width: 100%;
+    padding: 0 5%;
+}
+
+.headline-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    /* allow wrapping on tiny screens */
+    gap: 12px;
+    /* space between words and icons */
+    font-size: clamp(1.2rem, 3.2vw, 3.2rem);
+    font-weight: 900;
+    color: #111;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    text-align: center;
+}
+
+.text-segment {
+    opacity: 0;
+}
+
+.placeholder {
+    display: inline-block;
+    width: clamp(35px, 4vw, 80px);
+    /* responsive placeholder to match final icon size */
+    height: clamp(35px, 4vw, 80px);
+    visibility: hidden;
+    will-change: transform;
+}
+
+/* =========================================
+   Responsive Design (Mobile)
+   ========================================= */
+@media (max-width: 1000px) {
+    .pill-nav {
+        padding: 6px 8px;
+        gap: 2px;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .nav-cta {
+        font-size: 13px;
+        padding: 8px 18px;
+        margin-left: 6px;
+    }
+
+    .header-block h2 {
+        font-size: 10vw;
+    }
+
+    .icon {
+        width: clamp(80px, 20vw, 160px);
+    }
+
+    h1,
+    h2 {
+        font-size: 8vw;
+        text-align: center;
+    }
+
+    .placeholder {
+        width: 30px;
+        height: 30px;
+    }
+
+    .header-block {
+        transform: translate(-50%, -65%);
+    }
+}
+
+@media (max-width: 500px) {
+    .icon-container {
+        gap: 0.5rem;
+    }
+
+    .icon {
+        width: clamp(60px, 18vw, 100px);
+    }
+
+    .header-block h2 {
+        font-size: 12vw;
+    }
+}
+
+/* =========================================
+   Soap Bubbles (from Bg Hero)
+   ========================================= */
+.soap-bubble {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: radial-gradient(circle at 30% 30%,
+            rgba(255, 255, 255, 0.6) 0%,
+            rgba(255, 255, 255, 0.3) 15%,
+            rgba(255, 255, 255, 0.05) 50%,
+            rgba(255, 255, 255, 0.0) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow:
+        inset -4px -4px 10px rgba(255, 255, 255, 0.4),
+        inset 2px 2px 6px rgba(255, 255, 255, 0.15),
+        0 4px 15px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(3px);
+    pointer-events: auto;
+    z-index: 250;
+    animation-name: bubbleFloat;
+    animation-timing-function: linear;
+    animation-iteration-count: 1;
+}
+
+@keyframes bubbleFloat {
+    0% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0;
+    }
+
+    8% {
+        opacity: 1;
+    }
+
+    80% {
+        transform: translateY(-78vh) translateX(calc(var(--dx) * 0.2)) scale(1);
+        opacity: 1;
+    }
+
+    92% {
+        opacity: 0;
+        transform: translateY(-92vh) translateX(calc(var(--dx) * 0.6)) scale(0.98);
+    }
+
+    100% {
+        transform: translateY(-110vh) translateX(calc(var(--dx))) scale(0.85);
+        opacity: 0;
+    }
+}
+
+.bubble-blast-particle {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 260;
+    background: radial-gradient(circle at 30% 30%,
+            rgba(255, 255, 255, 0.95),
+            rgba(255, 200, 100, 0.9));
+    box-shadow: 0 0 10px rgba(255, 180, 80, 0.9);
+}
+
+/* =========================================
+   Categories Carousel Section
+   ========================================= */
+.carousel-section {
+    min-height: 100vh;
+    width: 100%;
+    padding: 0;
+    position: relative;
+    /* Remove flat opaque background to let the global DotGrid/Noise show through.
+       Add a subtle, extremely soft radial glow in the exact center to spotlight the 3D carousel. */
+    background: radial-gradient(circle at center, rgba(102, 126, 234, 0.05) 0%, transparent 60%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    z-index: 2;
+    contain: layout style paint;
+}
+
+.carousel-section .viewport {
+    width: 100%;
+}
+
+/* =========================================
+   Categories Static Vertical Monolith 
+   ========================================= */
+.bg-monolith {
+    position: absolute;
+    top: 50%;
+    left: 4vw; 
+    transform: translate(-50%, -50%) rotate(90deg);
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(3rem, 11vh, 15rem); 
+    font-weight: 900;
+    color: transparent;
+    -webkit-text-stroke: 2px rgba(255, 255, 255, 0.15);
+    z-index: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    user-select: none;
+    letter-spacing: 0.15em; 
+    filter: drop-shadow(0px 0px 30px rgba(255, 255, 255, 0.05));
+}
+
+/* =========================================
+   Categories Ambient Atmospheric Glows
+   ========================================= */
+.ambient-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(140px);
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    animation: slowOrbit 25s ease-in-out infinite alternate;
+}
+
+.ambient-glow-1 {
+    width: 45vw;
+    height: 45vw;
+    background: #667eea; /* planet-purple */
+    top: -5%;
+    right: -5%;
+}
+
+.ambient-glow-2 {
+    width: 60vw;
+    height: 40vw;
+    background: #00f2fe; /* planet-teal */
+    bottom: -15%;
+    left: 10%;
+    animation-duration: 30s;
+    animation-delay: -10s;
+}
+
+@keyframes slowOrbit {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-6vw, 8vh) scale(1.15); }
+}
+
+#category-particles-canvas {
+    position: absolute;
+    top: 5%;
+    left: 0;
+    width: 100%;
+    /* Confine the canvas to the top portion where the heading exists */
+    height: 30%;
+    z-index: 10;
+    pointer-events: auto;
+    /* Needs to receive mousemove events */
+}
+
+/* Base */
+
+
+/* --- 3D Circular Carousel (Categories) --- */
+#dynamic-bg {
+    position: fixed;
+    inset: -50px;
+    background-size: cover;
+    background-position: center;
+    filter: blur(40px) brightness(1.1);
+    opacity: 0;
+    z-index: 0;
+    transition: opacity 1s ease;
+    pointer-events: none;
+    transform: scale(1.1);
+}
+
+.viewport {
+    --slider-height: 100vh;
+    height: var(--slider-height);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1500px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    contain: layout style paint;
+}
+
+.viewport.fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 3000 !important;
+    background: rgba(0, 0, 0, 0.02);
+}
+
+#page-dim-blur {
+    position: fixed;
+    inset: 0;
+    z-index: 2400;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.45s ease;
+    backdrop-filter: blur(10px) saturate(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+    background: rgba(6, 8, 20, 0.45);
+}
+
+#page-dim-blur.visible {
+    opacity: 1;
+}
+
+/* --- Interact & Exit Buttons --- */
+.interact-btn {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 18px 42px;
+    border-radius: 2px; /* Sharp, brutalist edges for an architectural look */
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.25em; /* Extreme luxury tracking */
+    text-transform: uppercase;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    z-index: 100;
+    overflow: hidden; /* Essential for text flip and shine */
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* The Vertical Text Flip Container */
+.btn-text-content {
+    position: relative;
+    display: block;
+    height: 1.2rem; /* Matches font height */
+    overflow: hidden;
+}
+
+.text-original, .text-hover {
+    display: block;
+    width: 100%;
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.text-hover {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    color: #00f2fe; /* High-end contrast color */
+}
+
+/* The Panoramic Shine Sweep */
+.btn-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.1), 
+        transparent
+    );
+    transition: all 0.6s;
+}
+
+/* --- HOVER STATE --- */
+.interact-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 40px rgba(0, 242, 254, 0.15);
+}
+
+.interact-btn:hover .text-original {
+    transform: translateY(-100%);
+}
+
+.interact-btn:hover .text-hover {
+    transform: translateY(-100%);
+}
+
+.interact-btn:hover .btn-shine {
+    left: 100%;
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.interact-btn:active {
+    transform: translateX(-50%) scale(0.96);
+}
+
+.exit-btn {
+    position: fixed; 
+    top: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 9999;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    
+    /* Intentionally hidden state */
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8) rotate(-45deg);
+}
+
+.exit-btn.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1) rotate(0deg);
+}
+
+.exit-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.1) rotate(90deg);
+    border-color: white;
+}
+
+.stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+.slider-card {
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    user-select: none;
+    transform-style: preserve-3d;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    backface-visibility: hidden;
+    will-change: transform;
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    contain: layout style paint;
+}
+
+.slider-card.focused {
+    z-index: 2000 !important;
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 50px 100px rgba(0, 0, 0, 0.5);
+}
+
+.slider-card-content {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.slider-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    display: block;
+}
+
+.slider-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 65%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 24px;
+    box-sizing: border-box;
+    pointer-events: none;
+    color: white;
+}
+
+.slider-card h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.slider-card p {
+    margin: 4px 0 0;
+    font-size: 0.8rem;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+/* --- Thank You Animation --- */
+.split-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.split-layer {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    overflow: hidden;
+    background: #000;
+    z-index: 2;
+}
+
+.split-layer.top {
+    top: 0;
+    transform-origin: bottom center;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.split-layer.bottom {
+    top: 50%;
+    transform-origin: top center;
+    border-top: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.split-layer img {
+    position: absolute;
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+}
+
+.split-layer.top img {
+    top: 0;
+}
+
+.split-layer.bottom img {
+    top: -120px;
+}
+
+.split-overlay {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 240px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 65%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.split-layer.top .split-overlay {
+    top: 0;
+}
+
+.split-layer.bottom .split-overlay {
+    top: -120px;
+}
+
+#ty-canvas-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2500;
+    pointer-events: none;
+}
+
+/* --- Global UI --- */
+#dimmer {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1500;
+    transition: opacity 0.6s ease;
+    backdrop-filter: blur(2px);
+}
+
+#dimmer.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* --- Minimal Effect (Romantic) --- */
+.minimal-glow {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 300px;
+    height: 300px;
+    transform: translate(-50%, -50%) scale(0);
+    background: radial-gradient(circle, rgba(255, 180, 100, 0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 1600;
+    pointer-events: none;
+    filter: blur(40px);
+}
+
+.light-wave {
+    position: fixed;
+    height: 2px;
+    width: 120px;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.9), transparent);
+    z-index: 2400;
+    pointer-events: none;
+    filter: blur(1px);
+    opacity: 0;
+}
+
+.minimal-particle {
+    position: fixed;
+    width: 3px;
+    height: 3px;
+    background: white;
+    border-radius: 50%;
+    z-index: 2600;
+    pointer-events: none;
+    box-shadow: 0 0 8px white;
+}
+
+.minimal-heart {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3000;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.minimal-heart svg {
+    width: 180px;
+    height: 180px;
+    fill: none;
+    stroke: white;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
+}
+
+.falling-emoji {
+    position: fixed;
+    top: -50px;
+    font-size: 2.2rem;
+    pointer-events: none;
+    z-index: 4000;
+    user-select: none;
+}
+
+.carousel-3d {
+    transform: translateY(30px) scale(.99);
+    opacity: 0;
+    transition: transform .9s cubic-bezier(.2, .9, .2, 1), opacity .8s ease;
+}
+
+.carousel-3d.active {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+.carousel-item {
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 22px 60px rgba(2, 6, 23, 0.65), 0 6px 30px rgba(0, 0, 0, 0.45);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.08));
+    transition: transform 0.6s cubic-bezier(.2, .9, .2, 1), opacity .5s ease, filter .4s ease;
+    transform-origin: 50% 50% -100px;
+}
+
+.carousel-item img {
+    transition: transform .6s ease, filter .4s ease, opacity .4s ease;
+    display: block;
+}
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+    .slider-card {
+        width: 210px;
+        height: 210px;
+    }
+
+    .split-layer img {
+        height: 210px;
+    }
+
+    .split-layer.bottom img {
+        top: -105px;
+    }
+
+    .split-overlay {
+        height: 210px;
+    }
+
+    .split-layer.bottom .split-overlay {
+        top: -105px;
+    }
+}
+

@@ -1,0 +1,206 @@
+/* =========================================
+   Big CTA — Full-viewport call to action
+   ========================================= */
+.big-cta {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: #6BBA6C;
+  font-family: inherit;
+}
+
+.big-cta ::selection {
+  background: #481b7a;
+  color: #fff;
+}
+
+/* ---------- Animated wave layer ---------- */
+.big-cta__wave-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.big-cta__wave-layer--yellow {
+  height: 72vh;
+  transform: skewY(4deg);
+  transform-origin: top left;
+  z-index: 1;
+}
+
+.big-cta__wave-layer--purple {
+  height: 28vh;
+  transform: skewY(-4deg);
+  transform-origin: top left;
+  z-index: 2;
+}
+
+/* Solid fill above the wave edge */
+.big-cta__wave-fill {
+  position: absolute;
+  top: -50vh;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 50vh);
+}
+
+/* SVG wave container */
+.big-cta__wave-svg-wrap {
+  position: absolute;
+  top: 100%;
+  left: -10vw;
+  width: 120vw;
+  margin-top: -1px;
+}
+
+.big-cta__wave-svg-wrap svg {
+  width: 100%;
+  display: block;
+  fill: currentColor;
+}
+
+/* ---------- Content ---------- */
+.big-cta__content {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 35vh;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  text-align: center;
+}
+
+.big-cta__title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #1a1a1a;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.025em;
+  max-width: 48rem;
+  line-height: 1.15;
+}
+
+.big-cta__subtitle {
+  font-size: 1.125rem;
+  color: #3d3d3d;
+  margin-bottom: 1.75rem;
+  font-weight: 600;
+  max-width: 36rem;
+}
+
+/* CTA buttons */
+.big-cta__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.big-cta__btn {
+  background: #fff;
+  color: #481b7a;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.875rem 2.5rem;
+  border-radius: 9999px;
+  border: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  font-size: 1.065rem;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.big-cta__btn:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
+}
+
+.big-cta__btn:active {
+  transform: scale(0.95);
+}
+
+.big-cta__link {
+  color: #481b7a;
+  font-weight: 700;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 0.2s;
+}
+
+.big-cta__link:hover {
+  text-decoration: underline;
+}
+
+.big-cta__link-arrow {
+  font-size: 0.875rem;
+  transition: transform 0.2s;
+}
+
+.big-cta__link:hover .big-cta__link-arrow {
+  transform: translateX(4px);
+}
+
+/* ---------- Sparkles ---------- */
+.big-cta__sparkle {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.4);
+  display: none;
+}
+
+.big-cta__sparkle--1 {
+  top: 38%;
+  left: 18%;
+  width: 2rem;
+  height: 2rem;
+}
+
+.big-cta__sparkle--2 {
+  top: 32%;
+  left: 24%;
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.3;
+}
+
+.big-cta__sparkle--3 {
+  top: 42%;
+  right: 22%;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.big-cta__sparkle--4 {
+  top: 35%;
+  right: 28%;
+  width: 0.75rem;
+  height: 0.75rem;
+  opacity: 0.2;
+}
+
+/* ---------- Responsive ---------- */
+@media (min-width: 768px) {
+  .big-cta__title {
+    font-size: 3.125rem;
+  }
+
+  .big-cta__subtitle {
+    font-size: 1.25rem;
+  }
+
+  .big-cta__sparkle {
+    display: block;
+  }
+}
+
+@media (min-width: 1024px) {
+  .big-cta__title {
+    font-size: 3.375rem;
+  }
+}

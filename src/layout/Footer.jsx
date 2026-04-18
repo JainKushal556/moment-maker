@@ -1,0 +1,244 @@
+import { useEffect, useRef } from 'react'
+import Matter from 'matter-js'
+import '../styles/footer.css'
+
+const { Engine, Runner, Bodies, Body, Composite, Mouse, MouseConstraint, Events } = Matter
+
+export default function Footer() {
+  const playgroundRef = useRef(null)
+
+  useEffect(() => {
+    const playground = playgroundRef.current
+    if (!playground) return
+
+    const overlay = playground.querySelector('.footer-playground-overlay')
+    function getOverlayHeight() { return overlay ? overlay.offsetHeight : 220 }
+
+    const engine = Engine.create({ gravity: { x: 0, y: 0.7 } })
+    let pW = playground.clientWidth; let pH = playground.clientHeight
+    function playFloor() { return pH - getOverlayHeight() - 8 }
+    const wallT = 60
+
+    function createWalls() {
+      const floor = playFloor()
+      return [
+        Bodies.rectangle(pW / 2, floor + wallT / 2, pW + 200, wallT, { isStatic: true, label: 'floor' }),
+        Bodies.rectangle(-wallT / 2, floor / 2, wallT, floor * 2, { isStatic: true }),
+        Bodies.rectangle(pW + wallT / 2, floor / 2, wallT, floor * 2, { isStatic: true }),
+        Bodies.rectangle(pW / 2, -wallT / 2, pW + 200, wallT, { isStatic: true })
+      ]
+    }
+
+    let walls = createWalls(); Composite.add(engine.world, walls)
+    const items = []; const MAX_SPEED = 28; const blobSize = 280; const blobR = blobSize / 2
+
+    const blobStartPositions = [{ x: 0.12, y: 0.10 }, { x: 0.80, y: 0.12 }, { x: 0.38, y: 0.08 }, { x: 0.58, y: 0.18 }, { x: 0.15, y: 0.28 }, { x: 0.70, y: 0.06 }]
+    const blobEls = playground.querySelectorAll('.footer-blob')
+    blobEls.forEach((el, i) => {
+      const pos = blobStartPositions[i] || { x: Math.random(), y: 0.15 }; const floor = playFloor()
+      const body = Bodies.circle(pW * pos.x, floor * pos.y, blobR * 0.65, { restitution: 0.45, friction: 0.25, frictionAir: 0.018, density: 0.002, angle: (Math.random() - 0.5) * 0.6 })
+      Composite.add(engine.world, body); items.push({ el, body, w: blobSize, h: blobSize, isBlob: true })
+    })
+
+    const pillPositions = [{ x: 0.08, y: 0.55, angle: -1.2 }, { x: 0.30, y: 0.50, angle: -1.4 }, { x: 0.55, y: 0.55, angle: -1.1 }, { x: 0.82, y: 0.58, angle: -0.15 }]
+    const pillEls = playground.querySelectorAll('.footer-pill')
+    pillEls.forEach((el, i) => {
+      const w = el.offsetWidth || 180; const h = el.offsetHeight || 44
+      const pos = pillPositions[i] || { x: 0.5, y: 0.55, angle: -0.3 }; const floor = playFloor()
+      const body = Bodies.rectangle(pW * pos.x, floor * pos.y, w, h, { restitution: 0.5, friction: 0.2, frictionAir: 0.03, density: 0.001, angle: pos.angle, chamfer: { radius: h / 2 } })
+      Composite.add(engine.world, body); items.push({ el, body, w, h, isBlob: false })
+    })
+
+    const mouse = Mouse.create(playground)
+    const mouseConstraint = MouseConstraint.create(engine, { mouse, constraint: { stiffness: 0.18, render: { visible: false } } })
+    Composite.add(engine.world, mouseConstraint)
+    Events.on(mouseConstraint, 'startdrag', () => playground.style.cursor = 'grabbing')
+    Events.on(mouseConstraint, 'enddrag', () => playground.style.cursor = 'grab')
+
+    Events.on(engine, 'afterUpdate', () => {
+      const floor = playFloor()
+      for (const { body } of items) {
+        const spd = Math.sqrt(body.velocity.x ** 2 + body.velocity.y ** 2)
+        if (spd > MAX_SPEED) { const scale = MAX_SPEED / spd; Body.setVelocity(body, { x: body.velocity.x * scale, y: body.velocity.y * scale }) }
+        const margin = 20; let px = body.position.x; let py = body.position.y; let clamped = false
+        if (px < margin) { px = margin; clamped = true }; if (px > pW - margin) { px = pW - margin; clamped = true }
+        if (py < margin) { py = margin; clamped = true }; if (py > floor - margin) { py = floor - margin; clamped = true }
+        if (clamped) { Body.setPosition(body, { x: px, y: py }); Body.setVelocity(body, { x: 0, y: 0 }) }
+      }
+    })
+
+    const runner = Runner.create(); let isRunning = false; let syncRAF
+    function startPhysics() { if (isRunning) return; isRunning = true; Runner.run(runner, engine); syncDOM() }
+    function stopPhysics() { if (!isRunning) return; isRunning = false; Runner.stop(runner); cancelAnimationFrame(syncRAF) }
+    function syncDOM() {
+      if (!isRunning) return
+      for (const { el, body, w, h } of items) {
+        const x = body.position.x - w / 2
+        const y = body.position.y - h / 2
+        const angle = body.angle
+        el.style.transform = `translate(${x}px, ${y}px) rotate(${angle}rad)`
+      }
+      syncRAF = requestAnimationFrame(syncDOM)
+    }
+
+    // Anchor all items at origin so translate drives position
+    items.forEach(({ el }) => { el.style.left = '0px'; el.style.top = '0px' })
+
+    const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) startPhysics(); else stopPhysics() }) }, { rootMargin: '100px', threshold: 0 })
+    observer.observe(playground)
+
+    let resizeTimeout
+    const resizeHandler = () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { pW = playground.clientWidth; pH = playground.clientHeight; Composite.remove(engine.world, walls); walls = createWalls(); Composite.add(engine.world, walls) }, 250) }
+    window.addEventListener('resize', resizeHandler)
+
+    const mouseMoveHandler = (e) => { const rect = playground.getBoundingClientRect(); mouse.position.x = e.clientX - rect.left; mouse.position.y = e.clientY - rect.top }
+    playground.addEventListener('mousemove', mouseMoveHandler)
+
+    function setTouchPos(t) { const rect = playground.getBoundingClientRect(); mouse.position.x = t.clientX - rect.left; mouse.position.y = t.clientY - rect.top }
+    const touchStartHandler = (e) => { if (e.touches.length === 1) setTouchPos(e.touches[0]) }
+    const touchMoveHandler = (e) => { if (e.touches.length === 1) setTouchPos(e.touches[0]) }
+    playground.addEventListener('touchstart', touchStartHandler)
+    playground.addEventListener('touchmove', touchMoveHandler)
+
+    return () => {
+      stopPhysics(); observer.disconnect()
+      window.removeEventListener('resize', resizeHandler)
+      playground.removeEventListener('mousemove', mouseMoveHandler)
+      playground.removeEventListener('touchstart', touchStartHandler)
+      playground.removeEventListener('touchmove', touchMoveHandler)
+      Engine.clear(engine)
+    }
+  }, [])
+
+  return (
+    <section className="footer-section">
+      <div className="footer-playground" ref={playgroundRef}>
+
+        {/* Shape 1: Yellow Heptagon */}
+        <div className="footer-blob">
+          <svg viewBox="0 0 277 301">
+            <path d="M108.103 8.24078C126.954 -2.64276 150.179 -2.64276 169.03 8.24078L246.169 52.7773C265.02 63.6609 276.633 83.7745 276.633 105.542V194.615C276.633 216.382 265.02 236.495 246.169 247.379L169.03 291.915C150.179 302.799 126.954 302.799 108.103 291.915L30.9635 247.379C12.1126 236.495 0.5 216.382 0.5 194.615V105.542C0.5 83.7745 12.1126 63.6609 30.9635 52.7773L108.103 8.24078Z" fill="#FAFF00" />
+          </svg>
+        </div>
+
+        {/* Shape 2: Lavender Circle */}
+        <div className="footer-blob">
+          <svg viewBox="0 0 207 207">
+            <path d="M176.3,31c-18.8-18.8-44.7-30.4-73.3-30.4C74.3,0.6,48.3,12.2,29.6,31S-0.8,75.7-0.8,104.3 c0,28.6,11.6,54.6,30.4,73.3S74.3,208,102.9,208c28.6,0,54.6-11.6,73.3-30.4s30.4-44.7,30.4-73.3C206.6,75.7,195,49.7,176.3,31z" fill="#8F9AFF" />
+          </svg>
+        </div>
+
+        {/* Shape 3: Orange Clover */}
+        <div className="footer-blob">
+          <svg viewBox="0 0 282 281">
+            <path d="M75.9469 280.078C91.5033 280.078 105.96 275.398 117.97 267.376C130.585 258.951 151.308 258.951 163.924 267.376C175.934 275.398 190.39 280.078 205.947 280.078C247.615 280.078 281.394 246.499 281.394 205.078C281.394 189.768 276.779 175.529 268.856 163.661C260.282 150.817 260.282 129.339 268.856 116.496C276.779 104.628 281.394 90.3887 281.394 75.0781C281.394 33.6568 247.615 0.078125 205.947 0.078125C190.39 0.078125 175.934 4.75843 163.924 12.7798C151.308 21.2056 130.585 21.2056 117.97 12.7798C105.96 4.75843 91.5033 0.078125 75.9469 0.078125C34.2787 0.078125 0.5 33.6568 0.5 75.0781C0.5 90.3887 5.11505 104.628 13.0377 116.496C21.6119 129.339 21.6119 150.817 13.0377 163.661C5.11505 175.529 0.5 189.768 0.5 205.078C0.5 246.499 34.2787 280.078 75.9469 280.078Z" fill="#FF8E59" />
+          </svg>
+        </div>
+
+        {/* Shape 4: Blue Star */}
+        <div className="footer-blob">
+          <svg viewBox="0 0 444 442">
+            <path d="M204.205 4.63126C215.258 -1.54115 228.742 -1.54115 239.795 4.63125L266.874 19.7527C272.176 22.7136 278.139 24.3042 284.218 24.3792L315.264 24.762C327.936 24.9182 339.614 31.6297 346.086 42.4769L361.942 69.0507C365.046 74.2541 369.412 78.5999 374.639 81.6906L401.333 97.4751C412.229 103.918 418.971 115.543 419.128 128.158L419.512 159.064C419.588 165.116 421.186 171.052 424.16 176.33L439.35 203.287C445.55 214.29 445.55 227.713 439.35 238.717L424.16 265.674C421.186 270.952 419.588 276.888 419.512 282.94L419.128 313.846C418.971 326.461 412.229 338.086 401.333 344.529L374.639 360.313C369.412 363.404 365.046 367.75 361.942 372.953L346.086 399.527C339.614 410.374 327.936 417.086 315.264 417.242L284.218 417.625C278.139 417.7 272.176 419.29 266.874 422.251L239.795 437.373C228.742 443.545 215.258 443.545 204.205 437.373L177.126 422.251C171.824 419.29 165.861 417.7 159.782 417.625L128.736 417.242C116.064 417.086 104.386 410.374 97.9142 399.527L82.0583 372.953C78.9536 367.75 74.5882 363.404 69.3612 360.313L42.6671 344.529C31.7709 338.086 25.029 326.461 24.8721 313.846L24.4875 282.94C24.4123 276.888 22.8144 270.952 19.8401 265.674L4.65025 238.717C-1.55008 227.713 -1.55008 214.29 4.65025 203.287L19.8401 176.33C22.8144 171.052 24.4122 165.116 24.4875 159.064L24.8721 128.158C25.029 115.543 31.7709 103.918 42.6671 97.4751L69.3612 81.6906C74.5882 78.5999 78.9536 74.2541 82.0583 69.0507L97.9142 42.4769C104.386 31.6297 116.064 24.9182 128.736 24.762L159.782 24.3792C165.861 24.3042 171.824 22.7136 177.126 19.7527L204.205 4.63126Z" fill="#5E9BFF" />
+          </svg>
+        </div>
+
+        {/* Shape 5: Pink Scalloped */}
+        <div className="footer-blob">
+          <svg viewBox="0 0 249 247">
+            <path d="M245.7,56.1l0-9.9c0-22.7-18.4-41-41-41l-160.2,0c-22.7,0-41,18.4-41,41l0,9.9c0,11,4.3,21,11.4,28.4 c1.5,1.5,1.5,4,0,5.5c-7.1,7.4-11.4,17.4-11.4,28.4l0,9.9c0,11,4.3,21,11.4,28.4c1.5,1.5,1.5,4,0,5.5c-7.1,7.4-11.4,17.4-11.4,28.4 l0,10.1c0,22.7,18.4,41,41,41l160.2,0c22.7,0,41-18.4,41-41l0-10.1c0-11-4.3-21-11.4-28.4c-1.5-1.5-1.5-4,0-5.5 c7.1-7.4,11.4-17.4,11.4-28.4l0-9.9c0-11-4.3-21-11.4-28.4c-1.5-1.5-1.5-4,0-5.5C241.3,77.1,245.7,67.1,245.7,56.1z" fill="#FFBDF9" />
+          </svg>
+        </div>
+
+        {/* Shape 6: Lime Clover */}
+        <div className="footer-blob">
+          <svg viewBox="0 0 282 281">
+            <path d="M75.9469 280.078C91.5033 280.078 105.96 275.398 117.97 267.376C130.585 258.951 151.308 258.951 163.924 267.376C175.934 275.398 190.39 280.078 205.947 280.078C247.615 280.078 281.394 246.499 281.394 205.078C281.394 189.768 276.779 175.529 268.856 163.661C260.282 150.817 260.282 129.339 268.856 116.496C276.779 104.628 281.394 90.3887 281.394 75.0781C281.394 33.6568 247.615 0.078125 205.947 0.078125C190.39 0.078125 175.934 4.75843 163.924 12.7798C151.308 21.2056 130.585 21.2056 117.97 12.7798C105.96 4.75843 91.5033 0.078125 75.9469 0.078125C34.2787 0.078125 0.5 33.6568 0.5 75.0781C0.5 90.3887 5.11505 104.628 13.0377 116.496C21.6119 129.339 21.6119 150.817 13.0377 163.661C5.11505 175.529 0.5 189.768 0.5 205.078C0.5 246.499 34.2787 280.078 75.9469 280.078Z" fill="#DAEF68" />
+          </svg>
+        </div>
+
+        {/* Pill Buttons */}
+        <a href="#categories" className="footer-pill">
+          <span className="pill-text">Browse Categories</span>
+          <span className="pill-hover-text">Find the perfect wish</span>
+        </a>
+        <a href="#create" className="footer-pill">
+          <span className="pill-text">Try Customization</span>
+          <span className="pill-hover-text">Make it truly yours</span>
+        </a>
+        <a href="#" className="footer-pill">
+          <span className="pill-text">Send a Wish</span>
+          <span className="pill-hover-text">Spread the joy</span>
+        </a>
+        <a href="#" className="footer-pill">
+          <span className="pill-text">Join Community</span>
+          <span className="pill-hover-text">Meet fellow wishers</span>
+        </a>
+
+        {/* Full Footer Overlay on Playground */}
+        <div className="footer-playground-overlay">
+
+          {/* Top: Logo + Nav columns */}
+          <div className="fpo-top">
+            {/* Brand */}
+            <div className="fpo-brand">
+              <a href="#" className="footer-logo-link" aria-label="Moment Maker Home">
+                <svg className="footer-logo-svg" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+                  <polygon points="16,2 18.5,11 28,11 20.5,16.5 23,26 16,21 9,26 11.5,16.5 4,11 13.5,11" fill="#111" />
+                  <line x1="16" y1="0" x2="16" y2="3" stroke="#111" strokeWidth="1.8" strokeLinecap="round" />
+                  <line x1="16" y1="27" x2="16" y2="30" stroke="#111" strokeWidth="1.8" strokeLinecap="round" />
+                  <line x1="30" y1="14" x2="33" y2="14" stroke="#111" strokeWidth="1.8" strokeLinecap="round" />
+                  <line x1="0" y1="14" x2="3" y2="14" stroke="#111" strokeWidth="1.8" strokeLinecap="round" />
+                  <text x="42" y="20" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="700" fontSize="14" fill="#111" letterSpacing="0.5">MOMENT</text>
+                  <text x="42" y="36" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="300" fontSize="10.5" fill="#444" letterSpacing="2.5">MAKER</text>
+                </svg>
+              </a>
+              <p className="fpo-tagline">Craft memories,<br />not just messages.</p>
+            </div>
+
+            {/* Nav columns */}
+            <div className="fpo-nav-cols">
+              <div className="fpo-col">
+                <a href="#">Home</a>
+                <a href="#categories">Browse Categories</a>
+                <a href="#create">Customize a Wish</a>
+                <a href="#">Send a Wish</a>
+              </div>
+              <div className="fpo-col">
+                <a href="#">Templates</a>
+                <a href="#">How It Works</a>
+                <a href="#">Blog</a>
+              </div>
+              <div className="fpo-col">
+                <a href="#">Showcase</a>
+                <a href="#">Themes</a>
+                <a href="#">Support</a>
+              </div>
+              <div className="fpo-col">
+                <a href="#">About Us</a>
+                <a href="#">Contact Us</a>
+                <a href="#">Affiliates</a>
+                <a href="#">Resources</a>
+              </div>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="fpo-divider"></div>
+
+          {/* Bottom: Centered socials + copyright */}
+          <div className="fpo-bottom">
+            <div className="fpo-socials">
+              <a href="#" className="fpo-social-icon" aria-label="Facebook"><i className="fab fa-facebook-f"></i></a>
+              <a href="#" className="fpo-social-icon" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
+              <a href="#" className="fpo-social-icon" aria-label="RSS"><i className="fas fa-rss"></i></a>
+              <a href="#" className="fpo-social-icon" aria-label="Google"><i className="fab fa-google-plus-g"></i></a>
+              <a href="#" className="fpo-social-icon" aria-label="Flickr"><i className="fab fa-flickr"></i></a>
+            </div>
+            <span className="fpo-copy">&copy;Copyright. All rights reserved.</span>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  )
+}

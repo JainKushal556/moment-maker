@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#EAB308"/>
+  <defs>
+    <mask id="cake-cuts">
+      <rect x="0" y="0" width="512" height="512" fill="white" />
+      <path d="M 92 302 Q 117 338, 138 302 T 179 302 T 220 302 T 261 302 T 302 302 T 343 302 T 384 302 T 425 302" 
+            stroke="black" stroke-width="18" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      <rect x="77" y="379" width="358" height="18" fill="black" />
+    </mask>
+  </defs>
+  <g fill="#1A1A1A">
+    <path d="M 256 67 C 292 113, 287 144, 266 144 Q 256 133, 246 144 C 225 144, 220 113, 256 67 Z" />
+    <rect x="235" y="154" width="41" height="92" rx="10" />
+    <rect x="107" y="236" width="297" height="200" rx="26" mask="url(#cake-cuts)" />
+  </g>
+</svg>

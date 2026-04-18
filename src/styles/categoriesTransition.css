@@ -1,0 +1,72 @@
+/* =========================================
+   Categories Transition — Premium 3-Block Style (Awwwards)
+   ========================================= */
+
+.ct-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+  pointer-events: none;
+  /* Start transparent, the blocks themselves provide the cover */
+  background: transparent; 
+}
+
+.ct-overlay.ct-hidden {
+  display: none;
+}
+
+/* ── The 3 Architectural Blocks ── */
+.ct-blocks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  z-index: 2;
+}
+
+.ct-block {
+  flex: 1;
+  height: 100%;
+  background: #0a0a12; /* Deep premium black/purple */
+  /* We will animate their Y position from 100% (below) to 0, then to -100% (above) */
+  transform: translateY(100%);
+  will-change: transform;
+  border-right: 1px solid rgba(255, 255, 255, 0.05); /* very subtle separation */
+}
+
+.ct-block:last-child {
+  border-right: none;
+}
+
+/* ── The Massive Text ── */
+.ct-text-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3;
+  pointer-events: none;
+  /* Use mix-blend-mode for ultra-premium text interaction with the blocks */
+  mix-blend-mode: difference;
+}
+
+.ct-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  font-size: clamp(3.5rem, 13vw, 15rem);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: white; /* With difference, white on the dark block creates a sharp cut */
+  white-space: nowrap;
+  user-select: none;
+  opacity: 0;
+  transform: scale(0.85); /* Scales up slightly */
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .ct-text {
+    font-size: clamp(2.5rem, 14vw, 6rem);
+  }
+}

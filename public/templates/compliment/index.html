@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="./_next/static/chunks/de5bda265ad71d90.css" />
+    <title>You're the best!</title>
+    <meta name="description"
+        content="A cute little website filled with compliments, surprises, and a heartfelt message made just for you." />
+    <link rel="icon" href="./favicon.ico" sizes="64x64" type="image/x-icon" />
+    <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body class="outfit_43b16714-module__GatBpq__className bg-rose-50 antialiased select-none">
+    <div class="min-h-screen flex items-center justify-center overflow-hidden">
+        <!-- Background -->
+        <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none w-full h-full">
+            <div class="absolute inset-0 w-full h-full" style="background:radial-gradient(ellipse 85% 65% at 8% 8%, rgba(175, 109, 255, 0.1), transparent 60%),
+                        radial-gradient(ellipse 75% 60% at 75% 35%, rgba(255, 235, 170, 0.1), transparent 62%),
+                        radial-gradient(ellipse 70% 60% at 15% 80%, rgba(255, 100, 180, 0.1), transparent 62%),
+                        radial-gradient(ellipse 70% 60% at 92% 92%, rgba(120, 190, 255, 0.1), transparent 62%),
+                        linear-gradient(180deg, #fff5f7 0%, #fde7ee 100%)"></div>
+        </div>
+
+        <!-- Falling Petals -->
+        <div class="petals-container" id="petals-container"></div>
+
+        <!-- Stage 0: Intro -->
+        <div id="stage-intro" class="stage active px-4 py-6 flex-col items-center justify-center animate-fade-in">
+            <div class="flex flex-col items-center justify-center relative text-center">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-dancing font-semibold text-rose-500/85 tracking-wide">Just for
+                        you</h1>
+                </div>
+                <button id="start-btn"
+                    class="mt-8 relative group will-change-transform heart-btn transition-transform duration-200"
+                    tabindex="0">
+                    <div
+                        class="absolute inset-0 bg-rose-300/60 rounded-full blur-xl opacity-50 group-hover:opacity-80 transition-opacity duration-500">
+                    </div>
+                    <div
+                        class="relative w-32 h-32 bg-white rounded-full shadow-xl flex items-center justify-center border-4 border-rose-100">
+                        <div class="animate-pulse-heart">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="lucide lucide-heart w-14 h-14 text-rose-400 fill-current"
+                                aria-hidden="true">
+                                <path
+                                    d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5">
+                                </path>
+                            </svg>
+                        </div>
+                    </div>
+                </button>
+                <p class="text-rose-400/70 text-sm font-medium tracking-wide mt-4">Tap to open</p>
+            </div>
+        </div>
+
+        <!-- Stage 1: Scanner -->
+        <div id="stage-scanner" class="stage px-4 py-6 flex-col items-center justify-center">
+            <div id="scanning-view" class="flex flex-col items-center">
+                <div class="relative w-72 h-72 flex items-center justify-center">
+                    <div class="absolute inset-0 border-4 border-rose-400/50 rounded-full scanner-ring"></div>
+                    <div class="absolute inset-4 border-4 border-rose-200/40 rounded-full scanner-inner"></div>
+                    <div class="absolute inset-0 rounded-full overflow-hidden">
+                        <div
+                            class="w-full h-1/2 bg-gradient-to-b from-transparent to-rose-300/25 border-b-2 border-rose-400 scanner-line">
+                        </div>
+                    </div>
+                    <div class="bg-white/70 backdrop-blur-md p-6 rounded-full shadow-sm z-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                            class="w-12 h-12" style="fill: #fb7185;">
+                            <path
+                                d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+                <p id="scan-text" class="mt-8 text-xl text-gray-600 font-medium animate-slide-in">Scanning...</p>
+            </div>
+            <div id="receipt-view" class="flex flex-col items-center" style="display: none;">
+                <div class="receipt bg-white w-72 p-6 shadow-2xl relative mb-8 animate-slide-down">
+                    <div class="text-center border-b-2 border-dashed border-gray-200 pb-4 mb-4">
+                        <div class="flex justify-center mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="text-rose-300">
+                                <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z">
+                                </path>
+                                <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+                                <path d="M12 17.5v-11"></path>
+                            </svg>
+                        </div>
+                        <h2 class="font-bold text-gray-500 text-sm tracking-widest">OFFICIAL REPORT</h2>
+                        <p id="report-date" class="text-xs text-gray-400"></p>
+                    </div>
+                    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 24 24" fill="none"
+                            class="text-rose-100 fill-current opacity-40">
+                            <path
+                                d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="space-y-3 font-mono text-sm text-gray-600 mb-6">
+                        <div class="flex justify-between"><span>ITEM:</span><span class="font-bold">YOU</span></div>
+                        <div class="flex justify-between"><span>CUTENESS:</span><span class="font-bold">UNLIMITED</span>
+                        </div>
+                        <div class="flex justify-between"><span>SWEETNESS:</span><span class="font-bold">OVERLOAD</span>
+                        </div>
+                        <div class="flex justify-between"><span>VIBE:</span><span class="font-bold">PERFECT</span></div>
+                    </div>
+                    <div class="border-t-2 border-dashed border-gray-200 pt-4 text-center">
+                        <p class="font-bold text-rose-500/85 text-lg mb-1">TOTAL: 100% LOVELY</p>
+                        <p class="text-xs text-gray-400">||| || ||| || ||||</p>
+                    </div>
+                </div>
+                <button id="continue-to-gallery"
+                    class="btn-primary px-8 py-3 text-white rounded-full font-medium tracking-wide shadow-xl transition-all duration-300 flex items-center gap-2 animate-btn-delayed"
+                    style="background: linear-gradient(to right, #fb7185, #f43f5e);">
+                    Continue
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="mt-0.5">
+                        <path d="M18 8L22 12L18 16"></path>
+                        <path d="M2 12H22"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stage 2: Gallery / Compliments -->
+        <div id="stage-gallery" class="stage px-4 py-6 flex-col items-center justify-center w-full">
+            <h2
+                class="text-4xl md:text-5xl text-balance font-dancing font-semibold text-rose-500/85 mb-8 z-10 text-center animate-fade-in">
+                My favorite things about you</h2>
+            <div class="relative w-full max-w-md h-96 flex items-center justify-center">
+                <!-- Card 1 -->
+                <div class="absolute top-0 left-3 md:left-14 z-10 card-container w-40 h-48"
+                    style="transform: rotate(-6deg);" onclick="this.classList.toggle('flipped')">
+                    <div class="card-inner">
+                        <div class="card-front bg-white p-3 shadow-xl flex flex-col items-center">
+                            <div
+                                class="w-full h-32 bg-amber-400 bg-opacity-20 flex items-center justify-center mb-4 overflow-hidden relative">
+                                <div class="absolute inset-0 opacity-10 bg-black mix-blend-overlay"></div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" class="text-rose-50">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                                    <line x1="9" x2="9.01" y1="9" y2="9"></line>
+                                    <line x1="15" x2="15.01" y1="9" y2="9"></line>
+                                </svg>
+                            </div>
+                            <div class="px-2 py-2 bg-white">
+                                <div class="flex justify-center space-x-1">
+                                    <div class="w-8 h-0.5 bg-pink-200 rounded-full"></div>
+                                    <div class="w-6 h-0.5 bg-purple-200 rounded-full"></div>
+                                    <div class="w-10 h-0.5 bg-rose-200 rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="card-back bg-white p-4 shadow-xl flex flex-col justify-center text-center border-2 border-rose-100">
+                            <p class="text-sm text-gray-700 font-medium leading-relaxed">Being around you makes even
+                                ordinary days feel special.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="absolute top-3 md:top-4 right-4 md:right-14 z-20 card-container w-40 h-48"
+                    style="transform: rotate(12deg);" onclick="this.classList.toggle('flipped')">
+                    <div class="card-inner">
+                        <div class="card-front bg-white p-3 shadow-xl flex flex-col items-center">
+                            <div
+                                class="w-full h-32 bg-purple-400 bg-opacity-20 flex items-center justify-center mb-4 overflow-hidden relative">
+                                <div class="absolute inset-0 opacity-10 bg-black mix-blend-overlay"></div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" class="text-rose-50">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                                    <line x1="9" x2="9.01" y1="9" y2="9"></line>
+                                    <line x1="15" x2="15.01" y1="9" y2="9"></line>
+                                </svg>
+                            </div>
+                            <div class="px-2 py-2 bg-white">
+                                <div class="flex justify-center space-x-1">
+                                    <div class="w-8 h-0.5 bg-pink-200 rounded-full"></div>
+                                    <div class="w-6 h-0.5 bg-purple-200 rounded-full"></div>
+                                    <div class="w-10 h-0.5 bg-rose-200 rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="card-back bg-white p-4 shadow-xl flex flex-col justify-center text-center border-2 border-rose-100">
+                            <p class="text-sm text-gray-700 font-medium leading-relaxed">I love how your eyes light up
+                                when you talk about things you love.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 card-container w-40 h-48"
+                    style="transform: translateX(-50%) rotate(-2deg);" onclick="this.classList.toggle('flipped')">
+                    <div class="card-inner">
+                        <div class="card-front bg-white p-3 shadow-xl flex flex-col items-center">
+                            <div
+                                class="w-full h-32 bg-rose-400 bg-opacity-20 flex items-center justify-center mb-4 overflow-hidden relative">
+                                <div class="absolute inset-0 opacity-10 bg-black mix-blend-overlay"></div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" class="text-rose-50">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                                    <line x1="9" x2="9.01" y1="9" y2="9"></line>
+                                    <line x1="15" x2="15.01" y1="9" y2="9"></line>
+                                </svg>
+                            </div>
+                            <div class="px-2 py-2 bg-white">
+                                <div class="flex justify-center space-x-1">
+                                    <div class="w-8 h-0.5 bg-pink-200 rounded-full"></div>
+                                    <div class="w-6 h-0.5 bg-purple-200 rounded-full"></div>
+                                    <div class="w-10 h-0.5 bg-rose-200 rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="card-back bg-white p-4 shadow-xl flex flex-col justify-center text-center border-2 border-rose-100">
+                            <p class="text-sm text-gray-700 font-medium leading-relaxed">Your laugh is literally my
+                                favorite sound in the entire universe. Never stop.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-rose-400/60 text-sm mt-4 font-medium animate-pulse">Tap the cards to flip them</p>
+            <button id="continue-to-letter"
+                class="btn-primary mt-4 px-8 py-3 text-white rounded-full font-medium tracking-wide shadow-xl transition-all duration-300 flex items-center gap-2 animate-btn-delayed"
+                style="background: linear-gradient(to right, #fb7185, #f43f5e);">
+                One more thing
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="mt-0.5">
+                    <path d="M18 8L22 12L18 16"></path>
+                    <path d="M2 12H22"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Stage 3: Letter -->
+        <div id="stage-letter" class="stage px-4 py-6 flex-col items-center justify-center">
+            <div id="envelope-view" class="flex flex-col items-center animate-fade-in">
+                <button id="open-letter-btn"
+                    class="group relative cursor-pointer heart-btn transition-transform duration-200">
+                    <div
+                        class="w-72 h-48 bg-rose-200 rounded-lg shadow-xl flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute bottom-0 w-full h-1/2 bg-rose-300/30"></div>
+                        <div class="bg-white/70 backdrop-blur-md shadow-md rounded-full p-3 relative">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="text-rose-500">
+                                <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path>
+                                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="mt-6 text-rose-500/70 text-sm font-medium text-center animate-pulse">Tap to read letter
+                    </p>
+                </button>
+            </div>
+            <div id="letter-content"
+                class="w-full max-w-lg bg-white/90 backdrop-blur-sm p-8 md:p-12 rounded-lg relative shadow-lg animate-slide-in"
+                style="display: none;">
+                <h3 class="font-dancing text-3xl font-medium text-rose-500/85 mb-4" style="text-align: left;">For you,
+                </h3>
+                <div class="text-gray-700 leading-relaxed" style="text-align: left;">
+                    <p style="text-align: justify;">I wanted to make something a little different for you, just to
+                        remind you how much you mean to me. Thank you for being my person. Thank you for the laughs, the
+                        patience, and for sharing your world with me. You are genuinely wonderful, and I hope this
+                        little surprise made you smile today.</p>
+                </div>
+                <button id="continue-to-outro"
+                    class="btn-primary mx-auto mt-8 px-8 py-3 text-white rounded-full font-medium tracking-wide shadow-xl transition-all duration-300 flex items-center gap-2 animate-btn-delayed"
+                    style="background: linear-gradient(to right, #fb7185, #f43f5e);">
+                    One last thing
+                </button>
+            </div>
+        </div>
+
+        <!-- Stage 4: Outro -->
+        <div id="stage-outro" class="stage px-4 py-6 flex-col items-center justify-center text-center animate-fade-in">
+            <div class="mb-4">
+                <img src="./gifs/happy.gif" alt="Happy" class="w-40 h-auto">
+            </div>
+            <h1 class="text-4xl md:text-5xl font-dancing text-rose-500/85 font-semibold mb-3">You're the best</h1>
+            <p class="text-rose-400/80">Don't ever forget it</p>
+        </div>
+
+        <script src="./script.js"></script>
+</body>
+
+</html>
