@@ -55,6 +55,7 @@ export const templates = [
         category: "special", 
         rating: 4.7, 
         isPremium: false, 
+        isReact: true,
         img: "/templates/compliment/thumb.png", 
         desc: "Something sweet to say to someone special.", 
         url: "/templates/compliment/index.html" 

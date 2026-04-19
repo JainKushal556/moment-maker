@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Outfit:wght@300..700&display=swap');
+
+/* Prefix with .warm-compliment to scope to component */
+.warm-compliment {
+    /* Animations */
+    --animate-pulse-heart: pulse 1.5s ease-in-out infinite;
+    --animate-fade-in: fadeIn 0.55s ease-out forwards;
+    --animate-slide-in: slideIn 0.55s ease-out forwards;
+    --animate-spin-infinite: spin 2s linear infinite;
+    --animate-slide-down: slideDown 0.8s ease-out forwards;
+    --animate-btn-delayed: slideIn 0.6s ease-out forwards 1s;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-200px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-pulse-heart { animation: var(--animate-pulse-heart); }
+.animate-fade-in { animation: var(--animate-fade-in); }
+.animate-slide-in { animation: var(--animate-slide-in); }
+.animate-spin-infinite { animation: var(--animate-spin-infinite); }
+.animate-slide-down { animation: var(--animate-slide-down); }
+.animate-btn-delayed-intro { 
+    opacity: 0;
+    animation: var(--animate-btn-delayed);
+}
+
+.scanner-ring {
+    animation: spin 2.5s linear infinite, ringPulse 2s ease-in-out infinite;
+}
+
+.scanner-inner {
+    animation: spin 3s linear infinite reverse, ringPulse 2s ease-in-out infinite 0.5s;
+}
+
+@keyframes ringPulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 1; }
+}
+
+.scanner-line {
+    animation: spin 2s linear infinite;
+    transform-origin: bottom center;
+}
+
+/* Card flip styles */
+.card-container {
+    perspective: 1000px;
+    cursor: pointer;
+}
+
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.card-container.flipped .card-inner {
+    transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.card-back {
+    transform: rotateY(180deg);
+}
+
+/* Receipt clip path */
+.receipt {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 95% 98%, 90% 100%, 85% 98%, 80% 100%, 75% 98%, 70% 100%, 65% 98%, 60% 100%, 55% 98%, 50% 100%, 45% 98%, 40% 100%, 35% 98%, 30% 100%, 25% 98%, 20% 100%, 15% 98%, 10% 100%, 5% 98%, 0 100%);
+}
+
+/* Button effects */
+.btn-primary-template {
+    transition: transform 0.2s;
+}
+.btn-primary-template:hover {
+    transform: scale(1.02);
+}
+.btn-primary-template:active {
+    transform: scale(0.97);
+}
+
+.heart-btn-template:hover {
+    transform: scale(1.05);
+}
+.heart-btn-template:active {
+    transform: scale(0.95);
+}
+
+/* Petals */
+.petals-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.petal {
+    position: absolute;
+    top: -20px;
+    border-radius: 100% 0 100% 0;
+    opacity: 0.7;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    0% { transform: translateY(-10vh) rotate(0deg) translateX(0); opacity: 0; }
+    10% { opacity: 0.7; }
+    90% { opacity: 0.7; }
+    100% { transform: translateY(110vh) rotate(360deg) translateX(50px); opacity: 0; }
+}

@@ -12,9 +12,7 @@
 /* =========================================
    Nav Animation
    ========================================= */
-.moveX {
-    /* Initially static */
-}
+
 
 .moveLink {
     opacity: 0;
@@ -129,19 +127,7 @@ body {
     object-fit: cover;
 }
 
-/* =========================================
-   Main Sections
-   ========================================= */
-section:not(.editor-section) {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem;
-    color: #f0f0f0;
-    overflow: hidden;
-    position: relative;
-}
+
 
 /* =========================================
    Categories Explorer

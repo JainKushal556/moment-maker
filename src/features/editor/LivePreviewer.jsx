@@ -1,6 +1,8 @@
-import { useState, useRef, useEffect, useContext } from 'react'
+import { useState, useRef, useEffect, useContext, lazy, Suspense } from 'react'
 import { ViewContext } from '../../context/NavContext'
 import { Check, Share2, Edit3 } from 'lucide-react'
+
+const WarmCompliment = lazy(() => import('../../templates/WarmCompliment/WarmCompliment'))
 
 export default function LivePreviewer({ template, customization, refreshKey }) {
     const [, setCurrentView] = useContext(ViewContext)
@@ -38,9 +40,6 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
     }, [customization, template, refreshKey])
 
     useEffect(() => {
-        const iframe = frameRef.current
-        if (!iframe) return
-
         let completionResolved = false
 
         const revealOptions = (delay = 0) => {
@@ -50,10 +49,16 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
             }, delay)
         }
 
+        const handleMessage = (e) => {
+            if (e.data?.type !== 'preview_complete') return
+            completionResolved = true
+            revealOptions(400)
+        }
+        window.addEventListener('message', handleMessage)
+
+        const iframe = frameRef.current
         const handleLoad = () => {
             syncCustomization()
-
-            if (refreshKey === 0) return
 
             const fallbackDelay = template?.id === 'cp-v1' ? 8000 : 1200
             fallbackTimerRef.current = window.setTimeout(() => {
@@ -63,18 +68,15 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
             }, fallbackDelay)
         }
 
-        const handleMessage = (e) => {
-            if (e.data?.type !== 'preview_complete') return
-            completionResolved = true
-            revealOptions(400)
+        if (iframe) {
+            iframe.addEventListener('load', handleLoad)
         }
 
-        iframe.addEventListener('load', handleLoad)
-        window.addEventListener('message', handleMessage)
+        // No fallback timer for interactive templates like cp-v1; we strictly wait for the 'preview_complete' message.
 
         return () => {
             clearCompletionTimers()
-            iframe.removeEventListener('load', handleLoad)
+            if (iframe) iframe.removeEventListener('load', handleLoad)
             window.removeEventListener('message', handleMessage)
         }
     }, [refreshKey, template])
@@ -122,7 +124,7 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
 
     return (
         <div className="editor-preview-area relative">
-            {visiblePreviewKey === refreshKey && refreshKey > 0 && (
+            {visiblePreviewKey === refreshKey && visiblePreviewKey !== -1 && (
                 <div className="preview-complete-overlay">
                     <div className="preview-choice-card">
                         <div className="preview-choice-badge">
@@ -202,9 +204,15 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
                     </div>
                 </div>
 
-                <div className="browser-content">
+                <div className="browser-content bg-black relative overflow-hidden h-full">
                     {template ? (
-                        <iframe key={refreshKey} ref={frameRef} src={template.url} title="Preview" className="bg-black" />
+                        template.isReact ? (
+                            <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-white/50 bg-black">Loading...</div>}>
+                                {template.id === 'cp-v1' && <WarmCompliment customization={customization} key={refreshKey} />}
+                            </Suspense>
+                        ) : (
+                            <iframe key={refreshKey} ref={frameRef} src={template.url} title="Preview" className="bg-black w-full h-full border-0" />
+                        )
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-white/20 font-mono italic">Select a template...</div>
                     )}
