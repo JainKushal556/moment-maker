@@ -7,6 +7,7 @@ import './index.css'
 // Base UI
 import NoiseOverlay from './base/NoiseOverlay'
 import DotGrid from './base/DotGrid'
+import SvgTransition from './base/SvgTransition'
 
 // Layout
 import Navbar from './layout/Navbar'
@@ -18,12 +19,15 @@ import { NavProvider, ViewContext } from './context/NavContext'
 // Features
 const LandingPage = lazy(() => import('./features/landing/LandingPage'))
 const CategoriesExplorer = lazy(() => import('./features/explorer/CategoriesExplorer'))
+const TemplatePreview = lazy(() => import('./features/preview/TemplatePreview'))
+const EditorView = lazy(() => import('./features/editor/EditorView'))
+const ShareView = lazy(() => import('./features/share/ShareView'))
 
 gsap.registerPlugin(ScrollTrigger, Observer)
 
 function AppContent() {
   const lenisRef = useRef(null)
-  const [currentView] = useContext(ViewContext)
+  const [currentView, , , , , , transitionRef] = useContext(ViewContext)
 
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
@@ -69,7 +73,29 @@ function AppContent() {
       document.querySelectorAll('.falling-emoji, .minimal-glow, .light-wave, .minimal-particle, .minimal-heart, #ty-canvas-fullscreen, .soap-bubble, .bubble-blast-particle').forEach((el) => el.remove())
 
       document.body.style.overflow = ''
-      if (window.lenis) window.lenis.start()
+      if (currentView === 'editor' || currentView === 'share') {
+        // Destroy Lenis so mouse wheel works natively in the editor sidebar
+        if (window.lenis) {
+          window.lenis.destroy()
+          window.lenis = null
+          lenisRef.current = null
+        }
+      } else {
+        // Recreate Lenis if it was destroyed (coming back from editor)
+        if (!window.lenis) {
+          const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            smooth: true,
+          })
+          lenisRef.current = lenis
+          window.lenis = lenis
+          lenis.on('scroll', ScrollTrigger.update)
+          gsap.ticker.add((time) => lenis.raf(time * 1000))
+        } else {
+          window.lenis.start()
+        }
+      }
 
       window.dispatchEvent(new CustomEvent('momentNavToggle', {
         detail: { visible: currentView === 'categories' }
@@ -78,9 +104,9 @@ function AppContent() {
       prevViewRef.current = currentView
     }
 
-    if (window.lenis) {
+    if (window.lenis && currentView !== 'editor') {
       window.lenis.scrollTo(0, { immediate: true, force: true })
-    } else {
+    } else if (currentView !== 'editor') {
       window.scrollTo(0, 0)
     }
 
@@ -93,10 +119,10 @@ function AppContent() {
 
   return (
     <>
-      <Navbar />
-      <FullScreenNav />
-      <DotGrid />
-      <NoiseOverlay />
+      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && <Navbar />}
+      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && <FullScreenNav />}
+      {currentView !== 'share' && <DotGrid />}
+      {currentView !== 'share' && <NoiseOverlay />}
 
       {currentView === 'landing' && (
         <Suspense fallback={null}>
@@ -104,11 +130,32 @@ function AppContent() {
         </Suspense>
       )}
 
-      {currentView === 'categories' && (
+      {(currentView === 'categories' || currentView === 'preview') && (
         <Suspense fallback={<div className="fixed inset-0 z-50 bg-[#050508]"></div>}>
           <CategoriesExplorer />
         </Suspense>
       )}
+
+      {currentView === 'preview' && (
+        <Suspense fallback={null}>
+          <TemplatePreview />
+        </Suspense>
+      )}
+
+      {currentView === 'editor' && (
+        <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#1a0d0d]"></div>}>
+          <EditorView />
+        </Suspense>
+      )}
+
+      {currentView === 'share' && (
+        <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#0d0a0e]"></div>}>
+          <ShareView />
+        </Suspense>
+      )}
+
+      {/* SVG Stroke Transition Overlay — always mounted */}
+      <SvgTransition ref={transitionRef} />
     </>
   )
 }

@@ -1,143 +1,32 @@
-import { useRef, useEffect, useMemo, useState } from 'react'
+import { useRef, useEffect, useMemo, useState, useContext } from 'react'
 import gsap from 'gsap'
+import { ViewContext } from '../../context/NavContext'
+import { templates } from '../../data/templates'
 
-const templates = [
-    // Real Local Templates
-    { id: 'bd-v3', title: "Sweet Dream #03", category: "birthday", rating: 4.9, isPremium: false, img: "/templates/birthday-v3/thumb.png", desc: "A soft, cute birthday celebration with floating hearts.", url: "/templates/birthday-v3/index.html" },
-    { id: 'bd-v5', title: "Classic Glow #05", category: "birthday", rating: 4.8, isPremium: true, img: "/templates/birthday-v5/thumb.png", desc: "Premium minimalist birthday vibes with smooth transitions.", url: "/templates/birthday-v5/index.html" },
-    { id: 'bd-v9', title: "Golden Wish #09", category: "birthday", rating: 5.0, isPremium: true, img: "/templates/birthday-v9/thumb.png", desc: "Elegant and sophisticated birthday greetings.", url: "/templates/birthday-v9/index.html" },
-    { id: 'vh-v1', title: "Heartfelt Hug", category: "romantic", rating: 4.9, isPremium: false, img: "/templates/valentines-hug/thumb.png", desc: "A cozy romantic gesture for your special one.", url: "/templates/valentines-hug/index.html" },
-    { id: 'cp-v1', title: "Warm Compliment", category: "special", rating: 4.7, isPremium: false, img: "/templates/compliment/thumb.png", desc: "Something sweet to say to someone special.", url: "/templates/compliment/index.html" },
-    { id: 'ny-v1', title: "New Year 2026", category: "celebration", rating: 4.9, isPremium: false, img: "/templates/new-year/thumb.png", desc: "Interactive fireworks and futuristic countdown.", url: "/templates/new-year/index.html" },
-    { id: 'ny-v2', title: "Midnight Spark", category: "celebration", rating: 4.8, isPremium: true, img: "/templates/new-year-site/thumb.png", desc: "Cinematic celebration for the new year.", url: "/templates/new-year-site/index.html" },
-    
-    // Existing placeholders for variety
-    { id: 401, title: "BESTIES #401", category: "friendship", rating: 4.9, isPremium: false, img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80", desc: "Friends forever, truly." },
-]
 
-const TemplatePreview = ({ template, onClose }) => {
-    const [scale, setScale] = useState(1);
-    const containerRef = useRef(null);
-    const targetWidth = 1440; // Standard design width for templates
-    const targetHeight = 900;
-
-    useEffect(() => {
-        if (!template) return;
-
-        const updateScale = () => {
-            if (!containerRef.current) return;
-            const { offsetWidth, offsetHeight } = containerRef.current;
-            
-            // Calculate scale to fit both width and height with some padding
-            const padding = 0; 
-            const scaleX = offsetWidth / targetWidth;
-            const scaleY = offsetHeight / targetHeight;
-            
-            // We want to fit the whole template, so take the minimum
-            setScale(Math.min(scaleX, scaleY));
-        };
-
-        const observer = new ResizeObserver(updateScale);
-        if (containerRef.current) observer.observe(containerRef.current);
-        
-        // Initial call
-        updateScale();
-
-        return () => observer.disconnect();
-    }, [template]);
-
-    if (!template) return null;
-
-    return (
-        <div className="fixed inset-0 z-200 bg-[#050508]/95 backdrop-blur-3xl flex flex-col p-6 md:p-12 animate-in fade-in zoom-in-95 duration-500">
-            {/* Header - Distinct but airy */}
-            <div className="flex items-center justify-between mb-8 overflow-hidden shrink-0">
-                <div className="flex items-center gap-8">
-                    <button 
-                        onClick={onClose}
-                        className="group flex items-center gap-5 font-mono text-[10px] uppercase tracking-[0.3em] text-white/50 hover:text-[#f472b6] transition-colors"
-                    >
-                        <div className="w-12 h-12 flex items-center justify-center border border-white/20 group-hover:border-[#f472b6] rounded-full transition-all duration-300">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:rotate-90 transition-transform">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </div>
-                        EXIT PREVIEW
-                    </button>
-                    <div className="h-10 w-px bg-white/10" />
-                    <div className="animate-in slide-in-from-left-4 duration-700">
-                        <h3 className="font-montserrat font-black text-2xl uppercase tracking-tighter text-white">{template.title}</h3>
-                        <p className="text-[#f472b6] font-mono text-[9px] uppercase tracking-[0.4em] mt-1">
-                            Smart Fit Active // {template.category}
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Sized-down Preview Window */}
-            <div className="flex-1 flex items-center justify-center w-full min-h-0 relative">
-                <div 
-                    ref={containerRef}
-                    className="w-full h-full max-w-[1240px] max-h-full rounded-[2rem] overflow-hidden border border-white/10 bg-[#000000] shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] relative flex items-center justify-center"
-                >
-                    <div 
-                        style={{
-                            width: `${targetWidth}px`,
-                            height: `${targetHeight}px`,
-                            transform: `scale(${scale})`,
-                            transformOrigin: 'center center',
-                            flexShrink: 0,
-                            willChange: 'transform'
-                        }}
-                    >
-                        <iframe 
-                            src={template.url} 
-                            className="w-full h-full border-none pointer-events-auto"
-                            title={template.title}
-                        />
-                    </div>
-                    
-                    {/* Subtle Internal Overlay for "Glass" Effect */}
-                    <div className="absolute inset-0 pointer-events-none border border-white/5 rounded-[2rem] z-10" />
-                </div>
-            </div>
-
-            {/* Subtle Footer hint */}
-            <div className="mt-6 text-center opacity-20 hover:opacity-100 transition-opacity duration-700 shrink-0">
-                <p className="text-[9px] font-mono tracking-[0.5em] text-white uppercase">
-                    Resolution: {targetWidth}x{targetHeight} // Scaled to Fit
-                </p>
-            </div>
-        </div>
-    );
-};
 
 const TemplateGallery = ({ category, onBack }) => {
     const containerRef = useRef(null)
     const headerRef = useRef(null)
     const gridRef = useRef(null)
     const [searchQuery, setSearchQuery] = useState('')
-    const [previewTemplate, setPreviewTemplate] = useState(null)
+    const [, setCurrentView, , setSelectedTemplate] = useContext(ViewContext)
 
     const filteredTemplates = useMemo(() => {
         return templates.filter(t =>
-            (t.category === category?.id || category?.id === 'special' || t.category === 'special') &&
+            (t.category === category?.id) &&
             t.title.toLowerCase().includes(searchQuery.toLowerCase())
         )
     }, [category, searchQuery])
 
-    useEffect(() => {
-        if (previewTemplate) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-    }, [previewTemplate])
+    const handleTemplateClick = (template) => {
+        if (!template.url) return
+        setSelectedTemplate(template)
+        setCurrentView('preview')
+    }
 
     return (
         <div ref={containerRef} className="w-full text-white">
-            <TemplatePreview template={previewTemplate} onClose={() => setPreviewTemplate(null)} />
             {/* Top Bar Navigation */}
             <div className="flex items-center justify-between mb-24 border-b border-[#f472b6]/20 pb-6">
                 <button
@@ -195,7 +84,7 @@ const TemplateGallery = ({ category, onBack }) => {
                 {filteredTemplates.map((template) => (
                     <div
                         key={template.id}
-                        onClick={() => template.url && setPreviewTemplate(template)}
+                        onClick={() => handleTemplateClick(template)}
                         className="template-card group relative bg-[#0d0d16] rounded-3xl border border-white/10 hover:border-[#f472b6]/40 transition-all duration-500 cursor-pointer flex flex-col min-h-[420px] overflow-hidden"
                     >
                         {/* Image overlay stack */}
@@ -242,7 +131,7 @@ const TemplateGallery = ({ category, onBack }) => {
                             {/* Hover overlay preview text */}
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20 pointer-events-none">
                                 <div className="text-[10px] font-bold uppercase tracking-[0.4em] px-6 py-3 border border-white text-white bg-black/60 backdrop-blur-sm rounded-full">
-                                    CHOOSE THIS
+                                    BUILD THIS
                                 </div>
                             </div>
                         </div>

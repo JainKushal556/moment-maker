@@ -68,6 +68,10 @@ document.getElementById('open-letter-btn').addEventListener('click', function ()
 // Stage 3: Letter -> Outro
 document.getElementById('continue-to-outro').addEventListener('click', function () {
     showStage(4);
+    // Notify parent window that preview is complete
+    setTimeout(() => {
+        window.parent.postMessage({ type: 'preview_complete' }, '*');
+    }, 1500); // Small delay to let the outro animation play
 });
 
 // Create falling petals
@@ -97,6 +101,21 @@ function createPetals() {
         container.appendChild(petal);
     }
 }
+
+// Message listener for customization
+window.addEventListener('message', function (event) {
+    if (event.data.type === 'customize') {
+        const data = event.data;
+        if (data.letterTitle) {
+            const titleEl = document.getElementById('letter-title');
+            if (titleEl) titleEl.textContent = data.letterTitle;
+        }
+        if (data.letterBody) {
+            const bodyEl = document.getElementById('letter-body');
+            if (bodyEl) bodyEl.textContent = data.letterBody;
+        }
+    }
+});
 
 // Initialize petals on page load
 createPetals();

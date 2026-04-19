@@ -101,9 +101,38 @@ body {
 }
 
 /* =========================================
+   SVG Viewport Transition Overlay
+   ========================================= */
+.viewport-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9000;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.viewport-overlay .overlay-stroke {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(2.5);
+    width: 100%;
+    height: 100%;
+}
+
+.viewport-overlay svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* =========================================
    Main Sections
    ========================================= */
-section {
+section:not(.editor-section) {
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -184,4 +213,65 @@ html.lenis-scrolling iframe {
         transform: translateY(-100vh) scale(1.2) rotate(var(--rotation));
         opacity: 0;
     }
+}
+
+/* =========================================
+   Success Modal (Global Override)
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700;1,800&display=swap');
+
+.success-card-glow {
+    box-shadow: 0 0 80px rgba(255, 77, 109, 0.15), 0 0 30px rgba(255, 77, 109, 0.1) !important;
+    border: 1px solid rgba(255, 77, 109, 0.2) !important;
+}
+
+.success-headline {
+    font-family: 'Playfair Display', serif !important;
+    font-style: italic !important;
+    font-weight: 800 !important;
+    color: white !important;
+    letter-spacing: -0.02em !important;
+}
+
+.success-sub-headline {
+    color: #ff4d6d !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3em !important;
+    font-size: 10px !important;
+}
+
+.btn-secondary-glass {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    transition: all 0.3s ease !important;
+}
+
+.icon-box-red {
+    width: 64px !important;
+    height: 64px !important;
+    background: linear-gradient(135deg, #ff4d6d 0%, #c9184a 100%) !important;
+    box-shadow: 0 10px 25px rgba(201, 24, 74, 0.4) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 20px !important;
+}
+
+@keyframes ping-custom {
+  0% { transform: scale(1); opacity: 0.2; }
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+.animate-ping-custom {
+  animation: ping-custom 1.5s cubic-bezier(0, 0, 0.2, 1) infinite !important;
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  100% { left: 125%; }
+}
+
+.animate-shine {
+  animation: shine 0.8s ease-in-out forwards !important;
 }

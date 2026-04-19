@@ -1,15 +1,17 @@
 import { useRef } from 'react'
 import gsap from 'gsap'
 
-const BentoCard = ({ category, onClick }) => {
+const BentoCard = ({ category, templateCount, onClick }) => {
     const cardRef = useRef(null)
     const contentRef = useRef(null)
     const iconRef = useRef(null)
 
     const isLarge = category.size === 'large'
     const isMedium = category.size === 'medium'
+    const isComingSoon = templateCount === 0
 
     const handleMouseEnter = () => {
+        if (isComingSoon) return
         const content = contentRef.current
         const icon = iconRef.current
         if (!content) return
@@ -33,6 +35,7 @@ const BentoCard = ({ category, onClick }) => {
     }
 
     const handleMouseLeave = () => {
+        if (isComingSoon) return
         const content = contentRef.current
         const icon = iconRef.current
         if (!content) return
@@ -65,38 +68,38 @@ const BentoCard = ({ category, onClick }) => {
     return (
         <div
             ref={cardRef}
-            onClick={() => onClick(category)}
+            onClick={() => !isComingSoon && onClick(category)}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className={`bento-card group relative overflow-hidden cursor-pointer
+            className={`bento-card group relative overflow-hidden transition-all duration-500 bg-[#0a0a12]
                 ${sizeClasses}
-                rounded-3xl border border-white/10 hover:border-[#f472b6]/50
-                transition-[border-color] duration-500 bg-[#0a0a12]
+                ${isComingSoon ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-[#f472b6]/50'}
+                rounded-3xl border border-white/10
             `}
             data-category-id={category.id}
         >
-            {/* Background Image — Fully visible always */}
+            {/* Background Image */}
             <div className="absolute inset-0 overflow-hidden">
                 <img
                     src={category.img}
                     alt={category.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    style={{ filter: 'brightness(0.7)', willChange: 'transform' }}
+                    className={`w-full h-full object-cover transition-transform duration-700 ${!isComingSoon ? 'group-hover:scale-105' : ''}`}
+                    style={{ filter: isComingSoon ? 'brightness(0.3) grayscale(0.5)' : 'brightness(0.7)', willChange: 'transform' }}
                     loading="lazy"
                 />
             </div>
 
-            {/* Light Vignette / Text Readability gradient from bottom */}
-            <div className="absolute inset-0 bg-black/30" />
+            {/* Overlay Layers */}
+            <div className={`absolute inset-0 ${isComingSoon ? 'bg-black/60' : 'bg-black/30'}`} />
             <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-[#0a0a12] via-[#0a0a12]/80 to-transparent z-10" />
 
             {/* Content Container */}
             <div 
                 ref={contentRef}
                 className="relative h-full flex flex-col justify-between z-20"
-                style={{ padding: isLarge ? '3.5rem' : '2.5rem' }}
+                style={{ padding: isLarge ? '3.5rem' : '1.75rem' }}
             >
-                {/* Top Header Log */}
+                {/* Top Header */}
                 <div className="flex justify-between items-start">
                     <div className="flex gap-3 items-center">
                         <div
@@ -106,40 +109,47 @@ const BentoCard = ({ category, onClick }) => {
                         >
                             {category.icon}
                         </div>
-                        {isLarge && (
+                        {isLarge && !isComingSoon && (
                             <span className="font-mono text-[9px] text-[#f472b6] tracking-[0.3em] uppercase">
                                 FEELING: LOVELY
                             </span>
                         )}
                     </div>
                     
-                    <span
-                        className="bento-tag text-[9px] font-bold uppercase tracking-[0.3em] text-white/50 group-hover:text-[#f472b6] bg-black/40 px-3 py-1 border border-white/10 group-hover:border-[#f472b6]/30 transition-all backdrop-blur-md rounded-full"
-                    >
-                        {category.tag}
-                    </span>
+                    {/* Template Count / Coming Soon Tag */}
+                    <div className="flex flex-col items-end gap-2">
+                        {isComingSoon ? (
+                            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 bg-white/5 px-4 py-1.5 border border-white/10 backdrop-blur-md rounded-full">
+                                COMING SOON
+                            </span>
+                        ) : (
+                            <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#f472b6] bg-[#f472b6]/10 px-4 py-1.5 border border-[#f472b6]/30 backdrop-blur-md rounded-full shadow-[0_0_15px_rgba(244,114,182,0.2)]">
+                                {templateCount} {templateCount === 1 ? 'MOMENT' : 'MOMENTS'}
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 {/* Bottom Body */}
                 <div>
                     {(isLarge || isMedium) && (
-                        <p className="font-mono text-[10px] text-[#f472b6] uppercase tracking-[0.3em] mb-5">
+                        <p className="font-mono text-[10px] text-[#f472b6] uppercase tracking-[0.3em] mb-4 opacity-70">
                             {category.subtitle}
                         </p>
                     )}
                     <h3
-                        className="font-montserrat font-black tracking-tighter text-white leading-[1] uppercase group-hover:text-white transition-colors"
+                        className="font-montserrat font-black tracking-tighter text-white leading-[1] uppercase transition-colors"
                         style={{
-                            fontSize: isLarge ? 'clamp(3rem, 5vw, 5rem)' : isMedium ? 'clamp(2rem, 3vw, 3rem)' : 'clamp(1.5rem, 2vw, 2.5rem)',
-                            marginBottom: '1.5rem'
+                            fontSize: isLarge ? 'clamp(2.5rem, 5vw, 4.5rem)' : isMedium ? 'clamp(1.8rem, 3vw, 2.8rem)' : 'clamp(1.2rem, 2vw, 2.2rem)',
+                            marginBottom: isComingSoon ? '0.5rem' : '1.25rem'
                         }}
                     >
                         {category.title}
                     </h3>
                     
-                    {(isLarge || isMedium) && (
+                    {(isLarge || isMedium) && !isComingSoon && (
                         <div className="overflow-hidden">
-                            <p className="text-white/50 text-xs font-mono uppercase tracking-widest leading-relaxed border-l-2 border-[#f472b6]/30 pl-4 max-w-[90%] transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100">
+                            <p className="text-white/50 text-[11px] font-mono uppercase tracking-widest leading-relaxed border-l-2 border-[#f472b6]/30 pl-4 max-w-[90%] transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100">
                                 {category.desc}
                             </p>
                         </div>

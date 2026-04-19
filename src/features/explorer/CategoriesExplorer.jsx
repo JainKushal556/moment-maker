@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect, useContext, useCallback } from 'r
 import gsap from 'gsap'
 import BentoCard from './BentoCard'
 import TemplateGallery from './TemplateGallery'
+import { templates } from '../../data/templates'
 import { ViewContext } from '../../context/NavContext'
 
 // Warm, cute icons
@@ -160,7 +161,7 @@ const categories = [
 const CategoriesExplorer = () => {
     const [internalView, setInternalView] = useState('categories')
     const [selectedCategory, setSelectedCategory] = useState(null)
-    const [, setCurrentView] = useContext(ViewContext)
+    const [, setCurrentView, , , , , transitionRef] = useContext(ViewContext)
 
     const containerRef = useRef(null)
     const gridRef = useRef(null)
@@ -214,10 +215,19 @@ const CategoriesExplorer = () => {
     }, [internalView])
 
     const handleCategoryClick = useCallback((category) => {
-        setSelectedCategory(category)
-        setInternalView('templates')
-        window.scrollTo({ top: 0, behavior: 'instant' })
-    }, [])
+        const transition = transitionRef?.current
+        if (transition) {
+            transition.play('categories').then(() => {
+                setSelectedCategory(category)
+                setInternalView('templates')
+                window.scrollTo({ top: 0, behavior: 'instant' })
+            })
+        } else {
+            setSelectedCategory(category)
+            setInternalView('templates')
+            window.scrollTo({ top: 0, behavior: 'instant' })
+        }
+    }, [transitionRef])
 
     const handleBackToCategories = useCallback(() => {
         setInternalView('categories')
@@ -233,7 +243,7 @@ const CategoriesExplorer = () => {
     return (
         <section
             ref={containerRef}
-            className={`categories-explorer relative bg-[#0a0a12] w-full ${internalView === 'templates' ? 'z-[150]' : 'z-40'}`}
+            className={`categories-explorer relative bg-[#0a0a12] w-full ${internalView === 'templates' ? 'z-150' : 'z-40'}`}
             style={{
                 minHeight: '100vh',
                 display: 'flex',
@@ -291,13 +301,17 @@ const CategoriesExplorer = () => {
                             ref={gridRef}
                             className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-5 md:auto-rows-[300px]"
                         >
-                            {categories.map((cat) => (
-                                <BentoCard
-                                    key={cat.id}
-                                    category={cat}
-                                    onClick={handleCategoryClick}
-                                />
-                            ))}
+                            {categories.map((cat) => {
+                                const count = templates.filter(t => t.category === cat.id).length
+                                return (
+                                    <BentoCard
+                                        key={cat.id}
+                                        category={cat}
+                                        templateCount={count}
+                                        onClick={handleCategoryClick}
+                                    />
+                                )
+                            })}
                         </div>
                     </div>
                 ) : (
