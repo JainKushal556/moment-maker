@@ -112,7 +112,7 @@ const categories = [
         subtitle: "SCENE [06] // JOY",
         size: "medium",
         icon: <StarIcon size={24} />,
-        img: "/templates/birthday-v3/thumb.png",
+        img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80",
         tag: "CELEBRATE",
         desc: "Celebrate your day."
     },
@@ -122,7 +122,7 @@ const categories = [
         subtitle: "SCENE [07] // MAGIC",
         size: "small",
         icon: <SparkleIcon size={22} />,
-        img: "/templates/new-year/thumb.png",
+        img: "https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=400&q=80",
         tag: "BLISS",
         desc: "Magic in moments."
     },
@@ -142,7 +142,7 @@ const categories = [
         subtitle: "SCENE [09] // LOVE",
         size: "small",
         icon: <HeartIcon size={22} />,
-        img: "/templates/valentines-hug/thumb.png",
+        img: "https://images.unsplash.com/photo-1518199266791-5375a83191b7?w=400&q=80",
         tag: "FOREVER",
         desc: "Pure love shared."
     },
@@ -152,7 +152,7 @@ const categories = [
         subtitle: "SCENE [10] // UNIQUE",
         size: "small",
         icon: <StarIcon size={22} />,
-        img: "/templates/compliment/thumb.png",
+        img: "https://images.unsplash.com/photo-1530103862676-fa8c91badca?w=400&q=80",
         tag: "ONLY YOU",
         desc: "Simply the best."
     }

@@ -4,11 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "npx concurrently \"vite\" \"npm run build:watch --workspaces --if-present\"",
     "build": "vite build",
+    "build:templates": "npm run build --workspaces --if-present",
+    "build:all": "npm run build:templates && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
+  "workspaces": [
+    "templates/*"
+  ],
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "@tailwindcss/vite": "^4.2.2",
