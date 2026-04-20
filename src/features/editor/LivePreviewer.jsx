@@ -1,8 +1,6 @@
-import { useState, useRef, useEffect, useContext, lazy, Suspense } from 'react'
+import { useState, useRef, useEffect, useContext } from 'react'
 import { ViewContext } from '../../context/NavContext'
 import { Check, Share2, Edit3 } from 'lucide-react'
-
-const WarmCompliment = lazy(() => import('../../templates/WarmCompliment/WarmCompliment'))
 
 export default function LivePreviewer({ template, customization, refreshKey }) {
     const [, setCurrentView] = useContext(ViewContext)
@@ -22,13 +20,8 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
     }
 
     const clearCompletionTimers = () => {
-        if (revealTimerRef.current) {
-            window.clearTimeout(revealTimerRef.current)
-        }
-
-        if (fallbackTimerRef.current) {
-            window.clearTimeout(fallbackTimerRef.current)
-        }
+        if (revealTimerRef.current) window.clearTimeout(revealTimerRef.current)
+        if (fallbackTimerRef.current) window.clearTimeout(fallbackTimerRef.current)
     }
 
     useEffect(() => {
@@ -40,39 +33,18 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
     }, [customization, template, refreshKey])
 
     useEffect(() => {
-        let completionResolved = false
-
-        const revealOptions = (delay = 0) => {
-            clearCompletionTimers()
-            revealTimerRef.current = window.setTimeout(() => {
-                setVisiblePreviewKey(refreshKey)
-            }, delay)
-        }
-
         const handleMessage = (e) => {
             if (e.data?.type !== 'preview_complete') return
-            completionResolved = true
-            revealOptions(400)
+            revealTimerRef.current = window.setTimeout(() => {
+                setVisiblePreviewKey(refreshKey)
+            }, 7000)
         }
         window.addEventListener('message', handleMessage)
 
+        // Sync customization after iframe reload
         const iframe = frameRef.current
-        const handleLoad = () => {
-            syncCustomization()
-
-            const fallbackDelay = template?.id === 'cp-v1' ? 8000 : 1200
-            fallbackTimerRef.current = window.setTimeout(() => {
-                if (completionResolved) return
-                completionResolved = true
-                revealOptions(250)
-            }, fallbackDelay)
-        }
-
-        if (iframe) {
-            iframe.addEventListener('load', handleLoad)
-        }
-
-        // No fallback timer for interactive templates like cp-v1; we strictly wait for the 'preview_complete' message.
+        const handleLoad = () => { syncCustomization() }
+        if (iframe) iframe.addEventListener('load', handleLoad)
 
         return () => {
             clearCompletionTimers()
@@ -82,34 +54,23 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
     }, [refreshKey, template])
 
     useEffect(() => {
-        return () => {
-            clearCompletionTimers()
-        }
+        return () => { clearCompletionTimers() }
     }, [])
 
     const getFrameStyle = () => {
         switch (device) {
             case 'tablet':
                 return {
-                    width: '65%',
-                    height: '90%',
-                    borderRadius: '20px',
+                    width: '65%', height: '90%', borderRadius: '20px',
                     boxShadow: '0 30px 80px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.08)',
                 }
             case 'mobile':
                 return {
-                    width: '28%',
-                    height: '90%',
-                    borderRadius: '36px',
+                    width: '28%', height: '90%', borderRadius: '36px',
                     boxShadow: '0 30px 80px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.08)',
                 }
             default:
-                return {
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: '0px',
-                    boxShadow: 'none',
-                }
+                return { width: '100%', height: '100%', borderRadius: '0px', boxShadow: 'none' }
         }
     }
 
@@ -120,6 +81,13 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
             setVisiblePreviewKey(-1)
             setCurrentView('share')
         }, 1200)
+    }
+
+    // Build the correct iframe src — append ?preview=1 for proposal template
+    const getIframeSrc = () => {
+        if (!template) return ''
+        if (template.id === 'romantic-proposal') return `${template.url}?preview=1`
+        return template.url
     }
 
     return (
@@ -188,10 +156,7 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
                 ))}
             </div>
 
-            <div
-                className="preview-device-frame"
-                style={getFrameStyle()}
-            >
+            <div className="preview-device-frame" style={getFrameStyle()}>
                 <div className="browser-header">
                     <div className="browser-dots">
                         <div className="browser-dot" style={{ background: '#ff5f56' }} />
@@ -206,13 +171,13 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
 
                 <div className="browser-content bg-black relative overflow-hidden h-full">
                     {template ? (
-                        template.isReact ? (
-                            <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-white/50 bg-black">Loading...</div>}>
-                                {template.id === 'cp-v1' && <WarmCompliment customization={customization} key={refreshKey} />}
-                            </Suspense>
-                        ) : (
-                            <iframe key={refreshKey} ref={frameRef} src={template.url} title="Preview" className="bg-black w-full h-full border-0" />
-                        )
+                        <iframe
+                            key={refreshKey}
+                            ref={frameRef}
+                            src={getIframeSrc()}
+                            title="Preview"
+                            className="bg-black w-full h-full border-0"
+                        />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-white/20 font-mono italic">Select a template...</div>
                     )}

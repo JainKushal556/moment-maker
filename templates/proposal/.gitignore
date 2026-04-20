@@ -6,15 +6,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-package-lock.json
 
 node_modules
 dist
 dist-ssr
 *.local
-
-# Generated Vite/React template builds (run npm run build:templates to regenerate)
-public/templates/proposal/
 
 # Editor directories and files
 .vscode/*

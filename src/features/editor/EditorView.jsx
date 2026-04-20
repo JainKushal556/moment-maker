@@ -21,8 +21,14 @@ export default function EditorView() {
       if (templateCustomization && templateCustomization[selectedTemplate.id]) {
         // Load saved customizations
         setCustomization(templateCustomization[selectedTemplate.id])
+      } else if (selectedTemplate.id === 'romantic-proposal') {
+        // Load proposal-specific defaults
+        setCustomization({
+          images: selectedTemplate.defaults?.images || [null, null, null, null],
+          letterContent: selectedTemplate.defaults?.letterContent || ''
+        })
       } else {
-        // Load defaults
+        // Load generic defaults
         setCustomization({
           recipientName: '',
           message: selectedTemplate.desc || '',
