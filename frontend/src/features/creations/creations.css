@@ -1,0 +1,421 @@
+/* ================================================
+   MY CREATIONS — Dashboard
+   ================================================ */
+
+.mc-container {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    background: #0a0a12;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    font-family: 'Inter', sans-serif;
+}
+
+.mc-bg-gradient {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #0d0a18 0%, #12082a 50%, #0a0a12 100%);
+    z-index: -1;
+}
+.mc-bg-glow {
+    position: fixed;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80vw;
+    height: 60vh;
+    background: radial-gradient(ellipse at center, rgba(168, 85, 247, 0.1) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* ── Nav ── */
+.mc-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 10, 18, 0.7);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 1rem 2.5rem;
+    flex-shrink: 0;
+}
+.mc-nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.mc-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: 'Inter', sans-serif;
+}
+.mc-back-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateX(-3px);
+}
+
+.mc-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.mc-brand-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, #f472b6, #a855f7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: white;
+}
+.mc-brand span {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.85);
+    text-transform: uppercase;
+}
+
+.mc-logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: 'Inter', sans-serif;
+}
+.mc-logout-btn:hover {
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+}
+
+/* ── Header ── */
+.mc-header {
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 4rem 2.5rem 2rem;
+    flex-shrink: 0;
+}
+.mc-header-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    color: rgba(168, 85, 247, 0.7);
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+    margin-top: 0;
+}
+.mc-header-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    font-weight: 900;
+    color: white;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin: 0 0 1rem;
+    text-transform: uppercase;
+}
+.mc-header-sub {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.4);
+    margin: 0;
+}
+.mc-header-sub span {
+    color: rgba(244, 114, 182, 0.9);
+    font-weight: 600;
+}
+
+/* ── Main ── */
+.mc-main {
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 1rem 2.5rem 5rem;
+    flex: 1;
+}
+
+/* ── Error Banner ── */
+.mc-error-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    font-size: 13px;
+    margin-bottom: 2rem;
+}
+.mc-error-banner button {
+    background: rgba(239, 68, 68, 0.2);
+    border: none;
+    color: #fca5a5;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    flex-shrink: 0;
+}
+
+/* ── Grid ── */
+.mc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* ── Card ── */
+.mc-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+.mc-card:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+.mc-card--deleting {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* Card Thumbnail */
+.mc-card-thumb {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background-size: cover;
+    background-position: center;
+    background-color: #1a0d1f;
+    position: relative;
+}
+.mc-card-thumb-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(10, 10, 18, 0.9));
+}
+.mc-card-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(168, 85, 247, 0.25);
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    color: #c084fc;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 50px;
+    backdrop-filter: blur(8px);
+}
+
+/* Card Body */
+.mc-card-body {
+    padding: 1rem 1.2rem 0.5rem;
+    flex: 1;
+}
+.mc-card-body h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: white;
+    margin: 0 0 4px;
+}
+.mc-card-date {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    margin: 0;
+}
+
+/* Card Footer (actions) */
+.mc-card-footer {
+    padding: 0.75rem 1.2rem 1.2rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+.mc-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+.mc-action-btn--primary {
+    background: linear-gradient(135deg, rgba(244, 114, 182, 0.2), rgba(168, 85, 247, 0.2));
+    border: 1px solid rgba(244, 114, 182, 0.3);
+    color: #f472b6;
+}
+.mc-action-btn--primary:hover {
+    background: linear-gradient(135deg, rgba(244, 114, 182, 0.35), rgba(168, 85, 247, 0.35));
+}
+.mc-action-btn--ghost {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.6);
+}
+.mc-action-btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+.mc-action-btn--danger {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    color: rgba(239, 68, 68, 0.6);
+    margin-left: auto;
+    padding: 7px 10px;
+}
+.mc-action-btn--danger:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.35);
+}
+.mc-action-btn--danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Mini Spinner */
+.mc-mini-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(239, 68, 68, 0.2);
+    border-top-color: #fca5a5;
+    border-radius: 50%;
+    animation: mc-spin 0.7s linear infinite;
+    display: block;
+}
+@keyframes mc-spin {
+    to { transform: rotate(360deg) }
+}
+
+/* ── Skeleton Card ── */
+.mc-card--skeleton {
+    pointer-events: none;
+    animation: mc-pulse 1.6s ease-in-out infinite;
+}
+@keyframes mc-pulse {
+    0%, 100% { opacity: 0.6 }
+    50%       { opacity: 1 }
+}
+.mc-skeleton-block {
+    background: rgba(255, 255, 255, 0.06) !important;
+}
+.mc-skeleton-line {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    height: 14px;
+}
+
+/* ── Empty State ── */
+.mc-empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 2rem;
+    text-align: center;
+    gap: 1rem;
+}
+.mc-empty-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.2);
+    margin-bottom: 0.5rem;
+}
+.mc-empty-state h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}
+.mc-empty-state p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.3);
+    line-height: 1.7;
+    max-width: 280px;
+    margin: 0;
+}
+.mc-start-btn {
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #f472b6, #a855f7);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.03em;
+    box-shadow: 0 12px 30px rgba(244, 114, 182, 0.3);
+}
+.mc-start-btn:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 18px 40px rgba(244, 114, 182, 0.45);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+    .mc-nav { padding: 0.8rem 1.2rem; }
+    .mc-header { padding: 2.5rem 1.2rem 1rem; }
+    .mc-main { padding: 1rem 1.2rem 4rem; }
+    .mc-grid { grid-template-columns: 1fr; }
+}
