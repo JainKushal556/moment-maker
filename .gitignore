@@ -6,15 +6,33 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-package-lock.json
 
+# Node / Build
 node_modules
 dist
 dist-ssr
+
+# Environments
+.env
+.env.*
+.env.local
+.env.*.local
 *.local
+# Backend secrets — never commit these
+backend/.env
+backend/serviceAccountKey.json
+backend/*.json
+
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+*$py.class
+backend/venv/
+venv/
+env/
 
 # Generated Vite/React template builds (run npm run build:templates to regenerate)
-public/templates/proposal/
+frontend/public/templates/proposal/
 
 # Editor directories and files
 .vscode/*

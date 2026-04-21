@@ -1,0 +1,48 @@
+import os
+import cloudinary
+import cloudinary.uploader
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from core.security import get_current_user
+
+router = APIRouter(prefix="/upload", tags=["upload"])
+
+# Configure Cloudinary using environment variables (loaded by main.py via dotenv)
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
+
+
+@router.post("/image")
+async def upload_image(
+    file: UploadFile = File(...),
+    user: dict = Depends(get_current_user)
+):
+    """
+    Accepts an image file from the authenticated frontend,
+    uploads it to Cloudinary, and returns the secure CDN URL.
+    The API credentials never leave the server.
+    """
+    # Basic content-type validation
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Only image files are accepted.")
+
+    # 5 MB size limit
+    contents = await file.read()
+    if len(contents) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image must be smaller than 5 MB.")
+
+    try:
+        result = cloudinary.uploader.upload(
+            contents,
+            folder="moment-maker",           # organise uploads in a dedicated folder
+            resource_type="image",
+            overwrite=False,
+            unique_filename=True,
+        )
+        return {"url": result["secure_url"]}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Cloudinary upload failed: {str(e)}")
