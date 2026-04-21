@@ -1,14 +1,28 @@
 import { auth } from '../config/firebase'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL
+
+/**
+ * Waits for Firebase Auth to finish initializing and returns the current user.
+ * Prevents the race condition where auth.currentUser is null right after page load
+ * even when the user is actually logged in (Firebase hasn't hydrated yet).
+ */
+function waitForAuthUser() {
+    return new Promise((resolve) => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            unsubscribe()
+            resolve(user)
+        })
+    })
+}
 
 /**
  * Core fetch wrapper — automatically attaches the Firebase ID token
  * as a Bearer token to every request.
  */
 async function apiFetch(path, options = {}) {
-    const user = auth.currentUser
-    const token = user ? await user.getIdToken(true) : null
+    const user = await waitForAuthUser()
+    const token = user ? await user.getIdToken() : null
 
     const headers = {
         'Content-Type': 'application/json',
