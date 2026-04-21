@@ -71,7 +71,7 @@ export default function ShareView() {
             {/* ── Minimal Top Navigation ── */}
             <div style={{ position: 'absolute', top: '30px', left: '40px', zIndex: 10 }}>
                 <button 
-                    onClick={() => setCurrentView('mycreations')}
+                    onClick={() => setCurrentView('moments')}
                     style={{
                         background: 'rgba(255, 255, 255, 0.05)',
                         border: '1px solid rgba(255, 255, 255, 0.1)',
