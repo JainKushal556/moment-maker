@@ -28,7 +28,7 @@ const CategoriesExplorer = lazy(() => import('./features/explorer/CategoriesExpl
 const TemplatePreview = lazy(() => import('./features/preview/TemplatePreview'))
 const EditorView = lazy(() => import('./features/editor/EditorView'))
 const ShareView = lazy(() => import('./features/share/ShareView'))
-const MyCreations = lazy(() => import('./features/creations/MyCreations'))
+const MyMomentsView = lazy(() => import('./features/moments/MyMomentsView'))
 
 gsap.registerPlugin(ScrollTrigger, Observer)
 
@@ -81,15 +81,15 @@ function AppContent() {
       document.querySelectorAll('.falling-emoji, .minimal-glow, .light-wave, .minimal-particle, .minimal-heart, #ty-canvas-fullscreen, .soap-bubble, .bubble-blast-particle').forEach((el) => el.remove())
 
       document.body.style.overflow = ''
-      if (currentView === 'editor' || currentView === 'share') {
-        // Destroy Lenis so mouse wheel works natively in the editor sidebar
+      if (currentView === 'editor' || currentView === 'share' || currentView === 'moments') {
+        // Destroy Lenis so mouse wheel works natively in these views
         if (window.lenis) {
           window.lenis.destroy()
           window.lenis = null
           lenisRef.current = null
         }
       } else {
-        // Recreate Lenis if it was destroyed (coming back from editor)
+        // Recreate Lenis if it was destroyed (coming back from editor/share/moments)
         if (!window.lenis) {
           const lenis = new Lenis({
             duration: 1.2,
@@ -112,9 +112,9 @@ function AppContent() {
       prevViewRef.current = currentView
     }
 
-    if (window.lenis && currentView !== 'editor') {
+    if (window.lenis && currentView !== 'editor' && currentView !== 'moments') {
       window.lenis.scrollTo(0, { immediate: true, force: true })
-    } else if (currentView !== 'editor') {
+    } else if (currentView !== 'editor' && currentView !== 'moments') {
       window.scrollTo(0, 0)
     }
 
@@ -134,10 +134,10 @@ function AppContent() {
         />
       )}
 
-      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && <Navbar />}
-      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && <FullScreenNav requireAuth={openAuthModal} />}
-      {currentView !== 'share' && <DotGrid />}
-      {currentView !== 'share' && <NoiseOverlay />}
+      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && <Navbar />}
+      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && <FullScreenNav requireAuth={openAuthModal} />}
+      {currentView !== 'share' && currentView !== 'moments' && <DotGrid />}
+      {currentView !== 'share' && currentView !== 'moments' && <NoiseOverlay />}
 
       {currentView === 'landing' && (
         <Suspense fallback={null}>
@@ -169,9 +169,9 @@ function AppContent() {
         </Suspense>
       )}
 
-      {currentView === 'mycreations' && (
+      {currentView === 'moments' && (
         <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#0a0a12]"></div>}>
-          <MyCreations />
+          <MyMomentsView />
         </Suspense>
       )}
 

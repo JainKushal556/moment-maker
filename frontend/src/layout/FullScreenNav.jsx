@@ -113,16 +113,16 @@ const FullScreenNav = ({ requireAuth }) => {
         },
         { title: "Categories", label: "Explore Categories", action: () => { closeNavAndSwitch('categories') } },
         {
-            title: "Draft",
-            label: "My Creations",
+            title: "My Moments",
+            label: "Your Archive",
             action: () => {
                 if (currentUser) {
-                    closeNavAndSwitch('mycreations')
+                    closeNavAndSwitch('moments')
                 } else {
                     setNavOpen(false)
                     // Give nav time to close, then open auth modal
                     setTimeout(() => {
-                        requireAuth?.(() => setCurrentView('mycreations'))
+                        requireAuth?.(() => setCurrentView('moments'))
                     }, 280)
                 }
             }
