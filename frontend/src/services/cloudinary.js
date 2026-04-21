@@ -1,20 +1,80 @@
 import { auth } from '../config/firebase'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL
+const MAX_UPLOAD_PX = 1920   // max width or height
+const JPEG_QUALITY   = 0.85  // 85 % — good balance of size vs quality
+
+/**
+ * Compresses an image File using the Canvas API.
+ * Resizes to MAX_UPLOAD_PX on the longest edge and re-encodes as JPEG.
+ * A typical 10 MB phone photo becomes ~200–600 KB.
+ */
+function compressImage(file) {
+    return new Promise((resolve) => {
+        const img = new Image()
+        const objectUrl = URL.createObjectURL(file)
+        img.onload = () => {
+            URL.revokeObjectURL(objectUrl)
+            let { width, height } = img
+            if (width > MAX_UPLOAD_PX || height > MAX_UPLOAD_PX) {
+                if (width >= height) {
+                    height = Math.round((height / width) * MAX_UPLOAD_PX)
+                    width = MAX_UPLOAD_PX
+                } else {
+                    width = Math.round((width / height) * MAX_UPLOAD_PX)
+                    height = MAX_UPLOAD_PX
+                }
+            }
+            const canvas = document.createElement('canvas')
+            canvas.width = width
+            canvas.height = height
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+            canvas.toBlob(
+                (blob) => resolve(new File([blob], file.name, { type: 'image/jpeg' })),
+                'image/jpeg',
+                JPEG_QUALITY
+            )
+        }
+        img.src = objectUrl
+    })
+}
+
+/**
+ * Waits for Firebase Auth to be ready and returns the current ID token.
+ * Export this so callers can fetch the token ONCE and reuse it for multiple uploads.
+ */
+export async function getFirebaseToken() {
+    return new Promise((resolve) => {
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+            unsubscribe()
+            if (user) {
+                const token = await user.getIdToken()
+                resolve(token)
+            } else {
+                resolve(null)
+            }
+        })
+    })
+}
 
 /**
  * Uploads an image File to our FastAPI backend, which then uploads it
  * to Cloudinary server-side. Cloudinary credentials never touch the browser.
  *
  * @param {File} file - The image file selected by the user
+ * @param {string|null} preFetchedToken - Optional pre-fetched Firebase token.
+ *   Pass this when doing multiple uploads to avoid fetching a new token each time.
  * @returns {Promise<string>} - The secure Cloudinary URL of the uploaded image
  */
-export async function uploadImage(file) {
-    const user = auth.currentUser
-    const token = user ? await user.getIdToken(true) : null
+export async function uploadImage(file, preFetchedToken = null) {
+    const token = preFetchedToken ?? await getFirebaseToken()
+
+    // Compress before upload — resizes large phone photos to max 1920px JPEG
+    // so they always stay well under the backend's 5 MB limit
+    const compressed = await compressImage(file)
 
     const formData = new FormData()
-    formData.append('file', file)
+    formData.append('file', compressed)
 
     const response = await fetch(`${BASE_URL}/upload/image`, {
         method: 'POST',

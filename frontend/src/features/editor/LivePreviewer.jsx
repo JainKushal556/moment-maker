@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useContext } from 'react'
 import { ViewContext } from '../../context/NavContext'
 import { Check, Share2, Edit3 } from 'lucide-react'
 import { saveMoment, updateMoment } from '../../services/api'
-import { uploadImage, base64ToFile } from '../../services/cloudinary'
+import { uploadImage, base64ToFile, getFirebaseToken } from '../../services/cloudinary'
 
 export default function LivePreviewer({ template, customization, refreshKey }) {
     const [, setCurrentView, , , , , , , setSharedMomentId, editingMomentId, setEditingMomentId] = useContext(ViewContext)
@@ -10,16 +10,15 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
     const iframeContainerRef = useRef(null)
     const [iframeScale, setIframeScale] = useState(1)
     const frameRef = useRef(null)
-    const customizationRef = useRef(customization)
     const revealTimerRef = useRef(null)
     const fallbackTimerRef = useRef(null)
     const [isSharing, setIsSharing] = useState(false)
     const [visiblePreviewKey, setVisiblePreviewKey] = useState(-1)
 
-    const syncCustomization = () => {
+    const syncCustomization = (data = customization) => {
         const iframe = frameRef.current
         if (iframe?.contentWindow) {
-            iframe.contentWindow.postMessage({ type: 'customize', ...customizationRef.current }, '*')
+            iframe.contentWindow.postMessage({ type: 'customize', ...data }, '*')
         }
     }
 
@@ -27,10 +26,6 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
         if (revealTimerRef.current) window.clearTimeout(revealTimerRef.current)
         if (fallbackTimerRef.current) window.clearTimeout(fallbackTimerRef.current)
     }
-
-    useEffect(() => {
-        customizationRef.current = customization
-    }, [customization])
 
     useEffect(() => {
         syncCustomization()
@@ -63,7 +58,12 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
 
         // Sync customization after iframe reload
         const iframe = frameRef.current
-        const handleLoad = () => { syncCustomization() }
+        const handleLoad = () => { 
+            // Small delay to ensure the iframe React app is mounted and listening
+            setTimeout(() => {
+                syncCustomization()
+            }, 100)
+        }
         if (iframe) iframe.addEventListener('load', handleLoad)
 
         return () => {
@@ -119,10 +119,18 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
         try {
             // DEFERRED UPLOAD PHASE
             // Scan the customization payload for local base64 images. Upload them to Cloudinary.
-            const finalCustomization = { ...customizationRef.current }
+            const finalCustomization = { ...customization }
             
             if (template?.schema) {
                 const imageFields = template.schema.filter(f => f.type === 'image-gallery')
+                const hasBase64 = imageFields.some(f =>
+                    Array.isArray(finalCustomization[f.stateKey]) &&
+                    finalCustomization[f.stateKey].some(img => typeof img === 'string' && img.startsWith('data:image/'))
+                )
+
+                // Fetch token ONCE for all uploads — avoids race conditions from multiple token fetches
+                const uploadToken = hasBase64 ? await getFirebaseToken() : null
+
                 for (const field of imageFields) {
                     const images = finalCustomization[field.stateKey]
                     if (Array.isArray(images)) {
@@ -130,7 +138,7 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
                             const img = images[i]
                             if (typeof img === 'string' && img.startsWith('data:image/')) {
                                 const file = base64ToFile(img, `upload_${Date.now()}_${i}.jpg`)
-                                const secureUrl = await uploadImage(file)
+                                const secureUrl = await uploadImage(file, uploadToken)
                                 images[i] = secureUrl
                             }
                         }
