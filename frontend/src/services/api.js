@@ -71,3 +71,11 @@ export const deleteMoment = (id) =>
 export const getPublicMoment = (id) =>
     apiFetch(`/moments/public/${id}`)
 
+// ─── Users API ────────────────────────────────────────────────
+
+/** Fetch user's favorite templates */
+export const getFavorites = () => apiFetch('/moments/favorites')
+
+/** Toggle a template in user's favorites */
+export const toggleFavorite = (templateId) => 
+    apiFetch(`/moments/favorites/${templateId}`, { method: 'POST' })

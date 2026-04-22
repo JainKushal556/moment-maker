@@ -17,6 +17,8 @@ db = firestore.client()
 class MomentPayload(BaseModel):
     templateId: str
     customization: dict[str, Any]
+    status: str | None = "draft"
+    title: str | None = None
 
 
 @router.get("")
@@ -44,6 +46,8 @@ async def save_moment(payload: MomentPayload, user: dict = Depends(get_current_u
     moment_data = {
         "uid": uid,
         "templateId": payload.templateId,
+        "title": payload.title,
+        "status": payload.status,
         "customization": payload.customization,
         "savedAt": datetime.now(timezone.utc).isoformat(),
     }
@@ -66,6 +70,8 @@ async def update_moment(moment_id: str, payload: MomentPayload, user: dict = Dep
 
     updated_data = {
         "templateId": payload.templateId,
+        "title": payload.title,
+        "status": payload.status,
         "customization": payload.customization,
         "updatedAt": datetime.now(timezone.utc).isoformat(),
     }
@@ -105,3 +111,38 @@ async def delete_moment(moment_id: str, user: dict = Depends(get_current_user)):
 
     ref.delete()
     return None
+
+
+@router.get("/favorites")
+async def get_favorites(user: dict = Depends(get_current_user)):
+    """Fetch the authenticated user's favorite templates."""
+    uid = user["uid"]
+    doc = db.collection("users").document(uid).get()
+    
+    if not doc.exists:
+        return {"favorites": []}
+        
+    return {"favorites": doc.to_dict().get("favorites", [])}
+
+
+@router.post("/favorites/{template_id}")
+async def toggle_favorite(template_id: str, user: dict = Depends(get_current_user)):
+    """Toggle a template in the user's favorites array."""
+    uid = user["uid"]
+    ref = db.collection("users").document(uid)
+    doc = ref.get()
+    
+    if not doc.exists:
+        ref.set({"favorites": [template_id]}, merge=True)
+        return {"favorites": [template_id], "status": "added"}
+        
+    favorites = doc.to_dict().get("favorites", [])
+    if template_id in favorites:
+        favorites.remove(template_id)
+        status = "removed"
+    else:
+        favorites.append(template_id)
+        status = "added"
+        
+    ref.update({"favorites": favorites})
+    return {"favorites": favorites, "status": status}

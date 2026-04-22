@@ -149,20 +149,14 @@ function TextAreaField({ field, customization, onUpdate, sectionIndex }) {
 }
 
 // ── MAIN EXPORT — DYNAMIC FORM BUILDER ────────────────────────────────────────
-export default function DynamicFormBuilder({ template, customization = {}, onUpdate, onSave }) {
-  const [saveStatus, setSaveStatus] = useState('idle')
+export default function DynamicFormBuilder({ template, customization = {}, onUpdate, onSave, saveStatus, setSaveStatus }) {
 
   if (!customization) {
     return <div className="editor-panel p-8 text-white/40 font-mono text-xs uppercase tracking-widest">Initialising...</div>
   }
 
-  const handleSave = () => {
-    setSaveStatus('saving')
-    onSave()
-    setTimeout(() => {
-      setSaveStatus('saved')
-      setTimeout(() => setSaveStatus('idle'), 2500)
-    }, 800)
+  const handleSave = async () => {
+    await onSave()
   }
 
   // Fallback to empty schema if none exists
@@ -250,20 +244,28 @@ export default function DynamicFormBuilder({ template, customization = {}, onUpd
         <div className="ep-action-status">
           <div className={`ep-status-dot ${saveStatus === 'saved' ? 'saved' : ''}`} />
           <span className="ep-status-text">
-            {saveStatus === 'saved' ? 'All changes synced' : saveStatus === 'saving' ? 'Syncing...' : 'Unsaved draft'}
+            {saveStatus === 'saved'
+              ? 'Draft saved to My Moments'
+              : saveStatus === 'saving'
+              ? 'Uploading & saving...'
+              : 'Unsaved draft'}
           </span>
         </div>
         <button
           onClick={handleSave}
-          disabled={saveStatus === 'saving'}
+          disabled={saveStatus === 'saving' || saveStatus === 'saved'}
           className={`ep-save-btn ${saveStatus === 'saved' ? 'saved' : ''}`}
         >
           {saveStatus === 'saved' ? (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+          ) : saveStatus === 'saving' ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: 'spin 1s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
           ) : (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           )}
-          <span>{saveStatus === 'saved' ? 'Published' : saveStatus === 'saving' ? 'Saving…' : 'Save & Preview'}</span>
+          <span>
+            {saveStatus === 'saved' ? 'Saved' : saveStatus === 'saving' ? 'Saving...' : 'Save as Draft & Preview'}
+          </span>
         </button>
       </div>
     </div>

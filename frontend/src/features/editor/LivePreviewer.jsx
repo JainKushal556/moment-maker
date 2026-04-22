@@ -16,10 +16,17 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
     const [isSharing, setIsSharing] = useState(false)
     const [visiblePreviewKey, setVisiblePreviewKey] = useState(-1)
 
-    const syncCustomization = (data = customization) => {
+    // Always keep a ref to the latest customization so iframe load handlers
+    // don't get trapped in a stale closure
+    const customizationRef = useRef(customization)
+    useEffect(() => {
+        customizationRef.current = customization
+    }, [customization])
+
+    const syncCustomization = (data) => {
         const iframe = frameRef.current
         if (iframe?.contentWindow) {
-            iframe.contentWindow.postMessage({ type: 'customize', ...data }, '*')
+            iframe.contentWindow.postMessage({ type: 'customize', ...(data ?? customizationRef.current) }, '*')
         }
     }
 
@@ -28,6 +35,7 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
         if (fallbackTimerRef.current) window.clearTimeout(fallbackTimerRef.current)
     }
 
+    // Sync whenever customization, template or refreshKey changes
     useEffect(() => {
         syncCustomization()
     }, [customization, template, refreshKey])
@@ -57,13 +65,12 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
         }
         window.addEventListener('message', handleMessage)
 
-        // Sync customization after iframe reload
+        // Sync customization after iframe reload — use ref to avoid stale closure
         const iframe = frameRef.current
-        const handleLoad = () => { 
-            // Small delay to ensure the iframe React app is mounted and listening
+        const handleLoad = () => {
             setTimeout(() => {
-                syncCustomization()
-            }, 100)
+                syncCustomization(customizationRef.current)
+            }, 300)
         }
         if (iframe) iframe.addEventListener('load', handleLoad)
 
@@ -120,52 +127,27 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
     const executeShare = async () => {
         setIsSharing(true)
         try {
-            // DEFERRED UPLOAD PHASE
-            // Scan the customization payload for local base64 images. Upload them to Cloudinary.
-            const finalCustomization = { ...customization }
-            
-            if (template?.schema) {
-                const imageFields = template.schema.filter(f => f.type === 'image-gallery')
-                const hasBase64 = imageFields.some(f =>
-                    Array.isArray(finalCustomization[f.stateKey]) &&
-                    finalCustomization[f.stateKey].some(img => typeof img === 'string' && img.startsWith('data:image/'))
-                )
-
-                // Fetch token ONCE for all uploads — avoids race conditions from multiple token fetches
-                const uploadToken = hasBase64 ? await getFirebaseToken() : null
-
-                for (const field of imageFields) {
-                    const images = finalCustomization[field.stateKey]
-                    if (Array.isArray(images)) {
-                        for (let i = 0; i < images.length; i++) {
-                            const img = images[i]
-                            if (typeof img === 'string' && img.startsWith('data:image/')) {
-                                const file = base64ToFile(img, `upload_${Date.now()}_${i}.jpg`)
-                                const secureUrl = await uploadImage(file, uploadToken)
-                                images[i] = secureUrl
-                            }
-                        }
-                    }
-                }
-            }
-
-            // DATABASE SAVE PHASE
+            // Images are already uploaded to Cloudinary during the "Save as Draft" step.
+            // Here we only need to update the status to 'shared'.
             let data
             if (editingMomentId) {
-                // Existing moment — update it in place, same link stays valid
                 data = await updateMoment(editingMomentId, {
                     templateId: template.id,
-                    customization: finalCustomization
+                    title: template.title,
+                    status: 'shared',
+                    customization: customization
                 })
             } else {
-                // Brand-new moment — create a fresh document
+                // Edge case: user clicks Share without saving a draft first
                 data = await saveMoment({
                     templateId: template.id,
-                    customization: finalCustomization
+                    title: template.title,
+                    status: 'shared',
+                    customization: customization
                 })
             }
             setSharedMomentId(data.id)
-            setEditingMomentId(null) // clear so next fresh creation doesn't re-use this id
+            setEditingMomentId(null)
             setVisiblePreviewKey(-1)
             setCurrentView('share')
         } catch (error) {

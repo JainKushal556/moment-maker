@@ -132,11 +132,9 @@ const BentoCard = ({ category, templateCount, onClick }) => {
 
                 {/* Bottom Body */}
                 <div>
-                    {(isLarge || isMedium) && (
-                        <p className="font-mono text-[10px] text-[#f472b6] uppercase tracking-[0.3em] mb-4 opacity-70">
-                            {category.subtitle}
-                        </p>
-                    )}
+                    <p className="font-mono text-[10px] text-[#f472b6] uppercase tracking-[0.3em] mb-4 opacity-70">
+                        {category.subtitle}
+                    </p>
                     <h3
                         className="font-montserrat font-black tracking-tighter text-white leading-[1] uppercase transition-colors"
                         style={{

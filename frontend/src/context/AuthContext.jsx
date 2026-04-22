@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { getFavorites, toggleFavorite } from '../services/api'
 import {
     onAuthStateChanged,
     signInWithPopup,
@@ -26,6 +27,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true)
     const [authModalOpen, setAuthModalOpen] = useState(false)
     const [authCallback, setAuthCallback] = useState(null)
+    const [favorites, setFavorites] = useState([])
 
     // Call this from anywhere to open the login modal.
     // Pass an optional callback to run after successful login.
@@ -64,6 +66,15 @@ export const AuthProvider = ({ children }) => {
             if (user) {
                 // Upsert Firestore user document on every login
                 await createUserDoc(user).catch(console.error)
+                // Fetch favorites
+                try {
+                    const res = await getFavorites()
+                    if (res && res.favorites) setFavorites(res.favorites)
+                } catch(e) {
+                    console.error("Error fetching favorites", e)
+                }
+            } else {
+                setFavorites([])
             }
             setCurrentUser(user)
             setLoading(false)
@@ -102,6 +113,23 @@ export const AuthProvider = ({ children }) => {
         return currentUser.getIdToken(/* forceRefresh */ true)
     }
 
+    const handleToggleFavorite = async (templateId) => {
+        if (!currentUser) {
+            openAuthModal()
+            return false
+        }
+        try {
+            const res = await toggleFavorite(templateId)
+            if (res && res.favorites) {
+                setFavorites(res.favorites)
+                return true
+            }
+        } catch (e) {
+            console.error("Failed to toggle favorite", e)
+        }
+        return false
+    }
+
     const value = {
         currentUser,
         loading,
@@ -115,6 +143,8 @@ export const AuthProvider = ({ children }) => {
         resetPassword,
         logout,
         getIdToken,
+        favorites,
+        handleToggleFavorite,
     }
 
     // Don't render children until we know auth state, prevents flash of wrong UI
