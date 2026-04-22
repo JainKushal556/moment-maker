@@ -32,7 +32,7 @@ venv/
 env/
 
 # Generated Vite/React template builds (run npm run build:templates to regenerate)
-frontend/public/templates/proposal/
+frontend/public/templates/
 
 # Editor directories and files
 .vscode/*

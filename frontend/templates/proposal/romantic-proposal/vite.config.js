@@ -4,9 +4,9 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/templates/proposal/',
+  base: '/templates/proposal/romantic-proposal/',
   build: {
-    outDir: '../../public/templates/proposal',
+    outDir: '../../../public/templates/proposal/romantic-proposal',
     emptyOutDir: true,
     rollupOptions: {
       output: {

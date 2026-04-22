@@ -7,7 +7,7 @@ export const templates = [
         isPremium: true, 
         img: "https://images.unsplash.com/photo-1518199266791-5375a83191b7?w=800&q=80", 
         desc: "A beautiful, interactive, step-by-step romantic proposal experience.", 
-        url: "/templates/proposal/index.html",
+        url: "/templates/proposal/romantic-proposal/index.html",
         schema: [
             {
                 id: 'moments_gallery',
