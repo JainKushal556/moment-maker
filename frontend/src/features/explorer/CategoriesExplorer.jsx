@@ -4,6 +4,7 @@ import BentoCard from './BentoCard'
 import TemplateGallery from './TemplateGallery'
 import { templates } from '../../data/templates'
 import { ViewContext } from '../../context/NavContext'
+import Footer from '../../layout/Footer'
 
 // Warm, cute icons
 const HeartIcon = ({ size = 24 }) => (
@@ -253,53 +254,66 @@ const CategoriesExplorer = () => {
         >
             <FloatingHearts />
             
-            <div className="w-full relative z-10"
-                style={{ maxWidth: '1600px', margin: '0 auto', padding: '10rem 2rem 10rem' }}
-            >
-                {internalView === 'categories' ? (
-                    <div>
-                        {/* SOFT ROMANTIC HEADER */}
-                        <header ref={headerRef} className="mb-32">
-                            <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
-                                <div>
-                                    <button
-                                        id="back-to-home-button"
-                                        onClick={handleReturnHome}
-                                        className="group flex items-center gap-4 mb-12 font-bold uppercase tracking-[0.3em] text-[10px] text-white/50 hover:text-[#f472b6] transition-colors relative z-60"
-                                    >
-                                        <div className="w-8 h-8 flex items-center justify-center border border-white/20 group-hover:border-[#f472b6] rounded-full transition-colors">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <polyline points="15 18 9 12 15 6" />
-                                            </svg>
-                                        </div>
-                                        RETURN HOME
-                                    </button>
+                {/* PRE-HEADER NAVIGATION (Like Editor) */}
+                <div className="w-full h-12 flex items-center px-8 md:px-16 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
+                    <button
+                        onClick={internalView === 'categories' ? handleReturnHome : handleBackToCategories}
+                        className="group flex items-center gap-3 text-white/40 hover:text-white transition-colors"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:-translate-x-1 transition-transform">
+                            <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                        <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">
+                            {internalView === 'categories' ? 'RETURN HOME' : 'BACK TO MOMENTS'}
+                        </span>
+                    </button>
+                </div>
 
-                                    <h1
-                                        className="font-montserrat font-black tracking-tighter uppercase leading-[0.95] mb-6 text-white"
-                                        style={{ fontSize: 'clamp(4rem, 10vw, 9rem)' }}
-                                    >
-                                        THE MOMENTS
-                                        <span className="block text-[#f472b6] text-[40%] tracking-widest mt-4 drop-shadow-[0_0_15px_rgba(244,114,182,0.4)]">
-                                            // CHOOSE WITH LOVE
-                                        </span>
-                                    </h1>
-                                </div>
+                <div
+                    className="w-full relative z-10"
+                    style={{
+                        maxWidth: '1600px',
+                        margin: '0 auto',
+                        paddingLeft: '32px',
+                        paddingRight: '32px',
+                        paddingTop: '96px',
+                    }}
+                >
+                    {internalView === 'categories' ? (
+                        <div style={{ paddingBottom: '10rem' }}>
+                            {/* SOFT ROMANTIC HEADER */}
+                            <header ref={headerRef} className="mb-24 md:mb-40 space-y-12 md:space-y-20">
+                                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 lg:gap-20">
+                                    <div className="min-w-0">
+                                        {/* Moved to top header */}
+                                        <h1
+                                            className="text-6xl md:text-8xl lg:text-[11rem] font-black tracking-tighter leading-[0.85] text-white"
+                                        >
+                                            The<br />
+                                            <span className="text-transparent bg-clip-text bg-linear-to-br from-fuchsia-500 via-pink-400 to-orange-400">Moments.</span>
+                                        </h1>
+                                    </div>
                                 
-                                <div className="md:text-right">
-                                    <p className="text-white/40 text-xs font-mono uppercase tracking-[0.2em] max-w-[300px] leading-relaxed md:ml-auto border-l border-[#f472b6]/30 pl-4">
-                                        Love is in the air.<br/>
-                                        10 unique vibes found.<br/>
-                                        Waiting for your heart to pick.
-                                    </p>
+                                <div className="lg:pb-4 lg:ml-auto">
+                                    <div className="flex items-stretch gap-10 max-w-[360px]">
+                                        <div className="w-px bg-white/10 shrink-0" />
+                                        <div className="text-white/40 text-sm md:text-base font-medium leading-relaxed space-y-2 text-right">
+                                            <p>Pick a vibe.</p>
+                                            <p>Choose a template.</p>
+                                            <p>Share a personal moment.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </header>
 
+                        <div style={{ height: '60px' }} className="hidden md:block" />
+                        <div style={{ height: '30px' }} className="md:hidden" />
+
                         {/* Bento Grid */}
                         <div
                             ref={gridRef}
-                            className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-5 md:auto-rows-[300px]"
+                            className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6 md:gap-8 md:auto-rows-[300px]"
                         >
                             {categories.map((cat) => {
                                 const count = templates.filter(t => t.category === cat.id).length
@@ -315,12 +329,16 @@ const CategoriesExplorer = () => {
                         </div>
                     </div>
                 ) : (
-                    <TemplateGallery
-                        category={selectedCategory}
-                        onBack={handleBackToCategories}
-                    />
+                    <div style={{ paddingBottom: '10rem' }}>
+                        <TemplateGallery
+                            category={selectedCategory}
+                            onBack={handleBackToCategories}
+                        />
+                    </div>
                 )}
             </div>
+            <div style={{ height: '160px' }} />
+            <Footer />
         </section>
     )
 }

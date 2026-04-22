@@ -96,21 +96,22 @@ export default function TemplatePreview() {
     }
 
     return (
-        <div ref={containerRef} className="tp-showcase-container">
+        <div ref={containerRef} className={`tp-showcase-container view-${deviceView}`}>
             {/* Premium Animated Background */}
             <div className="tp-bg-gradient" />
             <div className="tp-bg-glow" />
 
             {/* Top Navigation */}
-            <nav className="tp-nav-header">
-                <div className="tp-nav-inner">
-                    <button className="tp-back-btn" onClick={handleBack}>
-                        <div className="tp-back-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <polyline points="15 18 9 12 15 6"/>
-                            </svg>
-                        </div>
-                        <span>Back to Explorers</span>
+            <nav className="w-full h-12 flex items-center px-8 md:px-16 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
+                <div className="max-w-[1600px] mx-auto w-full flex items-center justify-between">
+                    <button 
+                        className="group flex items-center gap-3 text-white/40 hover:text-white transition-colors"
+                        onClick={handleBack}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:-translate-x-1 transition-transform">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                        <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">Back to Explorers</span>
                     </button>
 
                     {/* Premium Device Switcher */}

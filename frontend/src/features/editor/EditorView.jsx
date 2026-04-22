@@ -25,7 +25,11 @@ export default function EditorView() {
         // Load proposal-specific defaults
         setCustomization({
           images: selectedTemplate.defaults?.images || [null, null, null, null],
-          letterContent: selectedTemplate.defaults?.letterContent || ''
+          letterContent: selectedTemplate.defaults?.letterContent || '',
+          recipientName: '',
+          message: '',
+          letterTitle: '',
+          letterBody: ''
         })
       } else {
         // Load generic defaults

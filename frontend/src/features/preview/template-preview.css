@@ -9,9 +9,31 @@
     background: #0a0a12;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
     height: 100vh;
     font-family: 'Inter', sans-serif;
+}
+
+/* Scroll control based on view */
+.tp-showcase-container.view-desktop {
+    overflow: hidden;
+}
+
+.tp-showcase-container.view-tablet,
+.tp-showcase-container.view-mobile {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Hide scrollbar for cleaner look but keep functionality */
+.tp-showcase-container::-webkit-scrollbar {
+    width: 6px;
+}
+.tp-showcase-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+.tp-showcase-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
 }
 
 /* Premium Animated Background */

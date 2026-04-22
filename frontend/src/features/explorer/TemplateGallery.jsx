@@ -2,6 +2,7 @@ import { useRef, useEffect, useMemo, useState, useContext } from 'react'
 import gsap from 'gsap'
 import { ViewContext } from '../../context/NavContext'
 import { templates } from '../../data/templates'
+import MomentMagicCard from '../moments/MomentMagicCard'
 
 
 
@@ -9,7 +10,9 @@ const TemplateGallery = ({ category, onBack }) => {
     const containerRef = useRef(null)
     const headerRef = useRef(null)
     const gridRef = useRef(null)
+    const searchInputRef = useRef(null)
     const [searchQuery, setSearchQuery] = useState('')
+    const [isSearchOpen, setIsSearchOpen] = useState(false)
     const [, setCurrentView, , setSelectedTemplate, , setTemplateCustomization, , , , , setEditingMomentId] = useContext(ViewContext)
 
     const filteredTemplates = useMemo(() => {
@@ -38,129 +41,76 @@ const TemplateGallery = ({ category, onBack }) => {
 
     return (
         <div ref={containerRef} className="w-full text-white">
-            {/* Top Bar Navigation */}
-            <div className="flex items-center justify-between mb-24 border-b border-[#f472b6]/20 pb-6">
-                <button
-                    onClick={onBack}
-                    className="group flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.3em] text-white/50 hover:text-[#f472b6] transition-colors"
-                >
-                    <div className="w-8 h-8 flex items-center justify-center border border-white/20 group-hover:border-[#f472b6] rounded-full transition-colors">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="15 18 9 12 15 6" />
-                        </svg>
-                    </div>
-                    BACK TO MOMENTS
-                </button>
-                <div className="text-right">
-                    <span className="font-mono text-[10px] text-[#f472b6] uppercase tracking-[0.3em] animate-pulse">
-                        ACCESSING MOMENTS...
-                    </span>
-                </div>
-            </div>
 
             {/* Header section */}
-            <div ref={headerRef} className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 mb-32">
-                <div>
-                    <div className="flex items-center gap-3 mb-4">
-                        <span className="text-[10px] font-mono uppercase tracking-[0.4em] px-4 py-2 border border-[#f472b6]/50 text-[#f472b6] bg-black/50 backdrop-blur-sm rounded-full">
-                            {category?.tag} VIBE
-                        </span>
+            <div ref={headerRef} className="mb-24 md:mb-40 space-y-12 md:space-y-20">
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 lg:gap-20">
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-3 mb-6 md:mb-8">
+                            <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-fuchsia-400 font-black">
+                                {category?.tag} VIBE
+                            </span>
+                        </div>
+                        <h2 className="font-montserrat font-black uppercase tracking-tighter leading-[0.9] text-white"
+                            style={{ fontSize: 'clamp(3.5rem, 8vw, 8.25rem)' }}
+                        >
+                            {category?.title} <br/>
+                            <span className="text-white/20 text-[42%] tracking-[0.12em] block mt-6 border-t-4 border-[#f472b6]/30 pt-6 w-fit">GALLERY</span>
+                        </h2>
                     </div>
-                    <h2 className="font-montserrat font-black uppercase tracking-tighter leading-[0.95]"
-                        style={{ fontSize: 'clamp(3rem, 6vw, 6rem)' }}
-                    >
-                        {category?.title} <br/>
-                        <span className="text-white/20 text-[60%] tracking-widest block mt-6 border-t-4 border-[#f472b6]/30 pt-6 w-fit">GALLERY</span>
-                    </h2>
-                </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 lg:w-auto w-full">
-                    <div className="relative min-w-[320px]">
-                        <svg className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        </svg>
-                        <input
-                            type="text"
-                            placeholder={`SEARCH MOMENTS...`}
-                            className="w-full bg-[#0a0a12] border border-white/20 rounded-full py-4 pl-12 pr-4 outline-none font-mono text-xs font-bold text-white uppercase placeholder:text-white/30 hover:border-[#f472b6]/50 focus:border-[#f472b6] transition-colors shadow-inner"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                    <div className="flex flex-col sm:flex-row gap-4 lg:w-auto w-full lg:pb-5">
+                        <div className={`relative flex items-center justify-end transition-all duration-300 ${isSearchOpen || searchQuery ? 'w-full sm:w-[340px] md:w-[380px]' : 'w-14'}`}>
+                            <button
+                                type="button"
+                                aria-label="Open template search"
+                                onClick={() => {
+                                    setIsSearchOpen(true)
+                                    requestAnimationFrame(() => searchInputRef.current?.focus())
+                                }}
+                                className={`absolute left-0 top-0 z-10 h-14 w-14 flex items-center justify-center text-white/45 hover:text-white transition-colors ${isSearchOpen || searchQuery ? 'pointer-events-none' : ''}`}
+                            >
+                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </button>
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                placeholder="Search templates"
+                                className={`w-full h-14 bg-white/[0.045] border border-white/10 rounded-xl pr-5 outline-none font-mono text-xs font-bold tracking-[0.08em] text-white placeholder:text-white/35 hover:border-white/20 focus:border-fuchsia-400/70 focus:bg-white/[0.07] transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] ${isSearchOpen || searchQuery ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                                style={{ paddingLeft: '56px' }}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onBlur={() => {
+                                    if (!searchQuery) setIsSearchOpen(false)
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <div style={{ height: '60px' }} className="hidden md:block" />
+            <div style={{ height: '30px' }} className="md:hidden" />
+
             {/* Template Grid */}
-            <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
                 {filteredTemplates.map((template) => (
-                    <div
-                        key={template.id}
-                        onClick={() => handleTemplateClick(template)}
-                        className="template-card group relative bg-[#0d0d16] rounded-3xl border border-white/10 hover:border-[#f472b6]/40 transition-all duration-500 cursor-pointer flex flex-col min-h-[420px] overflow-hidden"
-                    >
-                        {/* Image overlay stack */}
-                        <div className="relative h-64 overflow-hidden border-b border-white/10">
-                            <img
-                                src={template.img}
-                                alt={template.title}
-                                className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110"
-                                style={{ filter: 'brightness(0.7)' }}
-                                loading="lazy"
-                                onError={(e) => {
-                                    e.target.src = "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80"
-                                }}
-                            />
-                            
-                            {/* Colorful hover reveal */}
-                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-                                <img src={template.img} alt="" className="w-full h-full object-cover" onError={(e) => {
-                                    e.target.src = "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80"
-                                }} />
-                            </div>
-
-                            <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-700" />
-                            
-                            {/* Badges */}
-                            <div className="absolute top-4 left-4 flex gap-2 font-mono text-[9px] uppercase tracking-widest z-10">
-                                {template.isPremium ? (
-                                    <span className="bg-[#f472b6] text-white px-3 py-1 font-bold rounded-full">
-                                        PREMIUM
-                                    </span>
-                                ) : (
-                                    <span className="bg-white/10 text-white/50 px-3 py-1 border border-white/20 backdrop-blur-sm rounded-full">
-                                        FREE
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="absolute top-4 right-4 flex gap-2 font-mono text-[9px] uppercase tracking-widest z-10">
-                                <span className="bg-black/40 text-white border border-white/20 px-3 py-1 backdrop-blur-sm rounded-full capitalize">
-                                    ★ {template.rating}
-                                </span>
-                            </div>
-
-                            {/* Hover overlay preview text */}
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20 pointer-events-none">
-                                <div className="text-[10px] font-bold uppercase tracking-[0.4em] px-6 py-3 border border-white text-white bg-black/60 backdrop-blur-sm rounded-full">
-                                    BUILD THIS
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-10 flex-1 flex flex-col justify-between relative z-10 transition-transform duration-500 group-hover:-translate-y-2">
-                            <div>
-                                <h4 className="font-montserrat font-black text-xl uppercase tracking-tighter text-white group-hover:text-[#f472b6] transition-colors mb-3">
-                                    {template.title}
-                                </h4>
-                                <p className="text-white/50 text-xs font-mono lowercase tracking-wider leading-relaxed border-l-2 border-[#f472b6]/30 pl-4">
-                                    {template.desc}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="absolute bottom-0 left-0 w-full h-1 bg-linear-to-r from-[#f472b6] to-[#a855f7] transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 z-20" />
-                    </div>
+                    <MomentMagicCard 
+                        key={template.id} 
+                        moment={{
+                            ...template,
+                            image: template.img,
+                            vibe: template.tag || 'CINEMATIC' // Fallback to CINEMATIC if tag doesn't match a vibe
+                        }} 
+                        isTemplate={true}
+                        onAction={(type, id) => {
+                            if (type === 'build' || type === 'click') {
+                                handleTemplateClick(template);
+                            }
+                        }}
+                    />
                 ))}
 
                 {/* Blank Data State */}

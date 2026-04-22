@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useContext } from 'react'
 import { ViewContext } from '../../context/NavContext'
+import { useAuth } from '../../context/AuthContext'
 import { Check, Share2, Edit3 } from 'lucide-react'
 import { saveMoment, updateMoment } from '../../services/api'
 import { uploadImage, base64ToFile, getFirebaseToken } from '../../services/cloudinary'
@@ -114,7 +115,9 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
         }
     }
 
-    const handleShare = async () => {
+    const { currentUser, openAuthModal } = useAuth()
+
+    const executeShare = async () => {
         setIsSharing(true)
         try {
             // DEFERRED UPLOAD PHASE
@@ -173,6 +176,16 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
         }
     }
 
+    const handleShare = () => {
+        if (!currentUser) {
+            openAuthModal(() => {
+                executeShare()
+            })
+            return
+        }
+        executeShare()
+    }
+
     // Build the correct iframe src — append ?preview=1 for proposal template
     const getIframeSrc = () => {
         if (!template) return ''
@@ -191,12 +204,12 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
                             <div className="preview-choice-badge-icon">
                                 <Check size={18} strokeWidth={3} />
                             </div>
-                            <span>Preview Ready</span>
+                            <span>Moment Ready</span>
                         </div>
 
                         <div className="preview-choice-copy">
-                            <h1>Choose what to do next</h1>
-                            <p>{template?.title || 'Your moment'} is ready. Keep editing or share it now.</p>
+                            <h1>Your moment is ready</h1>
+                            <p>{template?.title || 'Your moment'} is saved as a preview. Keep editing or open the share page.</p>
                         </div>
 
                         <div className="preview-choice-actions">
@@ -218,7 +231,7 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
                                 <span className="preview-choice-btn-icon">
                                     <Share2 size={18} strokeWidth={2.4} />
                                 </span>
-                                <span>{isSharing ? 'Opening Share...' : 'Share'}</span>
+                                <span>{isSharing ? 'Opening Share...' : 'Open Share'}</span>
                             </button>
                         </div>
 

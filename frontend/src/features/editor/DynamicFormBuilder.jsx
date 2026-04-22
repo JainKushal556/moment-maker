@@ -149,8 +149,12 @@ function TextAreaField({ field, customization, onUpdate, sectionIndex }) {
 }
 
 // ── MAIN EXPORT — DYNAMIC FORM BUILDER ────────────────────────────────────────
-export default function DynamicFormBuilder({ template, customization, onUpdate, onSave }) {
+export default function DynamicFormBuilder({ template, customization = {}, onUpdate, onSave }) {
   const [saveStatus, setSaveStatus] = useState('idle')
+
+  if (!customization) {
+    return <div className="editor-panel p-8 text-white/40 font-mono text-xs uppercase tracking-widest">Initialising...</div>
+  }
 
   const handleSave = () => {
     setSaveStatus('saving')

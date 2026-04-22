@@ -81,7 +81,8 @@ function AppContent() {
       document.querySelectorAll('.falling-emoji, .minimal-glow, .light-wave, .minimal-particle, .minimal-heart, #ty-canvas-fullscreen, .soap-bubble, .bubble-blast-particle').forEach((el) => el.remove())
 
       document.body.style.overflow = ''
-      if (currentView === 'editor' || currentView === 'share' || currentView === 'moments') {
+      if (currentView === 'editor' || currentView === 'share' || currentView === 'preview') {
+        document.body.style.overflow = 'hidden';
         // Destroy Lenis so mouse wheel works natively in these views
         if (window.lenis) {
           window.lenis.destroy()
@@ -112,7 +113,7 @@ function AppContent() {
       prevViewRef.current = currentView
     }
 
-    if (window.lenis && currentView !== 'editor' && currentView !== 'moments') {
+    if (window.lenis && currentView !== 'editor' && currentView !== 'moments' && currentView !== 'preview') {
       window.lenis.scrollTo(0, { immediate: true, force: true })
     } else if (currentView !== 'editor' && currentView !== 'moments') {
       window.scrollTo(0, 0)
