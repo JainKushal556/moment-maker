@@ -18,6 +18,41 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
   const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["4deg", "-4deg"]);
   const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-4deg", "4deg"]);
 
+  const getValidityDetails = () => {
+    if (isTemplate) return null;
+    
+    const baseTimeStr = moment.updatedAt || moment.savedAt;
+    if (!baseTimeStr) return null;
+    
+    const baseTime = new Date(baseTimeStr);
+    const now = new Date();
+    const diffMs = now.getTime() - baseTime.getTime();
+    const diffMinutes = diffMs / (1000 * 60);
+    const minutesLeft = 2 - diffMinutes;
+    
+    const sessionsCount = moment.viewerSessions?.length || 0;
+    
+    const isTimeExpired = minutesLeft <= 0;
+    const isSessionExpired = moment.status === 'shared' && sessionsCount >= 4;
+    const isExpired = isTimeExpired || isSessionExpired;
+    
+    let timeText = '';
+    if (isTimeExpired) {
+        timeText = 'Expired';
+    } else {
+        const secondsLeft = Math.floor(minutesLeft * 60);
+        if (secondsLeft > 60) {
+             timeText = `${Math.floor(minutesLeft)}m left`;
+        } else {
+             timeText = `${secondsLeft}s left`;
+        }
+    }
+    
+    return { isExpired, timeText, sessionsCount };
+  };
+
+  const validity = getValidityDetails();
+
   const handleMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     x.set((e.clientX - rect.left) / rect.width - 0.5);
@@ -92,9 +127,25 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
                     {moment.status}
                 </span>
               </div>
-              <div className="flex items-center gap-3 opacity-30 truncate">
-                <span className="text-[10px] font-mono text-white uppercase tracking-widest truncate">
-                    {moment.type || moment.category || 'Moment Maker Original'}
+              <div className="flex items-center gap-3 opacity-80 truncate">
+                {!isTemplate && validity && (
+                  <>
+                    <span className={`text-[10px] font-mono uppercase tracking-widest truncate ${validity.isExpired ? 'text-red-400' : 'text-fuchsia-400'}`}>
+                      {validity.timeText}
+                    </span>
+                    {moment.status === 'shared' && (
+                        <>
+                            <span className="w-1 h-1 rounded-full bg-white/20"></span>
+                            <span className="text-[10px] font-mono text-white/60 uppercase tracking-widest truncate">
+                                {validity.sessionsCount}/4 Views
+                            </span>
+                        </>
+                    )}
+                    <span className="w-1 h-1 rounded-full bg-white/20"></span>
+                  </>
+                )}
+                <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest truncate">
+                    {moment.category || 'Moment Maker Original'}
                 </span>
               </div>
             </div>
@@ -102,20 +153,40 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
           </div>
 
           <div className="absolute inset-0 bg-zinc-950/90 backdrop-blur-md flex items-center justify-center gap-6 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 z-40">
-             <button 
-                onClick={(e) => { e.stopPropagation(); if (onAction) onAction(isTemplate ? 'build' : 'enter', moment.id); }}
-                className="rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] bg-white text-black hover:bg-fuchsia-600 hover:text-white shadow-2xl transition-all active:scale-95 cursor-pointer flex items-center gap-2 whitespace-nowrap"
-                style={{ padding: '14px 32px' }}
-             >
-               {isTemplate ? 'Build This' : moment.status === 'draft' ? 'Resume' : 'Edit'} <ArrowUpRight size={16} strokeWidth={3} />
-             </button>
-             {!isTemplate && (
-                <button 
-                onClick={(e) => { e.stopPropagation(); if (onAction) onAction('delete', moment.id); }}
-                className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all cursor-pointer"
-                >
-                    <Trash2 size={20} />
-                </button>
+             {validity?.isExpired ? (
+                 <>
+                   <button 
+                      onClick={(e) => { e.stopPropagation(); if (onAction) onAction('reactivate', moment.id); }}
+                      className="rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] bg-fuchsia-600 text-white hover:bg-fuchsia-500 shadow-2xl transition-all active:scale-95 cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                      style={{ padding: '14px 32px' }}
+                   >
+                     Reactivate <Sparkles size={16} strokeWidth={3} />
+                   </button>
+                   <button 
+                      onClick={(e) => { e.stopPropagation(); if (onAction) onAction('delete', moment.id); }}
+                      className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all cursor-pointer"
+                   >
+                       <Trash2 size={20} />
+                   </button>
+                 </>
+             ) : (
+                 <>
+                     <button 
+                        onClick={(e) => { e.stopPropagation(); if (onAction) onAction(isTemplate ? 'build' : 'enter', moment.id); }}
+                        className="rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] bg-white text-black hover:bg-fuchsia-600 hover:text-white shadow-2xl transition-all active:scale-95 cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                        style={{ padding: '14px 32px' }}
+                     >
+                       {isTemplate ? 'Build This' : moment.status === 'draft' ? 'Resume' : 'Edit'} <ArrowUpRight size={16} strokeWidth={3} />
+                     </button>
+                     {!isTemplate && (
+                        <button 
+                        onClick={(e) => { e.stopPropagation(); if (onAction) onAction('delete', moment.id); }}
+                        className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all cursor-pointer"
+                        >
+                            <Trash2 size={20} />
+                        </button>
+                     )}
+                 </>
              )}
           </div>
         </div>

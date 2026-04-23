@@ -25,11 +25,14 @@ export default function MyMomentsView() {
         getMoments()
             .then(data => {
                 if (data && Array.isArray(data)) {
-                    // Use the title directly from the database
-                    const enriched = data.map(m => ({
-                        ...m,
-                        type: m.title || 'Moment Maker Original'
-                    }));
+                    // Enrich with template category
+                    const enriched = data.map(m => {
+                        const template = templates.find(t => t.id === m.templateId);
+                        return {
+                            ...m,
+                            category: template ? template.category : 'Moment Maker Original'
+                        };
+                    });
                     setMoments(enriched);
                 }
             })
@@ -63,6 +66,12 @@ export default function MyMomentsView() {
         if (moment) {
             import('../../services/api').then(api => api.deleteMoment(id)).catch(console.error);
         }
+    }
+    
+    if (type === 'reactivate') {
+        import('../../services/api').then(api => api.reactivateMoment(id)).then((updatedMoment) => {
+            setMoments(m => m.map(x => x.id === id ? { ...x, ...updatedMoment } : x));
+        }).catch(console.error);
     }
     
     if (type === 'enter' || type === 'click' || type === 'build') {

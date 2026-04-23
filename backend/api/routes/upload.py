@@ -1,4 +1,5 @@
 import os
+import re
 import cloudinary
 import cloudinary.uploader
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
@@ -46,3 +47,19 @@ async def upload_image(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Cloudinary upload failed: {str(e)}")
+
+def delete_cloudinary_image(url: str):
+    """
+    Extracts the public_id from a Cloudinary URL and deletes it from Cloudinary.
+    """
+    if not url or "res.cloudinary.com" not in url or "moment-maker" not in url:
+        return
+        
+    match = re.search(r'/upload/(?:v\d+/)?(moment-maker/[^.]+)', url)
+    if match:
+        public_id = match.group(1)
+        try:
+            cloudinary.uploader.destroy(public_id)
+            print(f"Deleted from Cloudinary: {public_id}")
+        except Exception as e:
+            print(f"Failed to delete {public_id} from Cloudinary: {e}")

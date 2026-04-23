@@ -12,7 +12,15 @@ export default function PublicViewer({ momentId }) {
     useEffect(() => {
         const fetchMoment = async () => {
             try {
-                const data = await getPublicMoment(momentId)
+                // Handle Visitor ID for Session Tracking
+                let visitorId = localStorage.getItem('moment_visitor_id');
+                if (!visitorId) {
+                    // Generate a simple unique ID for this device
+                    visitorId = 'v_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+                    localStorage.setItem('moment_visitor_id', visitorId);
+                }
+
+                const data = await getPublicMoment(momentId, visitorId)
                 setMomentData(data)
                 
                 // Find matching template config
@@ -22,7 +30,11 @@ export default function PublicViewer({ momentId }) {
                 setTemplate(t)
             } catch (err) {
                 console.error(err)
-                setError("This moment doesn't exist or has been removed.")
+                if (err.message?.includes("time limit") || err.message?.includes("viewer limit")) {
+                    setError("This moment link has expired.")
+                } else {
+                    setError(err.message || "This moment doesn't exist or has been removed.")
+                }
             } finally {
                 setLoading(false)
             }

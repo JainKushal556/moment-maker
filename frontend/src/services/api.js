@@ -68,9 +68,14 @@ export const deleteMoment = (id) =>
     apiFetch(`/moments/${id}`, { method: 'DELETE' })
 
 /** Fetch a public moment for the share recipient view (auth not required for this endpoint, but apiFetch handles it gracefully if token is null) */
-export const getPublicMoment = (id) =>
-    apiFetch(`/moments/public/${id}`)
+export const getPublicMoment = (id, visitorId) => {
+    const query = visitorId ? `?visitorId=${visitorId}` : '';
+    return apiFetch(`/moments/public/${id}${query}`);
+}
 
+/** Reactivate an expired moment */
+export const reactivateMoment = (id) =>
+    apiFetch(`/moments/${id}/reactivate`, { method: 'POST' })
 // ─── Users API ────────────────────────────────────────────────
 
 /** Fetch user's favorite templates */
