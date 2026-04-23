@@ -29,6 +29,7 @@ const TemplatePreview = lazy(() => import('./features/preview/TemplatePreview'))
 const EditorView = lazy(() => import('./features/editor/EditorView'))
 const ShareView = lazy(() => import('./features/share/ShareView'))
 const MyMomentsView = lazy(() => import('./features/moments/MyMomentsView'))
+const AboutUs = lazy(() => import('./features/about/AboutUs'))
 
 gsap.registerPlugin(ScrollTrigger, Observer)
 
@@ -107,7 +108,7 @@ function AppContent() {
       }
 
       window.dispatchEvent(new CustomEvent('momentNavToggle', {
-        detail: { visible: currentView === 'categories' }
+        detail: { visible: currentView === 'categories' || currentView === 'about' }
       }))
 
       prevViewRef.current = currentView
@@ -137,7 +138,7 @@ function AppContent() {
 
       {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && <Navbar />}
       {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && <FullScreenNav requireAuth={openAuthModal} />}
-      {currentView !== 'share' && currentView !== 'moments' && <DotGrid />}
+      {currentView !== 'share' && currentView !== 'moments' && currentView !== 'about' && <DotGrid />}
       {currentView !== 'share' && currentView !== 'moments' && <NoiseOverlay />}
 
       {currentView === 'landing' && (
@@ -173,6 +174,12 @@ function AppContent() {
       {currentView === 'moments' && (
         <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#0a0a12]"></div>}>
           <MyMomentsView />
+        </Suspense>
+      )}
+
+      {currentView === 'about' && (
+        <Suspense fallback={<div className="fixed inset-0 z-50 bg-[#050508]"></div>}>
+          <AboutUs />
         </Suspense>
       )}
 

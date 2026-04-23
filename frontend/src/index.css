@@ -82,6 +82,12 @@ body {
     --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
+/* Fluid Typography Utilities */
+.fluid-h1 {
+    font-size: clamp(3rem, 15vw, 12rem);
+    line-height: 0.85;
+}
+
 /* =========================================
    Noise / Grain Overlay
    ========================================= */

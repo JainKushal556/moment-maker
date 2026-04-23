@@ -19,8 +19,8 @@ dist-ssr
 .env.*.local
 *.local
 # Allow production env — Firebase keys are public (restricted by Firebase rules, not secrecy)
-!.env.production
-!frontend/.env.production
+.env.production
+frontend/.env.production
 # Backend secrets — never commit these
 backend/.env
 backend/serviceAccountKey.json
@@ -39,7 +39,7 @@ frontend/public/templates/
 
 # Editor directories and files
 .vscode/*
-!.vscode/extensions.json
+.vscode/extensions.json
 .idea
 .DS_Store
 *.suo

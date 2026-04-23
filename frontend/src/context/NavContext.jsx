@@ -7,7 +7,7 @@ export const ViewContext = createContext(null)
 export const NavProvider = ({ children }) => {
     const [navOpen, setNavOpen] = useState(false)
     const [navColor, setNavColor] = useState('white')
-    const [currentView, setCurrentView] = useState('landing') // 'landing' | 'categories' | 'preview' | 'editor' | 'share'
+    const [currentView, setCurrentView] = useState('landing') // 'landing' | 'categories' | 'preview' | 'editor' | 'share' | 'about'
     const [selectedTemplate, setSelectedTemplate] = useState(null)
     const [templateCustomization, setTemplateCustomization] = useState({})
     const [sharedMomentId, setSharedMomentId] = useState(null)

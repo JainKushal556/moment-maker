@@ -127,7 +127,7 @@ const FullScreenNav = ({ requireAuth }) => {
                 }
             }
         },
-        { title: "About Us", label: "Our Story", action: () => { setNavOpen(false) } }
+        { title: "About Us", label: "Our Story", action: () => { closeNavAndSwitch('about') } }
     ]
 
     return (

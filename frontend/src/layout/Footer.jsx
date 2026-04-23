@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useContext } from 'react'
+import { ViewContext } from '../context/NavContext'
 import Matter from 'matter-js'
 import '../styles/footer.css'
 
@@ -6,6 +7,7 @@ const { Engine, Runner, Bodies, Body, Composite, Mouse, MouseConstraint, Events 
 
 export default function Footer() {
   const playgroundRef = useRef(null)
+  const [, navigateTo] = useContext(ViewContext)
 
   useEffect(() => {
     const playground = playgroundRef.current
@@ -214,7 +216,7 @@ export default function Footer() {
                 <a href="#">Support</a>
               </div>
               <div className="fpo-col">
-                <a href="#">About Us</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('about'); }}>About Us</a>
                 <a href="#">Contact Us</a>
                 <a href="#">Affiliates</a>
                 <a href="#">Resources</a>
