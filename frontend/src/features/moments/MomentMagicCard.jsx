@@ -3,14 +3,14 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ArrowUpRight, Trash2, Sparkles, Heart } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-// ১. এক্সপায়ারি টাইমার কম্পোনেন্ট
+
 const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
   const { favorites, handleToggleFavorite } = useAuth()
   const isFavorite = isTemplate && favorites?.includes(moment.id)
   
   const imageUrl = moment.image || moment.img || 'https://images.unsplash.com/photo-1530103043960-ef38714abb15?q=80&w=1000&auto=format&fit=crop';
 
-  // ৩ডি টিল্ট ইফেক্ট লজিক
+  
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const mouseXSpring = useSpring(x);
@@ -28,7 +28,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
     const now = new Date();
     const diffMs = now.getTime() - baseTime.getTime();
     const diffMinutes = diffMs / (1000 * 60);
-    const minutesLeft = 2 - diffMinutes;
+    const minutesLeft = 5 - diffMinutes;
     
     const sessionsCount = moment.viewerSessions?.length || 0;
     

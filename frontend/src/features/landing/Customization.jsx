@@ -75,40 +75,20 @@ export default function Customization() {
     setFirstWarningShown(false)
   }, [customization, activeTab])
 
-  const handleTabClick = useCallback((targetTabId, e) => {
+  const handleTabClick = useCallback((targetTabId) => {
     if (targetTabId === activeTab) return
-    if (unsavedTabs[activeTab] === 'dirty') {
-      pendingTabRef.current = targetTabId
-      if (!firstWarningShown) {
-        setToastMessage('You have unsaved changes.')
-        setShowToast(true)
-        if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
-        toastTimeoutRef.current = setTimeout(() => setShowToast(false), 3000)
-        setFirstWarningShown(true)
-      } else {
-        const btn = e.currentTarget
-        const rect = btn.getBoundingClientRect()
-        const container = btn.closest('.demo-controls')?.getBoundingClientRect() || { top: 0, left: 0 }
-        setPopoverPos({ top: rect.bottom - container.top + 10, left: rect.left - container.left + rect.width / 2 - 100 })
-        setShowPopover(true)
-      }
-    } else {
-      setActiveTab(targetTabId)
-    }
-  }, [activeTab, unsavedTabs, firstWarningShown])
+    setActiveTab(targetTabId)
+  }, [activeTab])
 
   const handlePopoverSave = useCallback(() => {
     setShowPopover(false); saveChanges()
-    if (pendingTabRef.current) { setActiveTab(pendingTabRef.current); pendingTabRef.current = null }
   }, [saveChanges])
 
   const handlePopoverDiscard = useCallback(() => {
     setShowPopover(false)
     setCustomization({ ...savedCustomization })
     setUnsavedTabs(prev => ({ ...prev, [activeTab]: 'initial' }))
-    setFirstWarningShown(false)
     sendCustomization(savedCustomization)
-    if (pendingTabRef.current) { setActiveTab(pendingTabRef.current); pendingTabRef.current = null }
   }, [savedCustomization, activeTab, sendCustomization])
 
   const handlePlayPause = useCallback(() => {
@@ -173,9 +153,9 @@ export default function Customization() {
 
             {/* Personalize Tab */}
             <div className={`tab-panel${activeTab === 'personalize' ? ' active' : ''}`}>
-              <div className="control-item"><label>Recipient Name</label><input type="text" id="recipient-input" placeholder="Enter their name..." value={customization.recipientName} onChange={debounce((e) => updateCustomization('recipientName', e.target.value, 'personalize'), 150)} /></div>
-              <div className="control-item"><label>Main Message</label><input type="text" id="message-input" value={customization.message} onChange={(e) => updateCustomization('message', e.target.value || 'Happy New Year', 'personalize')} /></div>
-              <div className="control-item"><label>Sub Message</label><input type="text" id="sub-message-input" value={customization.subMessage} onChange={(e) => updateCustomization('subMessage', e.target.value || 'The Future is Golden', 'personalize')} /></div>
+              <div className="control-item"><label>Recipient Name</label><input type="text" id="recipient-input" placeholder="Enter their name..." value={customization.recipientName} onChange={(e) => updateCustomization('recipientName', e.target.value, 'personalize')} /></div>
+              <div className="control-item"><label>Main Message</label><input type="text" id="message-input" placeholder="Happy New Year" value={customization.message} onChange={(e) => updateCustomization('message', e.target.value, 'personalize')} /></div>
+              <div className="control-item"><label>Sub Message</label><input type="text" id="sub-message-input" placeholder="The Future is Golden" value={customization.subMessage} onChange={(e) => updateCustomization('subMessage', e.target.value, 'personalize')} /></div>
             </div>
 
             {/* Design Tab */}
@@ -199,8 +179,8 @@ export default function Customization() {
 
             {/* Effects Tab */}
             <div className={`tab-panel${activeTab === 'effects' ? ' active' : ''}`}>
-              <div className="control-item"><label>Firework Intensity</label><div className="slider-group"><input type="range" id="firework-intensity" min="0" max="4" value={customization.fireworkIntensity} onChange={(e) => updateCustomization('fireworkIntensity', parseInt(e.target.value), 'effects')} /><div className="slider-labels"><span>None</span><span>Normal</span><span>Max</span></div></div></div>
-              <div className="control-item"><label>Animation Speed</label><div className="slider-group"><input type="range" id="animation-speed" min="0" max="4" value={customization.animationSpeed} onChange={(e) => updateCustomization('animationSpeed', parseInt(e.target.value), 'effects')} /><div className="slider-labels"><span>Slow</span><span>Normal</span><span>Fast</span></div></div></div>
+              <div className="control-item"><label>Firework Intensity</label><div className="slider-group"><input type="range" id="firework-intensity" min="1" max="3" value={customization.fireworkIntensity} onChange={(e) => updateCustomization('fireworkIntensity', parseInt(e.target.value), 'effects')} /><div className="slider-labels"><span>None</span><span>Normal</span><span>Max</span></div></div></div>
+              <div className="control-item"><label>Animation Speed</label><div className="slider-group"><input type="range" id="animation-speed" min="1" max="3" value={customization.animationSpeed} onChange={(e) => updateCustomization('animationSpeed', parseInt(e.target.value), 'effects')} /><div className="slider-labels"><span>Slow</span><span>Normal</span><span>Fast</span></div></div></div>
               <div className="control-item"><div className="toggle-row"><span className="toggle-label">Show City Skyline</span><label className="toggle-switch"><input type="checkbox" id="show-city" checked={customization.showCity} onChange={(e) => updateCustomization('showCity', e.target.checked, 'effects')} /><span className="toggle-slider"></span></label></div></div>
             </div>
 
@@ -238,7 +218,7 @@ export default function Customization() {
                 <div className="iframe-loading" id="iframe-loading" style={{ display: templateReady ? 'none' : 'flex' }}>
                   <div className="loading-spinner"></div><span>Loading preview...</span>
                 </div>
-                <iframe ref={iframeRef} id="template-preview" src="/templates/new-year/index.html" title="Template Preview" sandbox="allow-scripts allow-same-origin" />
+                <iframe ref={iframeRef} id="template-preview" src="/new-year/index.html" title="Template Preview" sandbox="allow-scripts allow-same-origin" />
               </div>
             </div>
           </div>

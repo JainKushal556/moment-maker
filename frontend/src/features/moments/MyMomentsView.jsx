@@ -1,7 +1,7 @@
 import React, { useState, useMemo, forwardRef, useContext, useEffect } from 'react';
 import {
   Trash2, Sparkles, ArrowUpRight,
-  ChevronRight, Menu, LogOut
+  ChevronRight, Menu, LogOut, AlertTriangle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ViewContext } from '../../context/NavContext';
@@ -19,18 +19,20 @@ export default function MyMomentsView() {
   const { currentUser, logout, openAuthModal, loading, favorites } = useAuth();
   const [moments, setMoments] = useState([]);
   const [filter, setFilter] = useState('all');
+  const [deleteTarget, setDeleteTarget] = useState(null); // State for confirmation modal
 
   useEffect(() => {
     if (currentUser) {
         getMoments()
             .then(data => {
                 if (data && Array.isArray(data)) {
-                    // Enrich with template category
+                    // Enrich with template category and fixed image
                     const enriched = data.map(m => {
                         const template = templates.find(t => t.id === m.templateId);
                         return {
                             ...m,
-                            category: template ? template.category : 'Moment Maker Original'
+                            category: template ? template.category : 'Moment Maker Original',
+                            image: template ? template.img : null // Use the fixed template image
                         };
                     });
                     setMoments(enriched);
@@ -59,13 +61,22 @@ export default function MyMomentsView() {
 
   const handleAction = (type, id) => {
     if (type === 'delete') {
+        setDeleteTarget(id); // Show confirmation modal instead of deleting immediately
+        return;
+    }
+    
+    if (type === 'confirm_delete') {
+        const idToDelete = deleteTarget;
+        setDeleteTarget(null);
+        
         // Optimistic delete
-        setMoments(m => m.filter(x => x.id !== id));
+        setMoments(m => m.filter(x => x.id !== idToDelete));
         // Real delete
-        const moment = moments.find(m => m.id === id);
+        const moment = moments.find(m => m.id === idToDelete);
         if (moment) {
-            import('../../services/api').then(api => api.deleteMoment(id)).catch(console.error);
+            import('../../services/api').then(api => api.deleteMoment(idToDelete)).catch(console.error);
         }
+        return;
     }
     
     if (type === 'reactivate') {
@@ -203,14 +214,39 @@ export default function MyMomentsView() {
         <div className="min-h-[60vh] flex items-center justify-center">
           <AnimatePresence mode="popLayout">
             {filteredMoments.length > 0 ? (
-              <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+              <motion.div 
+                layout
+                initial="hidden"
+                animate="show"
+                variants={{
+                  show: {
+                    transition: {
+                      staggerChildren: 0.05
+                    }
+                  }
+                }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 w-full"
+              >
                 {filteredMoments.map((moment) => (
-                  <MomentMagicCard 
-                    key={moment.id} 
-                    moment={moment} 
-                    isTemplate={moment.isTemplate}
-                    onAction={handleAction} 
-                  />
+                  <motion.div
+                    key={moment.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    transition={{ 
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30,
+                      opacity: { duration: 0.2 }
+                    }}
+                  >
+                    <MomentMagicCard 
+                      moment={moment} 
+                      isTemplate={moment.isTemplate}
+                      onAction={handleAction} 
+                    />
+                  </motion.div>
                 ))}
               </motion.div>
             ) : (
@@ -253,6 +289,66 @@ export default function MyMomentsView() {
       </main>
       
       <Footer />
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteTarget && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDeleteTarget(null)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-[400px] bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-[3rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] p-8 md:p-12 space-y-10"
+            >
+              <div className="flex justify-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-red-500/20 blur-2xl rounded-full animate-pulse" />
+                  <div className="relative w-16 h-16 rounded-2xl bg-linear-to-br from-red-500/20 to-red-600/5 border border-red-500/30 flex items-center justify-center text-red-500 shadow-inner">
+                    <AlertTriangle size={28} strokeWidth={2.5} />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="text-center space-y-5">
+                <h3 className="text-3xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none">
+                  Wait a <span className="text-red-500">second!</span>
+                </h3>
+                <div className="space-y-1">
+                  <p className="text-white/70 text-sm font-semibold tracking-wide">
+                    This action is <span className="text-white font-black underline decoration-red-500/50 decoration-2 underline-offset-4">PERMANENT</span>.
+                  </p>
+                  <p className="text-white/40 text-[11px] font-medium leading-relaxed max-w-[280px] mx-auto text-center">
+                    Your precious moment will be <span className="text-white/60 italic">gone forever</span>. <br/> Are you absolutely sure?
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setDeleteTarget(null)}
+                  className="flex-1 py-5 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] transition-all active:scale-[0.98]"
+                >
+                  No, Keep it
+                </button>
+                <button
+                  onClick={() => handleAction('confirm_delete', deleteTarget)}
+                  className="flex-1 group relative py-5 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:bg-red-500 active:scale-[0.98] shadow-[0_10px_20px_-5px_rgba(220,38,38,0.4)] overflow-hidden"
+                >
+                  <span className="relative z-10">Delete</span>
+                  <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <div className="fixed inset-0 pointer-events-none z-100 bg-white opacity-[0.015] mix-blend-overlay" />
     </div>

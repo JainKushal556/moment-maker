@@ -18,6 +18,9 @@ dist-ssr
 .env.local
 .env.*.local
 *.local
+# Allow production env — Firebase keys are public (restricted by Firebase rules, not secrecy)
+!.env.production
+!frontend/.env.production
 # Backend secrets — never commit these
 backend/.env
 backend/serviceAccountKey.json
@@ -31,7 +34,7 @@ backend/venv/
 venv/
 env/
 
-# Generated Vite/React template builds (run npm run build:templates to regenerate)
+# Generated Vite/React template builds (regenerated on every npm run build)
 frontend/public/templates/
 
 # Editor directories and files

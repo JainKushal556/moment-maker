@@ -5,9 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npx concurrently \"vite\" \"npm run build:watch --workspaces --if-present\"",
-    "build": "vite build",
-    "build:templates": "npm run build --workspaces --if-present",
-    "build:all": "npm run build:templates && vite build",
+    "build": "npm run build --workspaces --if-present && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

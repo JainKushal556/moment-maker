@@ -1,6 +1,15 @@
-fastapi
-uvicorn[standard]
-firebase-admin
-python-dotenv
-cloudinary
-python-multipart
+# Core framework
+fastapi==0.136.0
+uvicorn[standard]==0.44.0
+starlette==1.0.0
+
+# Firebase Admin (includes Firestore)
+firebase-admin==7.4.0
+
+# Cloudinary SDK
+cloudinary==1.44.2
+
+# Utilities
+python-dotenv==1.2.2
+python-multipart==0.0.26
+pydantic==2.13.3

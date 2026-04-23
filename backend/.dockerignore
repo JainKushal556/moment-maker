@@ -1,0 +1,32 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments — dependencies come from builder stage
+venv/
+env/
+.venv/
+
+# Secrets — NEVER bake these into the image
+.env
+.env.*
+serviceAccountKey.json
+*.json
+
+# Dev / editor files
+.vscode/
+.idea/
+*.suo
+*.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docs
+README.md
+*.md

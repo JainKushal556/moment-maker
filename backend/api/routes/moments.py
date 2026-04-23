@@ -97,8 +97,8 @@ async def get_public_moment(moment_id: str, visitorId: str | None = None):
     if base_time_str:
         try:
             base_time = datetime.fromisoformat(base_time_str)
-            # Temporarily set to 2 minutes (120 seconds) for testing
-            if (datetime.now(timezone.utc) - base_time).total_seconds() >= 120:
+            # Temporarily set to 5 minutes (300 seconds) for testing
+            if (datetime.now(timezone.utc) - base_time).total_seconds() >= 300:
                 raise HTTPException(status_code=410, detail="This moment link has expired due to time limit.")
         except ValueError:
             pass # Handle legacy or malformed dates gracefully

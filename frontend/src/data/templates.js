@@ -5,7 +5,7 @@ export const templates = [
         category: "proposal", 
         rating: 5.0, 
         isPremium: true, 
-        img: "https://images.unsplash.com/photo-1518199266791-5375a83191b7?w=800&q=80", 
+        img: "/assets/templates-thumbnails/romantic-proposal.png", 
         desc: "A beautiful, interactive, step-by-step romantic proposal experience.", 
         url: "/templates/proposal/romantic-proposal/index.html",
         schema: [
@@ -36,7 +36,7 @@ export const templates = [
         category: "birthday", 
         rating: 4.9, 
         isPremium: false, 
-        img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80", 
+        img: "/assets/templates-thumbnails/birthday-mosaic.png", 
         desc: "A stunning 3D photo mosaic carousel for the perfect birthday surprise.", 
         url: "/templates/birthday/birthday-mosaic/index.html",
         schema: [
