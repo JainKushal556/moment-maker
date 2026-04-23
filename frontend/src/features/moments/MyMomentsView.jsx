@@ -241,8 +241,9 @@ export default function MyMomentsView() {
           </AnimatePresence>
         </div>
         <div style={{ height: '200px' }} />
-        <Footer />
       </main>
+      
+      <Footer />
 
       <div className="fixed inset-0 pointer-events-none z-100 bg-white opacity-[0.015] mix-blend-overlay" />
     </div>

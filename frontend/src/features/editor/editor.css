@@ -506,6 +506,55 @@
     filter: grayscale(0.2);
 }
 
+/* ── Share Button ── */
+.ep-share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 24px;
+    height: 48px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    white-space: nowrap;
+}
+
+.ep-share-btn.disabled {
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.15);
+    cursor: not-allowed;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ep-share-btn.active {
+    background: #ffffff;
+    color: #000000;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    animation: ep-share-glow 2s infinite;
+}
+
+.ep-share-btn.active:hover {
+    transform: translateY(-2px);
+    background: #ffffff;
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+}
+
+.ep-share-btn.active:active {
+    transform: translateY(0);
+}
+
+@keyframes ep-share-glow {
+    0%, 100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.05); }
+    50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
+}
+
 /* =========================================
    Preview Area
    ========================================= */

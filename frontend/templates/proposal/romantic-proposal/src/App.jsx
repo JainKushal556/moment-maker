@@ -10,13 +10,10 @@ import Rain from './components/Rain';
 import { CustomizationProvider } from './context/CustomizationContext';
 
 function App() {
-  const isPreviewMode = new URLSearchParams(window.location.search).get('preview') === '1';
-
-  const [stage, setStage] = useState(isPreviewMode ? 'first' : 'loader');
-  const [loading, setLoading] = useState(!isPreviewMode);
+  const [stage, setStage] = useState('loader');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isPreviewMode) return; // skip loader in preview mode
     const timer = setTimeout(() => {
       setLoading(false);
       setStage('first');

@@ -148,8 +148,34 @@ function TextAreaField({ field, customization, onUpdate, sectionIndex }) {
   )
 }
 
+// ── SUB-COMPONENT: TEXT FIELD ───────────────────────────────────────────────
+function TextField({ field, customization, onUpdate, sectionIndex }) {
+  const { label, placeholder, stateKey } = field
+  const value = customization[stateKey] || ''
+
+  return (
+    <div className="ep-section editor-section">
+      <div className="ep-section-header">
+        <span className="ep-section-num">0{sectionIndex}</span>
+        <span className="ep-section-title">{label}</span>
+        <div className="ep-section-line" />
+      </div>
+      <div className="ep-field">
+        <label className="ep-label">{label}</label>
+        <input
+          type="text"
+          className="ep-input"
+          placeholder={placeholder || 'Enter text...'}
+          value={value}
+          onChange={(e) => onUpdate(stateKey, e.target.value)}
+        />
+      </div>
+    </div>
+  )
+}
+
 // ── MAIN EXPORT — DYNAMIC FORM BUILDER ────────────────────────────────────────
-export default function DynamicFormBuilder({ template, customization = {}, onUpdate, onSave, saveStatus, setSaveStatus }) {
+export default function DynamicFormBuilder({ template, customization = {}, onUpdate, onSave, onShare, saveStatus, setSaveStatus }) {
 
   if (!customization) {
     return <div className="editor-panel p-8 text-white/40 font-mono text-xs uppercase tracking-widest">Initialising...</div>
@@ -221,6 +247,17 @@ export default function DynamicFormBuilder({ template, customization = {}, onUpd
                 />
               )
               break
+            case 'text':
+              fieldComponent = (
+                <TextField 
+                  key={field.id}
+                  field={field} 
+                  customization={customization} 
+                  onUpdate={onUpdate} 
+                  sectionIndex={sectionIndex} 
+                />
+              )
+              break
             default:
               fieldComponent = (
                 <div key={field.id} style={{ color: 'red', padding: '10px' }}>
@@ -240,33 +277,47 @@ export default function DynamicFormBuilder({ template, customization = {}, onUpd
       </div>
 
       {/* ── STICKY ACTION BAR ── */}
-      <div className="ep-action-bar">
-        <div className="ep-action-status">
-          <div className={`ep-status-dot ${saveStatus === 'saved' ? 'saved' : ''}`} />
-          <span className="ep-status-text">
-            {saveStatus === 'saved'
-              ? 'Draft saved to My Moments'
-              : saveStatus === 'saving'
-              ? 'Uploading & saving...'
-              : 'Unsaved draft'}
-          </span>
+      <div className="ep-action-bar flex items-center gap-3">
+        <div className="flex-1">
+          <div className="ep-action-status">
+            <div className={`ep-status-dot ${saveStatus === 'saved' ? 'saved' : ''}`} />
+            <span className="ep-status-text">
+              {saveStatus === 'saved'
+                ? 'Draft saved to My Moments'
+                : saveStatus === 'saving'
+                ? 'Uploading & saving...'
+                : 'Unsaved draft'}
+            </span>
+          </div>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saveStatus === 'saving' || saveStatus === 'saved'}
-          className={`ep-save-btn ${saveStatus === 'saved' ? 'saved' : ''}`}
-        >
-          {saveStatus === 'saved' ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-          ) : saveStatus === 'saving' ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: 'spin 1s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          )}
-          <span>
-            {saveStatus === 'saved' ? 'Saved' : saveStatus === 'saving' ? 'Saving...' : 'Save as Draft & Preview'}
-          </span>
-        </button>
+
+        <div className="flex gap-2">
+          <button
+            onClick={handleSave}
+            disabled={saveStatus === 'saving' || saveStatus === 'saved'}
+            className={`ep-save-btn ${saveStatus === 'saved' ? 'saved' : ''}`}
+          >
+            {saveStatus === 'saved' ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+            ) : saveStatus === 'saving' ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: 'spin 1s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            )}
+            <span>
+              {saveStatus === 'saved' ? 'Saved' : saveStatus === 'saving' ? 'Saving...' : 'Save Draft'}
+            </span>
+          </button>
+
+          <button
+            onClick={onShare}
+            disabled={saveStatus !== 'saved'}
+            className={`ep-share-btn ${saveStatus === 'saved' ? 'active' : 'disabled'}`}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <span>Share</span>
+          </button>
+        </div>
       </div>
     </div>
   )

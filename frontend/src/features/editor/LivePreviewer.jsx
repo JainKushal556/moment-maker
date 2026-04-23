@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useContext } from 'react'
 import { ViewContext } from '../../context/NavContext'
 import { useAuth } from '../../context/AuthContext'
-import { Check, Share2, Edit3 } from 'lucide-react'
+import { Check, Share2, Edit3, RotateCcw } from 'lucide-react'
 import { saveMoment, updateMoment } from '../../services/api'
 import { uploadImage, base64ToFile, getFirebaseToken } from '../../services/cloudinary'
 
@@ -13,8 +13,7 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
     const frameRef = useRef(null)
     const revealTimerRef = useRef(null)
     const fallbackTimerRef = useRef(null)
-    const [isSharing, setIsSharing] = useState(false)
-    const [visiblePreviewKey, setVisiblePreviewKey] = useState(-1)
+    const [internalRefreshKey, setInternalRefreshKey] = useState(0)
 
     // Always keep a ref to the latest customization so iframe load handlers
     // don't get trapped in a stale closure
@@ -35,10 +34,14 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
         if (fallbackTimerRef.current) window.clearTimeout(fallbackTimerRef.current)
     }
 
-    // Sync whenever customization, template or refreshKey changes
+    // Only sync/reload on template change or explicit refresh
     useEffect(() => {
         syncCustomization()
-    }, [customization, template, refreshKey])
+    }, [template, refreshKey, internalRefreshKey])
+
+    const handleManualRefresh = () => {
+        setInternalRefreshKey(prev => prev + 1)
+    }
 
     useEffect(() => {
         if (!iframeContainerRef.current) return;
@@ -68,9 +71,14 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
         // Sync customization after iframe reload — use ref to avoid stale closure
         const iframe = frameRef.current
         const handleLoad = () => {
-            setTimeout(() => {
+            // Heartbeat sync: send data multiple times to ensure the template's
+            // listener is ready and catches the message.
+            let count = 0
+            const interval = setInterval(() => {
                 syncCustomization(customizationRef.current)
-            }, 300)
+                count++
+                if (count > 5) clearInterval(interval)
+            }, 200)
         }
         if (iframe) iframe.addEventListener('load', handleLoad)
 
@@ -79,7 +87,7 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
             if (iframe) iframe.removeEventListener('load', handleLoad)
             window.removeEventListener('message', handleMessage)
         }
-    }, [refreshKey, template])
+    }, [refreshKey, template, internalRefreshKey])
 
     useEffect(() => {
         return () => { clearCompletionTimers() }
@@ -124,109 +132,18 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
 
     const { currentUser, openAuthModal } = useAuth()
 
-    const executeShare = async () => {
-        setIsSharing(true)
-        try {
-            // Images are already uploaded to Cloudinary during the "Save as Draft" step.
-            // Here we only need to update the status to 'shared'.
-            let data
-            if (editingMomentId) {
-                data = await updateMoment(editingMomentId, {
-                    templateId: template.id,
-                    title: template.title,
-                    status: 'shared',
-                    customization: customization
-                })
-            } else {
-                // Edge case: user clicks Share without saving a draft first
-                data = await saveMoment({
-                    templateId: template.id,
-                    title: template.title,
-                    status: 'shared',
-                    customization: customization
-                })
-            }
-            setSharedMomentId(data.id)
-            setEditingMomentId(null)
-            setVisiblePreviewKey(-1)
-            setCurrentView('share')
-        } catch (error) {
-            console.error("Failed to share moment", error)
-            alert("Could not create share link. Please try again.")
-        } finally {
-            setIsSharing(false)
-        }
-    }
-
-    const handleShare = () => {
-        if (!currentUser) {
-            openAuthModal(() => {
-                executeShare()
-            })
-            return
-        }
-        executeShare()
-    }
-
     // Build the correct iframe src — append ?preview=1 for proposal template
     const getIframeSrc = () => {
         if (!template) return ''
-        if (template.id === 'romantic-proposal') return `${template.url}?preview=1`
         return template.url
     }
 
     const { width: iWidth, height: iHeight } = getIframeDimensions()
 
     return (
-        <div className="editor-preview-area relative">
-            {visiblePreviewKey === refreshKey && visiblePreviewKey !== -1 && (
-                <div className="preview-complete-overlay">
-                    <div className="preview-choice-card">
-                        <div className="preview-choice-badge">
-                            <div className="preview-choice-badge-icon">
-                                <Check size={18} strokeWidth={3} />
-                            </div>
-                            <span>Moment Ready</span>
-                        </div>
+        <div className="editor-preview-area relative pt-20">
 
-                        <div className="preview-choice-copy">
-                            <h1>Your moment is ready</h1>
-                            <p>{template?.title || 'Your moment'} is saved as a preview. Keep editing or open the share page.</p>
-                        </div>
-
-                        <div className="preview-choice-actions">
-                            <button
-                                onClick={() => setVisiblePreviewKey(-1)}
-                                className="preview-choice-btn preview-choice-btn-secondary"
-                            >
-                                <span className="preview-choice-btn-icon">
-                                    <Edit3 size={18} strokeWidth={2.4} />
-                                </span>
-                                <span>Continue Editing</span>
-                            </button>
-
-                            <button
-                                onClick={handleShare}
-                                disabled={isSharing}
-                                className="preview-choice-btn preview-choice-btn-primary"
-                            >
-                                <span className="preview-choice-btn-icon">
-                                    <Share2 size={18} strokeWidth={2.4} />
-                                </span>
-                                <span>{isSharing ? 'Opening Share...' : 'Open Share'}</span>
-                            </button>
-                        </div>
-
-                        <div className="preview-choice-meta">
-                            <span>{template?.title || 'Custom moment'}</span>
-                            <span className="preview-choice-meta-dot" />
-                            <span>{device}</span>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <div className="absolute top-0 right-1 flex items-center gap-2 p-1.5 bg-[#1a1a1a]/80 backdrop-blur-xl border border-white/10 rounded-full z-30 shadow-2xl">
+            <div className="absolute top-6 right-6 flex flex-col items-center gap-2 p-2 bg-[#1a1a1a]/95 backdrop-blur-2xl border border-white/10 rounded-2xl z-50 shadow-2xl">
                 {[
                     { id: 'desktop', label: 'Desktop', icon: <><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></> },
                     { id: 'tablet', label: 'Tablet', icon: <><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></> },
@@ -250,16 +167,23 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
                         <div className="browser-dot" style={{ background: '#ffbd2e' }} />
                         <div className="browser-dot" style={{ background: '#27c93f' }} />
                     </div>
-                    <div className="browser-address">
+                    <div className="browser-address relative">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="mr-2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         wishcraft.app/v/moment
+                        <button 
+                            onClick={handleManualRefresh}
+                            className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white/80 hover:text-white transition-all active:scale-90 z-20"
+                            title="Refresh Preview"
+                        >
+                            <RotateCcw size={14} />
+                        </button>
                     </div>
                 </div>
 
                 <div className="browser-content bg-black relative overflow-hidden flex-1" ref={iframeContainerRef} style={getContentAspectStyle()}>
                     {template ? (
                         <iframe
-                            key={refreshKey}
+                            key={`${refreshKey}-${internalRefreshKey}`}
                             ref={frameRef}
                             src={getIframeSrc()}
                             title="Preview"

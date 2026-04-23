@@ -11,6 +11,7 @@ import './editor.css'
 export default function EditorView() {
   const [currentView, navigateTo, selectedTemplate, setSelectedTemplate, templateCustomization, setTemplateCustomization, transitionRef, sharedMomentId, setSharedMomentId, editingMomentId, setEditingMomentId] = useContext(ViewContext)
   const { currentUser, openAuthModal } = useAuth()
+  const [isSharing, setIsSharing] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [customization, setCustomization] = useState({
     recipientName: '',
@@ -34,6 +35,14 @@ export default function EditorView() {
           letterContent: selectedTemplate.defaults?.letterContent || ''
         })
         setSaveStatus('idle')
+      } else if (selectedTemplate.id === 'birthday-mosaic') {
+        // Load birthday-specific defaults
+        setCustomization({
+          recipientName: selectedTemplate.defaults?.recipientName || 'Rashmii',
+          personalMessage: selectedTemplate.defaults?.personalMessage || '',
+          images: selectedTemplate.defaults?.images || [null, null, null, null, null]
+        })
+        setSaveStatus('idle')
       } else {
         // Load generic defaults based on schema or template desc
         const defaults = {}
@@ -51,6 +60,27 @@ export default function EditorView() {
   const handleUpdate = (key, value) => {
     setCustomization(prev => ({ ...prev, [key]: value }))
     setSaveStatus('idle') // Any change resets the save status to allow re-saving
+  }
+
+  const handleShare = async () => {
+    if (!editingMomentId) return
+
+    setSaveStatus('saving')
+    try {
+        await updateMoment(editingMomentId, {
+            templateId: selectedTemplate.id,
+            title: selectedTemplate.title,
+            status: 'shared',
+            customization: customization
+        })
+        setSharedMomentId(editingMomentId)
+        setSaveStatus('saved')
+        navigateTo('share')
+    } catch (error) {
+        console.error("Failed to share moment:", error)
+        alert("Could not create share link. Please try again.")
+        setSaveStatus('saved')
+    }
   }
 
   const handleSave = async () => {
@@ -151,6 +181,7 @@ export default function EditorView() {
           customization={customization} 
           onUpdate={handleUpdate} 
           onSave={handleSave}
+          onShare={handleShare}
           saveStatus={saveStatus}
           setSaveStatus={setSaveStatus}
         />
