@@ -83,7 +83,11 @@ export default function CarouselStage({ name: propName }) {
       spinRef.current.style.animation = `${ROTATE_SPEED>0?'spin':'spinRevert'} ${Math.abs(ROTATE_SPEED)}s infinite linear`;
     }
 
-    setTimeout(() => reposition(), 1000);
+    setTimeout(() => {
+      reposition();
+      // Notify parent that the template is "completed" or fully loaded for preview
+      window.parent.postMessage({ type: 'TEMPLATE_COMPLETED' }, '*');
+    }, 1000);
 
 
 

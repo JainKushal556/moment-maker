@@ -16,6 +16,7 @@ export default function TemplatePreview() {
     const [iframeScale, setIframeScale] = useState(1)
     const [deviceView, setDeviceView] = useState('desktop')
     const [isTogglingFavorite, setIsTogglingFavorite] = useState(false)
+    const [hasSeenPreview, setHasSeenPreview] = useState(false)
     const isFavorite = favorites?.includes(selectedTemplate?.id)
 
     // Handle initial resize scaling
@@ -35,27 +36,59 @@ export default function TemplatePreview() {
         return () => observer.disconnect();
     }, [currentView, selectedTemplate, deviceView]);
 
-    // Apply global template customizations to the showcase iframe
+    // Apply global template customizations and track scroll progress
     useEffect(() => {
-        if (currentView !== 'preview' || !selectedTemplate || !iframeRef.current || !templateCustomization) return;
+        if (currentView !== 'preview' || !selectedTemplate || !iframeRef.current) return;
 
-        const customData = templateCustomization[selectedTemplate.id];
-        if (!customData) return;
+        const customData = templateCustomization?.[selectedTemplate.id];
 
-        const syncData = () => {
-             if (iframeRef.current && iframeRef.current.contentWindow) {
-                 iframeRef.current.contentWindow.postMessage({ type: 'customize', ...customData }, '*')
-             }
+        const handleTemplateMessage = (event) => {
+            const data = event.data;
+            if (!data || typeof data !== 'object') return;
+
+            console.log("Template Message Received:", data.type);
+
+            // Slightly more relaxed check to ensure we don't miss it during re-renders
+            const isFromIframe = iframeRef.current && event.source === iframeRef.current.contentWindow;
+            
+            if (data.type === 'TEMPLATE_COMPLETED') {
+                console.log("Unlock Signal Detected!");
+                setHasSeenPreview(true);
+            }
+        };
+
+        window.addEventListener('message', handleTemplateMessage);
+
+        const setupIframeLogic = () => {
+            const iframe = iframeRef.current;
+            if (!iframe || !iframe.contentWindow) return;
+            
+            // Prevent running on about:blank
+            if (iframe.contentWindow.location.href === 'about:blank') return;
+
+            // Sync Customization Data
+            if (customData) {
+                iframe.contentWindow.postMessage({ type: 'customize', ...customData }, '*');
+            }
+        };
+
+        const iframe = iframeRef.current;
+        iframe.addEventListener('load', setupIframeLogic);
+        
+        if (iframe.contentDocument?.readyState === 'complete' && iframe.contentWindow?.location?.href !== 'about:blank') {
+            setupIframeLogic();
         }
 
-        syncData()
-        const iframe = iframeRef.current;
-        iframe.addEventListener('load', syncData)
-        return () => iframe.removeEventListener('load', syncData)
+        return () => {
+            if (iframe) iframe.removeEventListener('load', setupIframeLogic);
+            window.removeEventListener('message', handleTemplateMessage);
+        };
     }, [currentView, selectedTemplate, templateCustomization])
 
     useEffect(() => {
         if (currentView === 'preview' && selectedTemplate) {
+            setHasSeenPreview(false);
+
             // Entrance animation
             const tl = gsap.timeline({ defaults: { ease: "power4.out" } })
             
@@ -80,6 +113,26 @@ export default function TemplatePreview() {
             )
         }
     }, [currentView, selectedTemplate])
+
+    // Unlock animation when hasSeenPreview becomes true
+    useEffect(() => {
+        if (hasSeenPreview && actionsRef.current) {
+            const customizeBtn = actionsRef.current.querySelector('.tp-pill-primary');
+            if (customizeBtn) {
+                gsap.fromTo(customizeBtn, 
+                    { scale: 1 },
+                    { 
+                        scale: 1.05, 
+                        duration: 0.3, 
+                        yoyo: true, 
+                        repeat: 1, 
+                        ease: "power2.out",
+                        clearProps: "scale"
+                    }
+                );
+            }
+        }
+    }, [hasSeenPreview]);
 
     if (currentView !== 'preview' || !selectedTemplate) return null
 
@@ -230,12 +283,23 @@ export default function TemplatePreview() {
                             )}
                         </span>
                     </button>
-                    <button className="tp-pill-btn tp-pill-primary" onClick={handleCustomize}>
-                        <span>Customize View</span>
+                    <button 
+                        className={`tp-pill-btn tp-pill-primary ${!hasSeenPreview ? 'tp-btn-locked' : ''}`} 
+                        onClick={handleCustomize}
+                        disabled={!hasSeenPreview}
+                    >
+                        <span>{hasSeenPreview ? 'Customize View' : 'Explore to Unlock'}</span>
                         <div className="tp-pill-arrow">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                <polyline points="9 18 15 12 9 6"/>
-                            </svg>
+                            {hasSeenPreview ? (
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            ) : (
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                </svg>
+                            )}
                         </div>
                     </button>
                 </div>

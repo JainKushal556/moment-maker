@@ -4,8 +4,8 @@ import { Heart } from 'lucide-react';
 
 const Final = () => {
   useEffect(() => {
-    // Notify the parent editor that the full experience is complete
-    window.parent?.postMessage({ type: 'preview_complete' }, '*');
+    // Notify the parent system that the full experience is complete
+    window.parent?.postMessage({ type: 'TEMPLATE_COMPLETED' }, '*');
   }, []);
 
   return (
