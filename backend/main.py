@@ -2,9 +2,9 @@ import os
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from api.routes import moments, upload
-
 load_dotenv()  # Load .env before any module reads os.getenv()
+
+from api.routes import moments, upload
 
 app = FastAPI(title="WishCraft API", version="0.1.0")
 

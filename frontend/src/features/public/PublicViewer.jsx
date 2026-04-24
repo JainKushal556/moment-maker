@@ -2,12 +2,75 @@ import { useEffect, useRef, useState } from 'react'
 import { getPublicMoment } from '../../services/api'
 import { templates } from '../../data/templates'
 
+const CACHE_NAME = 'moment-images-cache';
+
+async function processAndCacheImages(customization, blobUrlsRef) {
+    if (!customization) return customization;
+    
+    // Deep clone to avoid mutating the original state unexpectedly
+    const processed = JSON.parse(JSON.stringify(customization));
+
+    async function processNode(node) {
+        if (typeof node === 'string') {
+            if (node.includes('res.cloudinary.com')) {
+                try {
+                    const cache = await caches.open(CACHE_NAME);
+                    const cachedResponse = await cache.match(node);
+                    
+                    if (cachedResponse) {
+                        const blob = await cachedResponse.blob();
+                        const blobUrl = URL.createObjectURL(blob);
+                        blobUrlsRef.current.push(blobUrl);
+                        console.log(`[Cache] Image loaded directly from local cache:\n${node}`);
+                        return blobUrl;
+                    } else {
+                        console.log(`[Cache] Downloading & saving image to local cache:\n${node}`);
+                        const response = await fetch(node);
+                        if (response.ok) {
+                            const cacheResponse = response.clone();
+                            await cache.put(node, cacheResponse);
+                            const blob = await response.blob();
+                            const blobUrl = URL.createObjectURL(blob);
+                            blobUrlsRef.current.push(blobUrl);
+                            return blobUrl;
+                        }
+                    }
+                } catch (err) {
+                    console.error("[Cache] Failed to process image caching:", err);
+                }
+            }
+            return node;
+        } else if (Array.isArray(node)) {
+            return await Promise.all(node.map(item => processNode(item)));
+        } else if (typeof node === 'object' && node !== null) {
+            const newObj = {};
+            for (const key of Object.keys(node)) {
+                newObj[key] = await processNode(node[key]);
+            }
+            return newObj;
+        }
+        return node;
+    }
+
+    return await processNode(processed);
+}
+
 export default function PublicViewer({ momentId }) {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [momentData, setMomentData] = useState(null)
     const [template, setTemplate] = useState(null)
     const iframeRef = useRef(null)
+    const blobUrlsRef = useRef([])
+
+    useEffect(() => {
+        // Cleanup blob URLs on unmount to free memory
+        return () => {
+            if (blobUrlsRef.current) {
+                blobUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+            }
+        };
+    }, []);
 
     useEffect(() => {
         const fetchMoment = async () => {
@@ -21,6 +84,12 @@ export default function PublicViewer({ momentId }) {
                 }
 
                 const data = await getPublicMoment(momentId, visitorId)
+                
+                // Process and cache any Cloudinary images
+                if (data.customization) {
+                    data.customization = await processAndCacheImages(data.customization, blobUrlsRef);
+                }
+                
                 setMomentData(data)
                 
                 // Find matching template config

@@ -6,7 +6,7 @@ import './template-preview.css'
 
 export default function TemplatePreview() {
     const [currentView, setCurrentView, selectedTemplate, , templateCustomization] = useContext(ViewContext)
-    const { currentUser, openAuthModal } = useAuth()
+    const { currentUser, openAuthModal, favorites, handleToggleFavorite } = useAuth()
     const containerRef = useRef(null)
     const cardRef = useRef(null)
     const contentRef = useRef(null)
@@ -15,6 +15,8 @@ export default function TemplatePreview() {
     const iframeRef = useRef(null) // Added to target iframe directly for postMessage
     const [iframeScale, setIframeScale] = useState(1)
     const [deviceView, setDeviceView] = useState('desktop')
+    const [isTogglingFavorite, setIsTogglingFavorite] = useState(false)
+    const isFavorite = favorites?.includes(selectedTemplate?.id)
 
     // Handle initial resize scaling
     useEffect(() => {
@@ -93,6 +95,12 @@ export default function TemplatePreview() {
 
     const handleBack = () => {
         setCurrentView('categories')
+    }
+
+    const onToggleFavorite = async () => {
+        setIsTogglingFavorite(true)
+        await handleToggleFavorite(selectedTemplate.id)
+        setIsTogglingFavorite(false)
     }
 
     return (
@@ -199,8 +207,28 @@ export default function TemplatePreview() {
 
                 {/* Tier 3: Action Buttons */}
                 <div ref={actionsRef} className="tp-actions-pills">
-                    <button className="tp-pill-btn tp-pill-secondary" onClick={handleBack}>
-                        <span>Draft</span>
+                    <button 
+                        className="tp-pill-btn tp-pill-secondary" 
+                        onClick={onToggleFavorite}
+                        disabled={isTogglingFavorite}
+                    >
+                        <span className="flex items-center gap-2">
+                            {isFavorite ? (
+                                <>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" className="text-pink-500">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                    </svg>
+                                    Remove from favorite
+                                </>
+                            ) : (
+                                <>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                    </svg>
+                                    Add to favorite
+                                </>
+                            )}
+                        </span>
                     </button>
                     <button className="tp-pill-btn tp-pill-primary" onClick={handleCustomize}>
                         <span>Customize View</span>

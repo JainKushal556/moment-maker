@@ -159,10 +159,31 @@ const categories = [
     }
 ]
 
+const getInitialInternalView = () => {
+    return sessionStorage.getItem('explorerInternalView') || 'categories'
+}
+
+const getInitialCategory = () => {
+    const saved = sessionStorage.getItem('explorerSelectedCategory')
+    return saved ? JSON.parse(saved) : null
+}
+
 const CategoriesExplorer = () => {
-    const [internalView, setInternalView] = useState('categories')
-    const [selectedCategory, setSelectedCategory] = useState(null)
+    const [internalView, setInternalView] = useState(getInitialInternalView())
+    const [selectedCategory, setSelectedCategory] = useState(getInitialCategory())
     const [, setCurrentView, , , , , transitionRef] = useContext(ViewContext)
+
+    useEffect(() => {
+        sessionStorage.setItem('explorerInternalView', internalView)
+    }, [internalView])
+
+    useEffect(() => {
+        if (selectedCategory) {
+            sessionStorage.setItem('explorerSelectedCategory', JSON.stringify(selectedCategory))
+        } else {
+            sessionStorage.removeItem('explorerSelectedCategory')
+        }
+    }, [selectedCategory])
 
     const containerRef = useRef(null)
     const gridRef = useRef(null)
@@ -238,6 +259,10 @@ const CategoriesExplorer = () => {
     const handleReturnHome = useCallback(() => {
         if (window.lenis) window.lenis.scrollTo(0, { immediate: true })
         else window.scrollTo(0, 0)
+        
+        sessionStorage.removeItem('explorerInternalView')
+        sessionStorage.removeItem('explorerSelectedCategory')
+        
         setCurrentView('landing')
     }, [setCurrentView])
 
