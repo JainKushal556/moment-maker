@@ -142,6 +142,7 @@ function TextAreaField({ field, customization, onUpdate, sectionIndex }) {
           value={value}
           onChange={(e) => onUpdate(stateKey, e.target.value)}
           style={{ minHeight: '200px' }}
+          data-lenis-prevent="true"
         />
       </div>
     </div>
@@ -190,7 +191,7 @@ export default function DynamicFormBuilder({ template, customization = {}, onUpd
 
   return (
     <div className="editor-panel">
-      <div className="editor-panel-scroll">
+      <div className="editor-panel-scroll" data-lenis-prevent="true">
 
         {/* ── BRAND HEADER ── */}
         <div className="ep-header">

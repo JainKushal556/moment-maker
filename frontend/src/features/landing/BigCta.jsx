@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useContext } from 'react'
+import { ViewContext } from '../../context/NavContext'
 import '../../styles/bigCta.css'
 
 /* ── Sparkle SVG ── */
@@ -73,6 +74,8 @@ function AnimatedWaveLayer({ color, layerClass, speed = 0.05 }) {
 
 /* ── Main component ── */
 export default function BigCta() {
+  const [, navigateTo] = useContext(ViewContext)
+
   return (
     <section className="big-cta">
       {/* Background layers */}
@@ -97,11 +100,19 @@ export default function BigCta() {
         </p>
 
         <div className="big-cta__actions">
-          <button className="big-cta__btn">Start Creating</button>
-          <a href="#examples" className="big-cta__link">
+          <button 
+            className="big-cta__btn"
+            onClick={() => navigateTo('categories')}
+          >
+            Start Creating
+          </button>
+          <button 
+            onClick={() => navigateTo('categories')}
+            className="big-cta__link"
+          >
             See Examples{' '}
             <span className="big-cta__link-arrow">&gt;</span>
-          </a>
+          </button>
         </div>
 
         {/* Ambient sparkles (visible ≥ 768 px) */}

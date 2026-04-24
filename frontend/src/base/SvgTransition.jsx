@@ -48,18 +48,18 @@ const SvgTransition = forwardRef(function SvgTransition(_, ref) {
 
             const tl = gsap.timeline()
 
-            // Phase 1: Screen Fill Animation (fast & snappy)
+            // Phase 1: Screen Fill Animation
             paths.forEach((path) => {
                 tl.to(path, {
                     strokeDashoffset: 0,
                     strokeWidth: 650,
-                    duration: 0.4,
+                    duration: 0.7,
                     ease: 'power2.out',
                 }, 0)
             })
 
             // At midpoint — screen is fully covered — resolve so parent can swap the view
-            tl.call(() => resolve(), null, 0.3)
+            tl.call(() => resolve(), null, 0.6)
 
             // Phase 2: Exit Forward Animation
             paths.forEach((path) => {
@@ -67,9 +67,9 @@ const SvgTransition = forwardRef(function SvgTransition(_, ref) {
                 tl.to(path, {
                     strokeDashoffset: -length,
                     strokeWidth: 20,
-                    duration: 0.75,
-                    ease: 'power3.inOut',
-                }, 0.45)
+                    duration: 1.2,
+                    ease: 'power2.inOut',
+                }, 0.8)
             })
         })
     })

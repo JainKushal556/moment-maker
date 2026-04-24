@@ -36,19 +36,19 @@ const FloatingHearts = () => {
             heart.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="#f472b6" style="opacity: ${Math.random() * 0.4 + 0.2}">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
             </svg>`
-            
+
             const size = Math.random() * 20 + 10
             heart.style.left = Math.random() * 100 + '%'
             heart.style.top = '100%'
             heart.style.setProperty('--rotation', (Math.random() * 90 - 45) + 'deg')
             heart.style.animationDuration = Math.random() * 10 + 15 + 's'
-            
+
             container.appendChild(heart)
             heart.addEventListener('animationend', () => heart.remove())
         }
 
         const interval = setInterval(createHeart, 2000)
-        for(let i=0; i<8; i++) setTimeout(createHeart, Math.random() * 5000)
+        for (let i = 0; i < 8; i++) setTimeout(createHeart, Math.random() * 5000)
 
         return () => clearInterval(interval)
     }, [])
@@ -252,17 +252,25 @@ const CategoriesExplorer = () => {
     }, [transitionRef])
 
     const handleBackToCategories = useCallback(() => {
-        setInternalView('categories')
-        window.scrollTo({ top: 0, behavior: 'auto' })
-    }, [])
+        const transition = transitionRef?.current
+        if (transition) {
+            transition.play('categories').then(() => {
+                setInternalView('categories')
+                window.scrollTo({ top: 0, behavior: 'instant' })
+            })
+        } else {
+            setInternalView('categories')
+            window.scrollTo({ top: 0, behavior: 'auto' })
+        }
+    }, [transitionRef])
 
     const handleReturnHome = useCallback(() => {
         if (window.lenis) window.lenis.scrollTo(0, { immediate: true })
         else window.scrollTo(0, 0)
-        
+
         sessionStorage.removeItem('explorerInternalView')
         sessionStorage.removeItem('explorerSelectedCategory')
-        
+
         setCurrentView('landing')
     }, [setCurrentView])
 
@@ -278,47 +286,47 @@ const CategoriesExplorer = () => {
             }}
         >
             <FloatingHearts />
-            
-                {/* PRE-HEADER NAVIGATION (Like Editor) */}
-                <div className="w-full h-12 flex items-center px-8 md:px-16 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
-                    <button
-                        onClick={internalView === 'categories' ? handleReturnHome : handleBackToCategories}
-                        className="group flex items-center gap-3 text-white/40 hover:text-white transition-colors"
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:-translate-x-1 transition-transform">
-                            <polyline points="15 18 9 12 15 6" />
-                        </svg>
-                        <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">
-                            {internalView === 'categories' ? 'RETURN HOME' : 'BACK TO MOMENTS'}
-                        </span>
-                    </button>
-                </div>
 
-                <div
-                    className="w-full relative z-10"
-                    style={{
-                        maxWidth: '1600px',
-                        margin: '0 auto',
-                        paddingLeft: '32px',
-                        paddingRight: '32px',
-                        paddingTop: '96px',
-                    }}
+            {/* PRE-HEADER NAVIGATION (Like Editor) */}
+            <div className="w-full h-12 flex items-center px-8 md:px-16 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
+                <button
+                    onClick={internalView === 'categories' ? handleReturnHome : handleBackToCategories}
+                    className="group flex items-center gap-3 text-white/40 hover:text-white transition-colors"
                 >
-                    {internalView === 'categories' ? (
-                        <div style={{ paddingBottom: '10rem' }}>
-                            {/* SOFT ROMANTIC HEADER */}
-                            <header ref={headerRef} className="mb-24 md:mb-40 space-y-12 md:space-y-20">
-                                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 lg:gap-20">
-                                    <div className="min-w-0">
-                                        {/* Moved to top header */}
-                                        <h1
-                                            className="text-6xl md:text-8xl lg:text-[11rem] font-black tracking-tighter leading-[0.85] text-white"
-                                        >
-                                            The<br />
-                                            <span className="text-transparent bg-clip-text bg-linear-to-br from-fuchsia-500 via-pink-400 to-orange-400">Moments.</span>
-                                        </h1>
-                                    </div>
-                                
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:-translate-x-1 transition-transform">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">
+                        {internalView === 'categories' ? 'RETURN HOME' : 'BACK TO MOMENTS'}
+                    </span>
+                </button>
+            </div>
+
+            <div
+                className="w-full relative z-10"
+                style={{
+                    maxWidth: '1600px',
+                    margin: '0 auto',
+                    paddingLeft: '32px',
+                    paddingRight: '32px',
+                    paddingTop: '96px',
+                }}
+            >
+                {internalView === 'categories' ? (
+                    <div style={{ paddingBottom: '10rem' }}>
+                        {/* SOFT ROMANTIC HEADER */}
+                        <header ref={headerRef} className="mb-24 md:mb-40 space-y-12 md:space-y-20">
+                            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 lg:gap-20">
+                                <div className="min-w-0">
+                                    {/* Moved to top header */}
+                                    <h1
+                                        className="text-6xl md:text-8xl lg:text-[11rem] font-black tracking-tighter leading-[0.85] text-white"
+                                    >
+                                        The<br />
+                                        <span className="text-transparent bg-clip-text bg-linear-to-br from-fuchsia-500 via-pink-400 to-orange-400">Moments.</span>
+                                    </h1>
+                                </div>
+
                                 <div className="lg:pb-4 lg:ml-auto">
                                     <div className="flex items-stretch gap-10 max-w-[360px]">
                                         <div className="w-px bg-white/10 shrink-0" />

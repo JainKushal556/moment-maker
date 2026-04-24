@@ -247,7 +247,7 @@ export default function CategoriesCarousel() {
 
         // Switch the background to dark exactly when blocks fully cover the screen (approx 1.5s in)
         master.to(sectionRef.current, { backgroundColor: '#050505', duration: 0.01 }, 1.5)
-        master.set('.hero-section', { opacity: 0 }, 1.5)
+        master.set('.hero, .hero-clone', { opacity: 0 }, 1.5)
 
         // ScrollTrigger — trigger when the section naturally hits the top
         transitionTrigger = ScrollTrigger.create({

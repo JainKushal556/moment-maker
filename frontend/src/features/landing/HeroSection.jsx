@@ -209,6 +209,7 @@ export default function HeroSection() {
     startBubbles()
 
     // Main ScrollTrigger
+    let isPastBoundary = false
     const scrollTrigger = ScrollTrigger.create({
       trigger: heroSection,
       start: 'top top',
@@ -217,12 +218,19 @@ export default function HeroSection() {
       pinSpacing: true,
       scrub: 0.5,
       onLeave: () => { 
+        // Scrub lag means onUpdate might fire after onLeave. 
+        // We will remove them and also set a flag so onUpdate doesn't re-create them.
+        isPastBoundary = true
         removeClonedIcons()
       },
       onLeaveBack: () => { 
+        isPastBoundary = true
         removeClonedIcons()
       },
+      onEnter: () => { isPastBoundary = false },
+      onEnterBack: () => { isPastBoundary = false },
       onUpdate: (self) => {
+        if (isPastBoundary) return // Prevent scrub lag from re-creating icons
         const progress = self.progress
         window.bubblesActive = progress < 0.18
 
@@ -253,6 +261,7 @@ export default function HeroSection() {
             })
             icons.forEach((icon, index) => {
               let clone = icon.cloneNode(true)
+              clone.classList.add('hero-clone')
               const iconRect = icon.getBoundingClientRect()
               const scaledSize = iconRect.width || finalTargetSizeRef.current
               clone.style.position = 'fixed'
@@ -267,7 +276,8 @@ export default function HeroSection() {
               clone.dataset.startX = `${iconRect.left}`
               clone.dataset.startY = `${iconRect.top}`
               clone.dataset.startSize = `${scaledSize}`
-              document.body.appendChild(clone)
+              const parent = heroSection.closest('.relative.z-10') || document.body
+              parent.appendChild(clone)
               clonedIconsRef.current.push(clone)
             })
           }

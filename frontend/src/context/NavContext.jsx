@@ -45,12 +45,6 @@ export const NavProvider = ({ children }) => {
         }
     }, [sharedMomentId])
 
-    // Routes that already have their own custom animations — skip SVG transition for these
-    const SKIP_TRANSITION = [
-        ['landing', 'categories'],
-        ['categories', 'landing'],
-    ]
-
     // Transition-aware navigation — plays SVG transition then swaps view at midpoint
     const navigateTo = useCallback((nextView) => {
         // If already transitioning or same view, just set directly
@@ -59,23 +53,21 @@ export const NavProvider = ({ children }) => {
             return
         }
 
-        // Check if this route should skip the SVG transition
-        const shouldSkip = SKIP_TRANSITION.some(
-            ([from, to]) => from === currentView && to === nextView
-        )
-
         const transition = transitionRef.current
-        if (shouldSkip || !transition) {
-            // Use existing animation or fallback to instant swap
+        const shouldSkip = nextView === 'landing'
+
+        if (!transition || shouldSkip) {
             setCurrentView(nextView)
             return
         }
 
         isTransitioning.current = true
+        
+        // playPromise resolves at the midpoint of the SVG animation
         transition.play(nextView).then(() => {
             setCurrentView(nextView)
-            // Small delay to let exit animation play out before allowing next transition
-            setTimeout(() => { isTransitioning.current = false }, 400)
+            // Faster lock time (1.5s) as recently tuned
+            setTimeout(() => { isTransitioning.current = false }, 1500)
         })
     }, [currentView])
 
