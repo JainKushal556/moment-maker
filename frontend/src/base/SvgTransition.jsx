@@ -17,11 +17,11 @@ const SvgTransition = forwardRef(function SvgTransition(_, ref) {
 
     // Color mapping per transition type
     const COLOR_MAP = {
-        landing:    ['#ff3d6a', '#d5ababff'],
+        landing: ['#ff3d6a', '#d5ababff'],
         categories: ['#ff3d6a', '#d5ababff'],
-        preview:    ['#6E44FF', '#d59fdfff'],
-        editor:     ['#ff3d6a', '#d5ababff'],
-        share:      ['#39e6d0', '#88e7d3ff'],
+        preview: ['#6E44FF', '#d59fdfff'],
+        editor: ['#ff3d6a', '#d5ababff'],
+        share: ['#39e6d0', '#88e7d3ff'],
     }
 
     const play = contextSafe((targetView) => {

@@ -18,13 +18,21 @@ const FullScreenNav = ({ requireAuth }) => {
     const tlRef = useRef(null)
     const viewSwitchTimeoutRef = useRef(null)
 
+
     const [navOpen, setNavOpen] = useContext(NavbarContext)
     const [, setCurrentView] = useContext(ViewContext)
     const { currentUser } = useAuth()
 
     // Build the master timeline once
     useGSAP(() => {
-        const tl = gsap.timeline({ paused: true, defaults: { overwrite: "auto" } })
+        const tl = gsap.timeline({ 
+            paused: true, 
+            defaults: { overwrite: "auto" },
+            onReverseComplete: () => {
+                // Fully hide the nav element after reverse so it can't block anything
+                gsap.set('.fullscreennav', { display: 'none' })
+            }
+        })
         
         tl.to('.fullscreennav', {
             display: 'block'
@@ -69,7 +77,6 @@ const FullScreenNav = ({ requireAuth }) => {
             tlRef.current.timeScale(1).play()
         } else {
             if (window.lenis) window.lenis.start()
-            // Make reverse significantly faster so it gets out of the way gracefully
             tlRef.current.timeScale(1.8).reverse()
         }
     }, [navOpen])
@@ -81,11 +88,10 @@ const FullScreenNav = ({ requireAuth }) => {
     }, [])
 
     const closeNavAndSwitch = (nextView) => {
-        if (viewSwitchTimeoutRef.current) clearTimeout(viewSwitchTimeoutRef.current)
+        // Switch view immediately so the new page renders behind the closing nav
+        // The nav reverse animation plays on top and reveals the new page as it exits
+        setCurrentView(nextView)
         setNavOpen(false)
-        viewSwitchTimeoutRef.current = window.setTimeout(() => {
-            setCurrentView(nextView)
-        }, 260)
     }
 
     const handleHomeAction = () => {

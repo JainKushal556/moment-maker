@@ -142,45 +142,59 @@ function AppContent() {
       {currentView !== 'share' && currentView !== 'moments' && <NoiseOverlay />}
 
       {currentView === 'landing' && (
-        <Suspense fallback={null}>
-          <LandingPage />
-        </Suspense>
+        <div className="relative z-10">
+          <Suspense fallback={null}>
+            <LandingPage />
+          </Suspense>
+        </div>
       )}
 
       {(currentView === 'categories' || currentView === 'preview') && (
-        <Suspense fallback={<div className="fixed inset-0 z-50 bg-[#050508]"></div>}>
-          <CategoriesExplorer />
-        </Suspense>
+        <div className="relative z-10">
+          <Suspense fallback={<div className="fixed inset-0 z-50 bg-[#050508]"></div>}>
+            <CategoriesExplorer />
+          </Suspense>
+        </div>
       )}
 
       {currentView === 'preview' && (
-        <Suspense fallback={null}>
-          <TemplatePreview />
-        </Suspense>
+        <div className="relative z-10">
+          <Suspense fallback={null}>
+            <TemplatePreview />
+          </Suspense>
+        </div>
       )}
 
       {currentView === 'editor' && (
-        <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#1a0d0d]"></div>}>
-          <EditorView />
-        </Suspense>
+        <div className="relative z-20">
+          <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#1a0d0d]"></div>}>
+            <EditorView />
+          </Suspense>
+        </div>
       )}
 
       {currentView === 'share' && (
-        <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#0d0a0e]"></div>}>
-          <ShareView />
-        </Suspense>
+        <div className="relative z-20">
+          <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#0d0a0e]"></div>}>
+            <ShareView />
+          </Suspense>
+        </div>
       )}
 
       {currentView === 'moments' && (
-        <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#0a0a12]"></div>}>
-          <MyMomentsView />
-        </Suspense>
+        <div className="relative z-20">
+          <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#0a0a12]"></div>}>
+            <MyMomentsView />
+          </Suspense>
+        </div>
       )}
 
       {currentView === 'about' && (
-        <Suspense fallback={<div className="fixed inset-0 z-50 bg-[#050508]"></div>}>
-          <AboutUs />
-        </Suspense>
+        <div className="relative z-10">
+          <Suspense fallback={<div className="fixed inset-0 z-50 bg-[#050508]"></div>}>
+            <AboutUs />
+          </Suspense>
+        </div>
       )}
 
       {/* SVG Stroke Transition Overlay — always mounted */}
