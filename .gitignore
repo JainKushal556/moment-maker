@@ -6,11 +6,23 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+firebase-debug.log*
+firebase-debug.*.log*
 
 # Node / Build
 node_modules
 dist
 dist-ssr
+
+# Firebase
+.firebase/
+.firebaserc
+.dataconnect
+
+# Testing and Coverage
+coverage
+.nyc_output
+lib-cov
 
 # Environments
 .env
@@ -47,3 +59,10 @@ frontend/public/templates/
 *.njsproj
 *.sln
 *.sw?
+
+# Misc caches and history
+.eslintcache
+.npm
+.node_repl_history
+.yarn-integrity
+*.tgz
