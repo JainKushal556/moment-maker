@@ -183,7 +183,7 @@ export default function Footer() {
           <div className="fpo-top">
             {/* Brand */}
             <div className="fpo-brand">
-              <a href="#" className="footer-logo-link" aria-label="Moment Maker Home">
+              <a href="#" className="footer-logo-link" aria-label="Moment Crafter Home">
                 <svg className="footer-logo-svg" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
                   <polygon points="16,2 18.5,11 28,11 20.5,16.5 23,26 16,21 9,26 11.5,16.5 4,11 13.5,11" fill="#111" />
                   <line x1="16" y1="0" x2="16" y2="3" stroke="#111" strokeWidth="1.8" strokeLinecap="round" />
@@ -191,7 +191,7 @@ export default function Footer() {
                   <line x1="30" y1="14" x2="33" y2="14" stroke="#111" strokeWidth="1.8" strokeLinecap="round" />
                   <line x1="0" y1="14" x2="3" y2="14" stroke="#111" strokeWidth="1.8" strokeLinecap="round" />
                   <text x="42" y="20" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="700" fontSize="14" fill="#111" letterSpacing="0.5">MOMENT</text>
-                  <text x="42" y="36" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="300" fontSize="10.5" fill="#444" letterSpacing="2.5">MAKER</text>
+                  <text x="42" y="36" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="300" fontSize="10.5" fill="#444" letterSpacing="2.5">CRAFTER</text>
                 </svg>
               </a>
               <p className="fpo-tagline">Craft memories,<br />not just messages.</p>

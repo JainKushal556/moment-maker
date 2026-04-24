@@ -13,6 +13,7 @@ const LandingPage = () => {
     return (
         <>
             <HeroSection />
+
             <Suspense fallback={null}>
                 <CategoriesCarousel />
             </Suspense>

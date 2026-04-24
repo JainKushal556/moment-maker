@@ -7,8 +7,8 @@ gsap.registerPlugin(ScrollTrigger)
 
 const faqData = [
   {
-    question: "What is Moment Maker?",
-    answer: "Moment Maker is a platform that lets you create beautiful, interactive, and personalized digital greetings for every occasion—birthdays, holidays, confessions, and more. Each greeting is a unique, shareable web experience."
+    question: "What is Moment Crafter?",
+    answer: "Moment Crafter is a platform that lets you create beautiful, interactive, and personalized digital greetings for every occasion—birthdays, holidays, confessions, and more. Each greeting is a unique, shareable web experience."
   },
   {
     question: "Is it free to use?",

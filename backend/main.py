@@ -6,7 +6,7 @@ load_dotenv()  # Load .env before any module reads os.getenv()
 
 from api.routes import moments, upload
 
-app = FastAPI(title="WishCraft API", version="0.1.0")
+app = FastAPI(title="Moment Crafter API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,7 +24,7 @@ app.include_router(upload.router)
 @app.get("/health")
 def health():
     # Used by Render and Docker HEALTHCHECK (must remain open)
-    return {"status": "ok", "service": "WishCraft API"}
+    return {"status": "ok", "service": "Moment Crafter API"}
 
 @app.get("/cron/keep-alive")
 def keep_alive(x_cron_secret: str | None = Header(None)):

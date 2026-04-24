@@ -97,7 +97,7 @@ export default function HowItWorks() {
 
     let animRAF; let isAnimating = false
     let lastActiveIdx = -1
-    const zones = [{ start: 0, end: 0.33, recedeEnd: 0.50 }, { start: 0.33, end: 0.66, recedeEnd: 0.83 }, { start: 0.66, end: 1.0, recedeEnd: 1.0 }]
+    const zones = [{ start: 0, end: 0.25, recedeEnd: 0.40 }, { start: 0.25, end: 0.55, recedeEnd: 0.70 }, { start: 0.55, end: 1.0, recedeEnd: 1.0 }]
 
     let cachedScrollProgress = 0
     const scrollHandler = () => {
@@ -106,7 +106,7 @@ export default function HowItWorks() {
       cachedScrollProgress = Math.min(1, Math.max(0, scrollY / sectionHeight))
 
       if (cardsTrack) {
-        let activeIdx = cachedScrollProgress >= 0.65 ? 2 : cachedScrollProgress >= 0.30 ? 1 : 0
+        let activeIdx = cachedScrollProgress >= 0.55 ? 2 : cachedScrollProgress >= 0.25 ? 1 : 0
         if (activeIdx !== lastActiveIdx) {
           lastActiveIdx = activeIdx
           const cards = cardsTrack.querySelectorAll('.hiw-card-outer')
@@ -125,7 +125,7 @@ export default function HowItWorks() {
             outer.classList.remove('active'); outer.classList.add('receding')
             const recedeProgress = Math.min(1, (cachedScrollProgress - zone.end) / (zone.recedeEnd - zone.end))
             const eased = recedeProgress < 0.5 ? 2 * recedeProgress * recedeProgress : 1 - Math.pow(-2 * recedeProgress + 2, 2) / 2
-            outer.style.transform = `translate3d(${eased * -350}px, 0, 0) scale(${1 - eased * 0.35})`; outer.style.opacity = `${1 - eased}`
+            outer.style.transform = `translate3d(${eased * -150}px, 0, 0) scale(${1 - eased * 0.15})`; outer.style.opacity = `${1 - eased}`
           } else { outer.classList.remove('active', 'receding') }
         })
       }

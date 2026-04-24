@@ -212,28 +212,21 @@ export default function HeroSection() {
     const scrollTrigger = ScrollTrigger.create({
       trigger: heroSection,
       start: 'top top',
-      end: '+=180%',
+      end: '+=380%',
       pin: true,
       pinSpacing: true,
       scrub: 0.5,
       onLeave: () => { 
         removeClonedIcons()
-        window.dispatchEvent(new CustomEvent('momentNavToggle', { detail: { visible: true } }))
       },
       onLeaveBack: () => { 
         removeClonedIcons()
-        window.dispatchEvent(new CustomEvent('momentNavToggle', { detail: { visible: false } }))
       },
       onUpdate: (self) => {
         const progress = self.progress
         window.bubblesActive = progress < 0.18
 
-        // Control Nav Visibility cleanly based exactly on the text becoming visible
-        const shouldNavBeVisible = progress > 0.62
-        if (window._navVisible !== shouldNavBeVisible) {
-          window._navVisible = shouldNavBeVisible
-          window.dispatchEvent(new CustomEvent('momentNavToggle', { detail: { visible: shouldNavBeVisible } }))
-        }
+
 
         if (progress > 0.01) {
           stopIdleAnimation()
@@ -417,7 +410,7 @@ export default function HeroSection() {
   return (
     <section className="hero" ref={heroRef}>
       <div className="header-block" ref={headerRef}>
-        <h2>Moment Maker</h2>
+        <h2>Moment Crafter</h2>
         <p className="subtitle" ref={subtitleRef}>Craft memories, not just messages.</p>
       </div>
 

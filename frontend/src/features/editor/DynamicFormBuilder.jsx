@@ -196,7 +196,7 @@ export default function DynamicFormBuilder({ template, customization = {}, onUpd
         <div className="ep-header">
           <div className="ep-brand-line">
             <div className="ep-brand-dot" />
-            <span className="ep-brand-tag">WishCraft Studio</span>
+            <span className="ep-brand-tag">Moment Crafter Studio</span>
           </div>
           <h2 className="ep-title">
             {template?.category ? template.category.charAt(0).toUpperCase() + template.category.slice(1) : 'Template'} <br/>

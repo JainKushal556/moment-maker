@@ -95,7 +95,7 @@ export default function AuthModal({ onClose, onSuccess }) {
                 {/* Brand */}
                 <div className="auth-brand">
                     <div className="auth-brand-icon">✦</div>
-                    <span>WishCraft</span>
+                    <span>Moment Crafter</span>
                 </div>
 
                 {/* Title */}

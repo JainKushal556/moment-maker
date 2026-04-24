@@ -167,7 +167,7 @@ async def delete_moment(moment_id: str, user: dict = Depends(get_current_user)):
         elif isinstance(data, list):
             for item in data:
                 delete_all_images_in_customization(item)
-        elif isinstance(data, str) and "res.cloudinary.com" in data and "moment-maker" in data:
+        elif isinstance(data, str) and "res.cloudinary.com" in data and "moment-crafter" in data:
             delete_cloudinary_image(data)
             
     try:

@@ -31,7 +31,7 @@ export default function MyMomentsView() {
                         const template = templates.find(t => t.id === m.templateId);
                         return {
                             ...m,
-                            category: template ? template.category : 'Moment Maker Original',
+                            category: template ? template.category : 'Moment Crafter Original',
                             image: template ? template.img : null // Use the fixed template image
                         };
                     });
@@ -293,7 +293,7 @@ export default function MyMomentsView() {
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
         {deleteTarget && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-6">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

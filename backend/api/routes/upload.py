@@ -38,7 +38,7 @@ async def upload_image(
     try:
         result = cloudinary.uploader.upload(
             contents,
-            folder="moment-maker",           # organise uploads in a dedicated folder
+            folder="moment-crafter",           # organise uploads in a dedicated folder
             resource_type="image",
             overwrite=False,
             unique_filename=True,
@@ -52,10 +52,10 @@ def delete_cloudinary_image(url: str):
     """
     Extracts the public_id from a Cloudinary URL and deletes it from Cloudinary.
     """
-    if not url or "res.cloudinary.com" not in url or "moment-maker" not in url:
+    if not url or "res.cloudinary.com" not in url or "moment-crafter" not in url:
         return
         
-    match = re.search(r'/upload/(?:v\d+/)?(moment-maker/[^.]+)', url)
+    match = re.search(r'/upload/(?:v\d+/)?(moment-crafter/[^.]+)', url)
     if match:
         public_id = match.group(1)
         try:

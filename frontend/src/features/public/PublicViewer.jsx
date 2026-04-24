@@ -193,7 +193,7 @@ export default function PublicViewer({ momentId }) {
                     e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'
                 }}
             >
-                Made with WishCraft
+                Made with Moment Crafter
             </a>
         </div>
     )

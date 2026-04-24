@@ -108,7 +108,7 @@ function AppContent() {
       }
 
       window.dispatchEvent(new CustomEvent('momentNavToggle', {
-        detail: { visible: currentView === 'categories' || currentView === 'about' }
+        detail: { visible: currentView === 'landing' || currentView === 'categories' || currentView === 'about' }
       }))
 
       prevViewRef.current = currentView

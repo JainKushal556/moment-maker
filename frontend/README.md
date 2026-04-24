@@ -1,4 +1,4 @@
-# Moment Maker
+# Moment Crafter
 
 A beautiful, interactive digital greetings platform built with **React** + **Vite**.
 

@@ -66,9 +66,10 @@ section {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -140%);
-    width: 100%;
-    max-width: 900px;
+    width: 95%;
+    max-width: 1400px;
     text-align: center;
+    white-space: nowrap;
     will-change: transform, opacity;
     z-index: 10;
     opacity: 0;
@@ -216,7 +217,7 @@ section {
     }
 
     .header-block h2 {
-        font-size: 10vw;
+        font-size: 7vw;
     }
 
     .icon {
@@ -249,7 +250,7 @@ section {
     }
 
     .header-block h2 {
-        font-size: 12vw;
+        font-size: 8vw;
     }
 }
 

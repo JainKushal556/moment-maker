@@ -72,7 +72,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
       onClick={handleCardClick}
       className="relative group w-full aspect-16/11 perspective-1000 mx-auto cursor-pointer"
     >
-      <div className="absolute -inset-[1.5px] rounded-[2.5rem] bg-linear-to-r from-fuchsia-500/20 via-transparent to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-[1px]" />
+      <div className="absolute inset-[-1.5px] rounded-[2.5rem] bg-linear-to-r from-fuchsia-500/20 via-transparent to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-[1px]" />
       
       <div className="relative h-full w-full overflow-hidden rounded-[2.5rem] bg-zinc-950 border border-white/10 shadow-2xl flex flex-col">
         <div className="relative h-[72%] w-full overflow-hidden">
@@ -145,7 +145,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
                   </>
                 )}
                 <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest truncate">
-                    {moment.category || 'Moment Maker Original'}
+                    {moment.category || 'Moment Crafter Original'}
                 </span>
               </div>
             </div>

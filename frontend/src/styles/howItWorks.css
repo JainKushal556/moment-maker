@@ -1,7 +1,7 @@
 /* ====== HOW IT WORKS SECTION ====== */
 .how-it-works-section {
     position: relative;
-    height: 400vh;
+    height: 300vh;
     background-color: #050505;
     z-index: 1;
     /* Override global section defaults to eliminate gap */
@@ -140,7 +140,7 @@
 
 .hiw-cards-track {
     display: flex;
-    gap: 4rem;
+    gap: 2rem;
     padding-left: 10%;
     will-change: transform;
     transition: transform 0.6s ease-in-out;

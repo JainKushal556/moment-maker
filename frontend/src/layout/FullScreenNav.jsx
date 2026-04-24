@@ -4,7 +4,7 @@ import { useContext, useRef, useEffect } from 'react'
 import { NavbarContext, ViewContext } from '../context/NavContext'
 import { useAuth } from '../context/AuthContext'
 
-// Cinematic image placeholders built to fit the Moment Maker vibe
+// Cinematic image placeholders built to fit the Moment Crafter vibe
 const cinematicImgs = [
     "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=800&auto=format&fit=crop",
@@ -187,7 +187,7 @@ const FullScreenNav = ({ requireAuth }) => {
                     </div>
                     <div className='flex flex-col gap-2'>
                         <h4 className='text-white/50 text-sm font-semibold uppercase tracking-widest'>Get In Touch</h4>
-                        <a href="mailto:hello@momentmaker.com" className='text-xl border-b border-[#FFD700] inline-block hover:text-[#FFD700] transition-colors'>hello@momentmaker.com</a>
+                        <a href="mailto:hello@momentcrafter.com" className='text-xl border-b border-[#FFD700] inline-block hover:text-[#FFD700] transition-colors'>hello@momentcrafter.com</a>
                     </div>
                     <div className='flex flex-col gap-2 lg:items-end items-start'>
                         <h4 className='text-white/50 text-sm font-semibold uppercase tracking-widest'>Socials</h4>
