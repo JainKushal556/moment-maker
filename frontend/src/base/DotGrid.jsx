@@ -254,11 +254,11 @@ const DotGrid = ({
 
   return (
     <div id="dot-grid-bg">
-      <section className={`dot-grid ${className}`} style={style}>
+      <div className={`dot-grid ${className}`} style={style}>
         <div ref={wrapperRef} className="dot-grid__wrap">
           <canvas ref={canvasRef} className="dot-grid__canvas" />
         </div>
-      </section>
+      </div>
     </div>
   );
 };
