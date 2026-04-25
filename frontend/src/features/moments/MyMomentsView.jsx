@@ -15,7 +15,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getMoments } from '../../services/api';
 
 export default function MyMomentsView() {
-  const [currentView, navigateTo, , setSelectedTemplate, , setTemplateCustomization, transitionRef, , , editingMomentId, setEditingMomentId] = useContext(ViewContext);
+  const [currentView, navigateTo, , setSelectedTemplate, , setTemplateCustomization, transitionRef, , , editingMomentId, setEditingMomentId, , setSelectedIntroId] = useContext(ViewContext);
   const { currentUser, logout, openAuthModal, loading, favorites } = useAuth();
   const [moments, setMoments] = useState([]);
   const [filter, setFilter] = useState('all');
@@ -108,6 +108,7 @@ export default function MyMomentsView() {
         const template = templates.find(t => t.id === moment.templateId) || templates[0];
         setEditingMomentId(id);
         setSelectedTemplate(template);
+        if (moment.introId) setSelectedIntroId(moment.introId);
         navigateTo('editor');
       }
     }

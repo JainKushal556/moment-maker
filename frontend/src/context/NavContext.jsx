@@ -24,7 +24,8 @@ export const NavProvider = ({ children }) => {
     const [selectedTemplate, setSelectedTemplate] = useState(null)
     const [templateCustomization, setTemplateCustomization] = useState({})
     const [sharedMomentId, setSharedMomentId] = useState(getInitialSharedMomentId())
-    const [editingMomentId, setEditingMomentId] = useState(null) // ID of moment being edited from MyCreations
+    const [editingMomentId, setEditingMomentId] = useState(null)
+    const [selectedIntroId, setSelectedIntroId] = useState('glass-card')
 
     // Ref that App.jsx will attach SvgTransition to
     const transitionRef = useRef(null)
@@ -72,7 +73,7 @@ export const NavProvider = ({ children }) => {
     }, [currentView])
 
     return (
-        <ViewContext.Provider value={[currentView, navigateTo, selectedTemplate, setSelectedTemplate, templateCustomization, setTemplateCustomization, transitionRef, sharedMomentId, setSharedMomentId, editingMomentId, setEditingMomentId]}>
+        <ViewContext.Provider value={[currentView, navigateTo, selectedTemplate, setSelectedTemplate, templateCustomization, setTemplateCustomization, transitionRef, sharedMomentId, setSharedMomentId, editingMomentId, setEditingMomentId, selectedIntroId, setSelectedIntroId]}>
             <NavbarColorContext.Provider value={[navColor, setNavColor]}>
                 <NavbarContext.Provider value={[navOpen, setNavOpen]}>
                     {children}

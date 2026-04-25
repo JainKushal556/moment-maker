@@ -1,5 +1,72 @@
 import { useState, useRef } from 'react'
 import { uploadImage } from '../../services/cloudinary'
+import { intros } from '../../data/intros'
+
+// ── SUB-COMPONENT: INTRO SELECTION FIELD ──────────────────────────────────────
+function IntroSelectionField({ selectedIntroId, onSelect }) {
+  return (
+    <div className="ep-section editor-section">
+      <div className="ep-section-header">
+        <span className="ep-section-num">00</span>
+        <span className="ep-section-title">Intro Animation</span>
+        <div className="ep-section-line" />
+      </div>
+      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginBottom: '16px', lineHeight: 1.5 }}>
+        Choose how your moment will be revealed to the receiver.
+      </p>
+      
+      <div className="intro-options-scroll" style={{ 
+        display: 'flex', 
+        gap: '12px', 
+        overflowX: 'auto', 
+        paddingBottom: '16px'
+      }}>
+        {intros.map(intro => (
+          <div 
+            key={intro.id}
+            onClick={() => onSelect(intro.id)}
+            style={{ 
+              minWidth: '120px',
+              maxWidth: '120px',
+              borderRadius: '12px', 
+              overflow: 'hidden',
+              cursor: 'pointer',
+              border: selectedIntroId === intro.id ? '2px solid #f472b6' : '1px solid rgba(255,255,255,0.1)',
+              background: selectedIntroId === intro.id ? 'rgba(244,114,182,0.1)' : 'rgba(255,255,255,0.02)',
+              transition: 'all 0.2s',
+              flexShrink: 0
+            }}
+          >
+             <div style={{ height: '70px', background: '#111', position: 'relative' }}>
+                <img 
+                    src={intro.thumbnail} 
+                    alt={intro.title} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    onError={(e) => { 
+                        e.target.style.display = 'none'; 
+                        e.target.nextSibling.style.display = 'flex'; 
+                    }} 
+                />
+                <div style={{ 
+                    display: 'none', 
+                    width: '100%', 
+                    height: '100%', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    background: 'linear-gradient(45deg, #f472b6, #c084fc)' 
+                }}>
+                   <span style={{ fontSize: '20px' }}>✨</span>
+                </div>
+             </div>
+             <div style={{ padding: '8px' }}>
+                <h4 style={{ fontSize: '11px', color: 'white', fontWeight: 600, textAlign: 'center', margin: 0 }}>{intro.title}</h4>
+             </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 // ── SUB-COMPONENT: IMAGE GALLERY FIELD ────────────────────────────────────────
 function ImageGalleryField({ field, customization, onUpdate, sectionIndex }) {
@@ -176,7 +243,7 @@ function TextField({ field, customization, onUpdate, sectionIndex }) {
 }
 
 // ── MAIN EXPORT — DYNAMIC FORM BUILDER ────────────────────────────────────────
-export default function DynamicFormBuilder({ template, customization = {}, onUpdate, onSave, onShare, saveStatus, setSaveStatus }) {
+export default function DynamicFormBuilder({ template, customization = {}, onUpdate, onSave, onShare, saveStatus, setSaveStatus, selectedIntroId, setSelectedIntroId }) {
 
   if (!customization) {
     return <div className="editor-panel p-8 text-white/40 font-mono text-xs uppercase tracking-widest">Initialising...</div>
@@ -184,6 +251,15 @@ export default function DynamicFormBuilder({ template, customization = {}, onUpd
 
   const handleSave = async () => {
     await onSave()
+  }
+
+  const handleIntroSelect = (id) => {
+    if (id !== selectedIntroId) {
+      setSelectedIntroId(id)
+      if (saveStatus === 'saved') {
+        setSaveStatus('idle')
+      }
+    }
   }
 
   // Fallback to empty schema if none exists
@@ -217,6 +293,14 @@ export default function DynamicFormBuilder({ template, customization = {}, onUpd
             <div className="ep-info-type">Template {template?.isPremium ? '• Premium' : ''}</div>
           </div>
         </div>
+
+        <div className="ep-divider" />
+
+        {/* ── INTRO SELECTION ── */}
+        <IntroSelectionField 
+            selectedIntroId={selectedIntroId} 
+            onSelect={handleIntroSelect} 
+        />
 
         {schema.length > 0 && <div className="ep-divider" />}
 

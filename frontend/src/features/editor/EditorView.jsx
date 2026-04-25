@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from 'react'
 import EditorHeader from './EditorHeader'
 import DynamicFormBuilder from './DynamicFormBuilder'
 import LivePreviewer from './LivePreviewer'
+import IntroSelector from './IntroSelector'
 import { ViewContext } from '../../context/NavContext'
 import { useAuth } from '../../context/AuthContext'
 import { saveMoment, updateMoment } from '../../services/api'
@@ -9,10 +10,14 @@ import { uploadImage, getFirebaseToken, base64ToFile } from '../../services/clou
 import './editor.css'
 
 export default function EditorView() {
-  const [currentView, navigateTo, selectedTemplate, setSelectedTemplate, templateCustomization, setTemplateCustomization, transitionRef, sharedMomentId, setSharedMomentId, editingMomentId, setEditingMomentId] = useContext(ViewContext)
+  const [currentView, navigateTo, selectedTemplate, setSelectedTemplate, templateCustomization, setTemplateCustomization, transitionRef, sharedMomentId, setSharedMomentId, editingMomentId, setEditingMomentId, selectedIntroId, setSelectedIntroId] = useContext(ViewContext)
   const { currentUser, openAuthModal } = useAuth()
   const [isSharing, setIsSharing] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  
+  // New States for Intro
+  const [step, setStep] = useState(0) // 0: Intro Selection, 1: Moment Edit
+  
   const [customization, setCustomization] = useState({
     recipientName: '',
     message: '',
@@ -71,7 +76,9 @@ export default function EditorView() {
             templateId: selectedTemplate.id,
             title: selectedTemplate.title,
             status: 'shared',
-            customization: customization
+            customization: customization,
+            introId: selectedIntroId,
+            senderName: currentUser?.displayName || currentUser?.email?.split('@')[0] || "Someone Special"
         })
         setSharedMomentId(editingMomentId)
         setSaveStatus('saved')
@@ -135,7 +142,9 @@ export default function EditorView() {
             templateId: selectedTemplate.id,
             customization: filteredCustomization,
             status: 'draft',
-            title: selectedTemplate.title
+            title: selectedTemplate.title,
+            introId: selectedIntroId,
+            senderName: currentUser?.displayName || currentUser?.email?.split('@')[0] || "Someone Special"
         }
 
         // 3. Save or Update in database
@@ -184,12 +193,16 @@ export default function EditorView() {
           onShare={handleShare}
           saveStatus={saveStatus}
           setSaveStatus={setSaveStatus}
+          selectedIntroId={selectedIntroId}
+          setSelectedIntroId={setSelectedIntroId}
         />
         
         <LivePreviewer 
           template={selectedTemplate} 
           customization={customization} 
           refreshKey={refreshKey}
+          introId={selectedIntroId}
+          senderName={currentUser?.displayName || currentUser?.email?.split('@')[0]}
         />
       </main>
     </div>

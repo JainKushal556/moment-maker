@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { getPublicMoment } from '../../services/api'
 import { templates } from '../../data/templates'
+import { getIntroById } from '../../data/intros'
 
 const CACHE_NAME = 'moment-images-cache';
 
@@ -60,8 +61,15 @@ export default function PublicViewer({ momentId }) {
     const [error, setError] = useState(null)
     const [momentData, setMomentData] = useState(null)
     const [template, setTemplate] = useState(null)
+    const [showIntro, setShowIntro] = useState(true)
     const iframeRef = useRef(null)
     const blobUrlsRef = useRef([])
+
+    // Find intro config if it exists
+    const introConfig = useMemo(() => {
+        if (!momentData?.introId) return null;
+        return getIntroById(momentData.introId);
+    }, [momentData?.introId]);
 
     useEffect(() => {
         // Cleanup blob URLs on unmount to free memory
@@ -112,7 +120,7 @@ export default function PublicViewer({ momentId }) {
     }, [momentId])
 
     useEffect(() => {
-        if (!iframeRef.current || !momentData) return
+        if (!iframeRef.current || !momentData || showIntro) return
 
         const iframe = iframeRef.current
         const sendData = () => {
@@ -125,8 +133,6 @@ export default function PublicViewer({ momentId }) {
         // Send immediately on load
         iframe.addEventListener('load', sendData)
         
-        // Also fire periodically for 5 seconds to ensure the iframe's React app catches it 
-        // even if it hydrates AFTER the iframe DOM load event fires.
         const interval = setInterval(sendData, 500)
         const timeout = setTimeout(() => clearInterval(interval), 5000)
 
@@ -135,7 +141,7 @@ export default function PublicViewer({ momentId }) {
             clearInterval(interval)
             clearTimeout(timeout)
         }
-    }, [momentData])
+    }, [momentData, showIntro])
 
     if (loading) {
         return (
@@ -153,6 +159,19 @@ export default function PublicViewer({ momentId }) {
                 <a href="/" style={{ color: '#c084fc', marginTop: '20px', textDecoration: 'none' }}>Make your own moment</a>
             </div>
         )
+    }
+
+    // Intro View
+    if (showIntro && introConfig) {
+        const IntroComponent = introConfig.component;
+        return (
+            <div style={{ position: 'fixed', inset: 0, backgroundColor: 'black', zIndex: 1000 }}>
+                <IntroComponent 
+                    senderName={momentData.senderName || "Someone Special"} 
+                    onFinish={() => setShowIntro(false)} 
+                />
+            </div>
+        );
     }
 
     return (

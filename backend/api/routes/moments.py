@@ -20,6 +20,8 @@ class MomentPayload(BaseModel):
     customization: dict[str, Any]
     status: str | None = "draft"
     title: str | None = None
+    introId: str | None = None
+    senderName: str | None = None
 
 
 @router.get("")
@@ -50,6 +52,8 @@ async def save_moment(payload: MomentPayload, user: dict = Depends(get_current_u
         "title": payload.title,
         "status": payload.status,
         "customization": payload.customization,
+        "introId": payload.introId,
+        "senderName": payload.senderName,
         "savedAt": datetime.now(timezone.utc).isoformat(),
         "viewerSessions": [],
     }
@@ -75,6 +79,8 @@ async def update_moment(moment_id: str, payload: MomentPayload, user: dict = Dep
         "title": payload.title,
         "status": payload.status,
         "customization": payload.customization,
+        "introId": payload.introId,
+        "senderName": payload.senderName,
         "updatedAt": datetime.now(timezone.utc).isoformat(),
     }
     ref.update(updated_data)
@@ -120,7 +126,9 @@ async def get_public_moment(moment_id: str, visitorId: str | None = None):
     return {
         "id": doc.id,
         "templateId": data.get("templateId"),
-        "customization": data.get("customization")
+        "customization": data.get("customization"),
+        "introId": data.get("introId"),
+        "senderName": data.get("senderName")
     }
 
 @router.post("/{moment_id}/reactivate", status_code=200)

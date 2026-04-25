@@ -1,0 +1,137 @@
+.scratch-wrapper-full {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background-color: #0c0c1e;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Quicksand', sans-serif;
+  container-type: inline-size;
+}
+
+.reveal-content-full {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #1a1a3a 0%, #0c0c1e 100%);
+  z-index: 1;
+  padding: 2rem;
+}
+
+.message-area-full {
+  text-align: center;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.full-name {
+  font-size: clamp(1.5rem, 8cqw, 4rem);
+  color: white;
+  margin: 0;
+  font-weight: 300;
+}
+
+.full-name span {
+  display: block;
+  font-weight: 800;
+  background: linear-gradient(to right, #22d3ee, #ec4899, #f59e0b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-top: 0.5rem;
+}
+
+.full-divider {
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(to right, #22d3ee, #ec4899);
+  border-radius: 2px;
+}
+
+.full-msg {
+  font-size: clamp(1rem, 3cqw, 1.8rem);
+  color: #a1a1aa;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.full-reveal-btn {
+  margin-top: 2rem;
+  padding: 1.2rem 3.5rem;
+  font-size: clamp(1rem, 2.5cqw, 1.2rem);
+  background: linear-gradient(to right, #06b6d4, #ec4899);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 15px 40px rgba(6, 182, 212, 0.4);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.full-reveal-btn:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 20px 50px rgba(236, 72, 153, 0.5);
+}
+
+.scratch-canvas-full {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  transition: opacity 1s ease;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.scratch-canvas-full.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.magic-hint-full {
+  position: absolute;
+  bottom: 5vh;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  z-index: 15;
+  pointer-events: none;
+  animation: hint-pulse 1.5s infinite alternate;
+  transition: opacity 0.3s ease;
+}
+
+@keyframes hint-pulse {
+  from { opacity: 0.3; transform: translateY(0); }
+  to { opacity: 1; transform: translateY(-5px); }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .message-area-full {
+    gap: 1.5rem;
+  }
+  .full-divider {
+    width: 60px;
+  }
+  .full-reveal-btn {
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+  }
+}

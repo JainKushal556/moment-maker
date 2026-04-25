@@ -1,19 +1,22 @@
-import { useState, useRef, useEffect, useContext } from 'react'
+import { useState, useRef, useEffect, useContext, useMemo } from 'react'
 import { ViewContext } from '../../context/NavContext'
 import { useAuth } from '../../context/AuthContext'
-import { Check, Share2, Edit3, RotateCcw } from 'lucide-react'
+import { Check, Share2, Edit3, RotateCcw, PlayCircle } from 'lucide-react'
 import { saveMoment, updateMoment } from '../../services/api'
 import { uploadImage, base64ToFile, getFirebaseToken } from '../../services/cloudinary'
+import { getIntroById } from '../../data/intros'
 
-export default function LivePreviewer({ template, customization, refreshKey }) {
+export default function LivePreviewer({ template, customization, refreshKey, introId, senderName }) {
     const [, setCurrentView, , , , , , , setSharedMomentId, editingMomentId, setEditingMomentId] = useContext(ViewContext)
     const [device, setDevice] = useState('desktop')
     const iframeContainerRef = useRef(null)
     const [iframeScale, setIframeScale] = useState(1)
     const frameRef = useRef(null)
-    const revealTimerRef = useRef(null)
-    const fallbackTimerRef = useRef(null)
     const [internalRefreshKey, setInternalRefreshKey] = useState(0)
+    
+    // Intro Playback State
+    const [showIntro, setShowIntro] = useState(false)
+    const introConfig = useMemo(() => introId ? getIntroById(introId) : null, [introId])
 
     // Always keep a ref to the latest customization so iframe load handlers
     // don't get trapped in a stale closure
@@ -29,19 +32,23 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
         }
     }
 
-    const clearCompletionTimers = () => {
-        if (revealTimerRef.current) window.clearTimeout(revealTimerRef.current)
-        if (fallbackTimerRef.current) window.clearTimeout(fallbackTimerRef.current)
-    }
-
     // Only sync/reload on template change or explicit refresh
     useEffect(() => {
-        syncCustomization()
-    }, [template, refreshKey, internalRefreshKey])
+        if (!showIntro) syncCustomization()
+    }, [template, refreshKey, internalRefreshKey, showIntro])
+
+    // Play intro when a new intro is selected
+    useEffect(() => {
+        if (introConfig) {
+            setShowIntro(true)
+        }
+    }, [introId])
 
     const handleManualRefresh = () => {
         setInternalRefreshKey(prev => prev + 1)
+        if (introConfig) setShowIntro(true)
     }
+
 
     useEffect(() => {
         if (!iframeContainerRef.current) return;
@@ -60,19 +67,9 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
     }, [device]);
 
     useEffect(() => {
-        const handleMessage = (e) => {
-            if (e.data?.type !== 'preview_complete') return
-            revealTimerRef.current = window.setTimeout(() => {
-                setVisiblePreviewKey(refreshKey)
-            }, 7000)
-        }
-        window.addEventListener('message', handleMessage)
-
         // Sync customization after iframe reload — use ref to avoid stale closure
         const iframe = frameRef.current
         const handleLoad = () => {
-            // Heartbeat sync: send data multiple times to ensure the template's
-            // listener is ready and catches the message.
             let count = 0
             const interval = setInterval(() => {
                 syncCustomization(customizationRef.current)
@@ -83,15 +80,9 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
         if (iframe) iframe.addEventListener('load', handleLoad)
 
         return () => {
-            clearCompletionTimers()
             if (iframe) iframe.removeEventListener('load', handleLoad)
-            window.removeEventListener('message', handleMessage)
         }
-    }, [refreshKey, template, internalRefreshKey])
-
-    useEffect(() => {
-        return () => { clearCompletionTimers() }
-    }, [])
+    }, [refreshKey, template, internalRefreshKey, showIntro])
 
     const getFrameStyle = () => {
         switch (device) {
@@ -130,15 +121,15 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
         }
     }
 
-    const { currentUser, openAuthModal } = useAuth()
-
-    // Build the correct iframe src — append ?preview=1 for proposal template
+    // Build the correct iframe src
     const getIframeSrc = () => {
         if (!template) return ''
         return template.url
     }
 
     const { width: iWidth, height: iHeight } = getIframeDimensions()
+
+    const IntroComp = introConfig?.component;
 
     return (
         <div className="editor-preview-area relative pt-20">
@@ -181,7 +172,15 @@ export default function LivePreviewer({ template, customization, refreshKey }) {
                 </div>
 
                 <div className="browser-content bg-black relative overflow-hidden flex-1" ref={iframeContainerRef} style={getContentAspectStyle()}>
-                    {template ? (
+                    {showIntro && IntroComp ? (
+                        <div className="absolute inset-0 z-50 bg-black">
+                            <IntroComp 
+                                key={internalRefreshKey}
+                                senderName={senderName || "Your Name"} 
+                                onFinish={() => setShowIntro(false)}
+                            />
+                        </div>
+                    ) : template ? (
                         <iframe
                             key={`${refreshKey}-${internalRefreshKey}`}
                             ref={frameRef}

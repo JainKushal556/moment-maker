@@ -1,0 +1,263 @@
+.envelope-wrapper {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #0c0c1e;
+  overflow: hidden;
+  font-family: 'Quicksand', sans-serif;
+}
+
+/* --- Dynamic Mesh Background --- */
+.night-bg {
+  position: absolute;
+  inset: 0;
+  background: #0c0c1e;
+  background: radial-gradient(circle at 50% 50%, #1a1a3a 0%, #0c0c1e 100%);
+}
+
+.night-bg::before, .night-bg::after {
+  content: "";
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  top: -25%;
+  left: -25%;
+  background: radial-gradient(circle at center, rgba(112, 0, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 10% 20%, rgba(255, 0, 200, 0.08) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(0, 212, 255, 0.08) 0%, transparent 40%);
+  filter: blur(80px);
+  animation: mesh-move 20s linear infinite alternate;
+}
+
+.night-bg::after {
+  animation: mesh-move 25s linear infinite reverse;
+  opacity: 0.5;
+}
+
+@keyframes mesh-move {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-5%, 5%) rotate(10deg); }
+  100% { transform: translate(5%, -5%) rotate(-10deg); }
+}
+
+/* --- Floating Particles --- */
+.stars {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 150px 160px, #ddd, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 190px 40px, #fff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 130px 280px, #fff, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 300px 300px;
+  opacity: 0.2;
+  animation: stars-drift 30s linear infinite;
+}
+
+@keyframes stars-drift {
+  from { transform: translateY(0); }
+  to { transform: translateY(-300px); }
+}
+
+.bokeh-circles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bokeh-circles::before, .bokeh-circles::after {
+  content: "";
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.03);
+  animation: float-circles 15s ease-in-out infinite alternate;
+}
+
+.bokeh-circles::before {
+  top: 10%;
+  left: 20%;
+}
+
+.bokeh-circles::after {
+  bottom: 15%;
+  right: 15%;
+  animation-delay: -5s;
+  width: 150px;
+  height: 150px;
+}
+
+@keyframes float-circles {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+  50% { transform: translate(50px, 100px) scale(1.2); opacity: 0.6; }
+  100% { transform: translate(-30px, 50px) scale(0.9); opacity: 0.3; }
+}
+
+/* --- Envelope Styling --- */
+.envelope-container {
+  position: relative;
+  width: 300px;
+  height: 200px;
+  cursor: pointer;
+  transition: transform 0.3s;
+  z-index: 10;
+  filter: drop-shadow(0 15px 40px rgba(0,0,0,0.5));
+}
+
+.envelope-container:hover {
+  transform: scale(1.05) rotate(1deg);
+}
+
+.envelope {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #ff8fab;
+  /* overflow: hidden;  <-- Removed to allow card to slide out */
+  border-radius: 2px;
+}
+
+.envelope::before {
+  content: "";
+  position: absolute;
+  z-index: 3; /* Increased to stay above card */
+  border-top: 100px solid transparent;
+  border-right: 150px solid #ffb3c6;
+  border-bottom: 100px solid #ffb3c6;
+  border-left: 150px solid transparent;
+  pointer-events: none;
+}
+
+.envelope::after {
+  content: "";
+  position: absolute;
+  z-index: 3; /* Increased to stay above card */
+  border-top: 100px solid transparent;
+  border-right: 150px solid transparent;
+  border-bottom: 100px solid #ffc2d1;
+  border-left: 150px solid #ffc2d1;
+  pointer-events: none;
+}
+
+.front-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-top: 105px solid #ff8fab;
+  border-left: 150px solid transparent;
+  border-right: 150px solid transparent;
+  transform-origin: top;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 4; /* Top flap should be above everything when closed */
+  pointer-events: none;
+}
+
+.open .front-flap {
+  transform: rotateX(180deg);
+  z-index: 1; /* Moves behind when opened */
+}
+
+/* --- Letter Styling --- */
+.letter-card {
+  position: absolute;
+  top: 10px;
+  left: 15px;
+  width: 270px;
+  height: 180px;
+  background: linear-gradient(135deg, #ffffff 0%, #fff0f5 100%);
+  z-index: 2; /* Sits between back and front layers of envelope */
+  padding: 25px 20px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.from-text {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #5a5a7a;
+  letter-spacing: 0.5px;
+}
+
+.from-text span {
+  color: #ff4d4d;
+  font-weight: 700;
+  position: relative;
+}
+
+.message-content {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+  margin: 8px 0;
+  min-height: 3.5rem;
+  font-weight: 500;
+}
+
+.heart-seal {
+  position: absolute;
+  top: 85px;
+  left: 134px;
+  z-index: 5; /* Seal on top of the closed flap */
+  transition: all 0.4s ease;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
+}
+
+.heart-seal:hover {
+  transform: scale(1.1);
+}
+
+.open .heart-seal {
+  opacity: 0;
+  transform: scale(0.5) translateY(-20px);
+}
+
+.tap-hint {
+  margin-top: 50px;
+  color: #ffb3c6;
+  font-size: 1.1rem;
+  font-weight: 500;
+  z-index: 5;
+  text-shadow: 0 0 10px rgba(255, 179, 198, 0.4);
+}
+
+.open-btn {
+  margin-top: 5px;
+  padding: 10px 24px;
+  background: linear-gradient(to right, #ff4d4d, #ff8fab);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.open-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(255, 77, 77, 0.4);
+}
+
+.open-btn:active {
+  transform: scale(0.95);
+}
