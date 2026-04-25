@@ -24,7 +24,7 @@ const TemplateGallery = ({ category, onBack }) => {
 
     const handleTemplateClick = (template) => {
         if (!template.url) return
-        
+
         // Reset state so it loads as a fresh new moment, not a continuation of an old one
         if (setEditingMomentId) setEditingMomentId(null)
         if (setTemplateCustomization) {
@@ -34,7 +34,7 @@ const TemplateGallery = ({ category, onBack }) => {
                 return next
             })
         }
-        
+
         setSelectedTemplate(template)
         setCurrentView('preview')
     }
@@ -54,7 +54,7 @@ const TemplateGallery = ({ category, onBack }) => {
                         <h2 className="font-montserrat font-black uppercase tracking-tighter leading-[0.9] text-white"
                             style={{ fontSize: 'clamp(3.5rem, 8vw, 8.25rem)' }}
                         >
-                            {category?.title} <br/>
+                            {category?.title} <br />
                             <span className="text-white/20 text-[42%] tracking-[0.12em] block mt-6 border-t-4 border-[#f472b6]/30 pt-6 w-fit">GALLERY</span>
                         </h2>
                     </div>
@@ -78,7 +78,7 @@ const TemplateGallery = ({ category, onBack }) => {
                                 ref={searchInputRef}
                                 type="text"
                                 placeholder="Search templates"
-                                className={`w-full h-14 bg-white/[0.045] border border-white/10 rounded-xl pr-5 outline-none font-mono text-xs font-bold tracking-[0.08em] text-white placeholder:text-white/35 hover:border-white/20 focus:border-fuchsia-400/70 focus:bg-white/[0.07] transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] ${isSearchOpen || searchQuery ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                                className={`w-full h-14 bg-white/0.045 border border-white/10 rounded-xl pr-5 outline-none font-mono text-xs font-bold tracking-[0.08em] text-white placeholder:text-white/35 hover:border-white/20 focus:border-fuchsia-400/70 focus:bg-white/[0.07] transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] ${isSearchOpen || searchQuery ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                                 style={{ paddingLeft: '56px' }}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -97,13 +97,13 @@ const TemplateGallery = ({ category, onBack }) => {
             {/* Template Grid */}
             <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
                 {filteredTemplates.map((template) => (
-                    <MomentMagicCard 
-                        key={template.id} 
+                    <MomentMagicCard
+                        key={template.id}
                         moment={{
                             ...template,
                             image: template.img,
                             vibe: template.tag || 'CINEMATIC' // Fallback to CINEMATIC if tag doesn't match a vibe
-                        }} 
+                        }}
                         isTemplate={true}
                         onAction={(type, id) => {
                             if (type === 'build' || type === 'click') {

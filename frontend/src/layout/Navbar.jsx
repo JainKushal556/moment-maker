@@ -12,7 +12,7 @@ const Navbar = () => {
 
     useGSAP(() => {
         gsap.set(navWrapperRef.current, { autoAlpha: 1, y: 0 })
-        
+
         const handleNavToggle = (e) => {
             if (e.detail.visible) {
                 gsap.to(navWrapperRef.current, { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out', overwrite: 'auto' })
@@ -27,19 +27,19 @@ const Navbar = () => {
 
     return (
         <div ref={navWrapperRef} className='z-100 flex fixed top-0 w-full items-start justify-end pointer-events-none mix-blend-difference'>
-            
+
             {/* Raw Text Menu Button */}
             <div className='lg:p-8 p-4 pointer-events-auto'>
-                <div 
+                <div
                     id="nav-menu-button"
-                    onClick={() => setNavOpen(true)} 
+                    onClick={() => setNavOpen(true)}
                     className='group h-14 lg:h-16 relative cursor-pointer flex items-center justify-center transition-all duration-300 ease-out'
                 >
                     <div className='relative flex items-center justify-center gap-5 pointer-events-none'>
                         <span className="text-white font-inter tracking-[0.25em] uppercase text-sm lg:text-base font-bold opacity-90 group-hover:opacity-100 transition-opacity">
                             Menu
                         </span>
-                        
+
                         {/* Elegant 3-line hamburger - slightly larger */}
                         <div className='flex flex-col items-end gap-[6px] mt-px'>
                             <div className="w-6 h-[2.5px] bg-white transition-all duration-300 group-hover:w-8"></div>

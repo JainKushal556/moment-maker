@@ -22,7 +22,7 @@ export default function TemplatePreview() {
     // Handle initial resize scaling
     useEffect(() => {
         if (!iframeContainerRef.current || currentView !== 'preview') return;
-        
+
         const observer = new ResizeObserver((entries) => {
             for (let entry of entries) {
                 let baseWidth = 1280;
@@ -31,7 +31,7 @@ export default function TemplatePreview() {
                 setIframeScale(entry.contentRect.width / baseWidth);
             }
         });
-        
+
         observer.observe(iframeContainerRef.current);
         return () => observer.disconnect();
     }, [currentView, selectedTemplate, deviceView]);
@@ -50,7 +50,7 @@ export default function TemplatePreview() {
 
             // Slightly more relaxed check to ensure we don't miss it during re-renders
             const isFromIframe = iframeRef.current && event.source === iframeRef.current.contentWindow;
-            
+
             if (data.type === 'TEMPLATE_COMPLETED') {
                 console.log("Unlock Signal Detected!");
                 setHasSeenPreview(true);
@@ -62,7 +62,7 @@ export default function TemplatePreview() {
         const setupIframeLogic = () => {
             const iframe = iframeRef.current;
             if (!iframe || !iframe.contentWindow) return;
-            
+
             // Prevent running on about:blank
             if (iframe.contentWindow.location.href === 'about:blank') return;
 
@@ -74,7 +74,7 @@ export default function TemplatePreview() {
 
         const iframe = iframeRef.current;
         iframe.addEventListener('load', setupIframeLogic);
-        
+
         if (iframe.contentDocument?.readyState === 'complete' && iframe.contentWindow?.location?.href !== 'about:blank') {
             setupIframeLogic();
         }
@@ -91,26 +91,26 @@ export default function TemplatePreview() {
 
             // Entrance animation
             const tl = gsap.timeline({ defaults: { ease: "power4.out" } })
-            
-            tl.fromTo(containerRef.current, 
-                { opacity: 0 }, 
+
+            tl.fromTo(containerRef.current,
+                { opacity: 0 },
                 { opacity: 1, duration: 0.8 }
             )
-            .fromTo(cardRef.current, 
-                { y: 60, opacity: 0, scale: 0.95 }, 
-                { y: 0, opacity: 1, scale: 1, duration: 1.2 },
-                "-=0.4"
-            )
-            .fromTo(contentRef.current, 
-                { y: 30, opacity: 0 }, 
-                { y: 0, opacity: 1, duration: 0.8 },
-                "-=0.8"
-            )
-            .fromTo(actionsRef.current, 
-                { y: 20, opacity: 0 }, 
-                { y: 0, opacity: 1, duration: 0.8 },
-                "-=0.6"
-            )
+                .fromTo(cardRef.current,
+                    { y: 60, opacity: 0, scale: 0.95 },
+                    { y: 0, opacity: 1, scale: 1, duration: 1.2 },
+                    "-=0.4"
+                )
+                .fromTo(contentRef.current,
+                    { y: 30, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.8 },
+                    "-=0.8"
+                )
+                .fromTo(actionsRef.current,
+                    { y: 20, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.8 },
+                    "-=0.6"
+                )
         }
     }, [currentView, selectedTemplate])
 
@@ -119,13 +119,13 @@ export default function TemplatePreview() {
         if (hasSeenPreview && actionsRef.current) {
             const customizeBtn = actionsRef.current.querySelector('.tp-pill-primary');
             if (customizeBtn) {
-                gsap.fromTo(customizeBtn, 
+                gsap.fromTo(customizeBtn,
                     { scale: 1 },
-                    { 
-                        scale: 1.05, 
-                        duration: 0.3, 
-                        yoyo: true, 
-                        repeat: 1, 
+                    {
+                        scale: 1.05,
+                        duration: 0.3,
+                        yoyo: true,
+                        repeat: 1,
                         ease: "power2.out",
                         clearProps: "scale"
                     }
@@ -165,44 +165,44 @@ export default function TemplatePreview() {
             {/* Top Navigation */}
             <nav className="w-full h-12 flex items-center px-8 md:px-16 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
                 <div className="max-w-[1600px] mx-auto w-full flex items-center justify-between">
-                    <button 
+                    <button
                         className="group flex items-center gap-3 text-white/40 hover:text-white transition-colors"
                         onClick={handleBack}
                     >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:-translate-x-1 transition-transform">
-                            <polyline points="15 18 9 12 15 6"/>
+                            <polyline points="15 18 9 12 15 6" />
                         </svg>
                         <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">Back to Explorers</span>
                     </button>
 
                     {/* Premium Device Switcher */}
                     <div className="tp-device-switcher">
-                        <button 
+                        <button
                             className={`tp-device-btn ${deviceView === 'desktop' ? 'active' : ''}`}
                             onClick={() => setDeviceView('desktop')}
                         >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                                <line x1="8" y1="21" x2="16" y2="21"/>
-                                <line x1="12" y1="17" x2="12" y2="21"/>
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                                <line x1="8" y1="21" x2="16" y2="21" />
+                                <line x1="12" y1="17" x2="12" y2="21" />
                             </svg>
                         </button>
-                        <button 
+                        <button
                             className={`tp-device-btn ${deviceView === 'tablet' ? 'active' : ''}`}
                             onClick={() => setDeviceView('tablet')}
                         >
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
-                                <line x1="12" y1="18" x2="12.01" y2="18"/>
+                                <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+                                <line x1="12" y1="18" x2="12.01" y2="18" />
                             </svg>
                         </button>
-                        <button 
+                        <button
                             className={`tp-device-btn ${deviceView === 'mobile' ? 'active' : ''}`}
                             onClick={() => setDeviceView('mobile')}
                         >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
-                                <line x1="12" y1="18" x2="12.01" y2="18"/>
+                                <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                                <line x1="12" y1="18" x2="12.01" y2="18" />
                             </svg>
                         </button>
                     </div>
@@ -215,9 +215,9 @@ export default function TemplatePreview() {
                     <div className="tp-card-inner">
                         <div className="tp-card-glass">
                             <div className={`tp-iframe-container view-${deviceView}`} ref={iframeContainerRef}>
-                                <iframe 
+                                <iframe
                                     ref={iframeRef}
-                                    src={selectedTemplate.url} 
+                                    src={selectedTemplate.url}
                                     title="Template Preview"
                                     className={`tp-preview-iframe view-${deviceView}`}
                                     style={{ transform: `scale(${iframeScale})` }}
@@ -246,7 +246,7 @@ export default function TemplatePreview() {
                                 <img src={selectedTemplate.img} alt="" />
                                 <div className="tp-play-icon-mini">
                                     <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M8 5v14l11-7z"/>
+                                        <path d="M8 5v14l11-7z" />
                                     </svg>
                                 </div>
                             </div>
@@ -260,8 +260,8 @@ export default function TemplatePreview() {
 
                 {/* Tier 3: Action Buttons */}
                 <div ref={actionsRef} className="tp-actions-pills">
-                    <button 
-                        className="tp-pill-btn tp-pill-secondary" 
+                    <button
+                        className="tp-pill-btn tp-pill-secondary"
                         onClick={onToggleFavorite}
                         disabled={isTogglingFavorite}
                     >
@@ -283,8 +283,8 @@ export default function TemplatePreview() {
                             )}
                         </span>
                     </button>
-                    <button 
-                        className={`tp-pill-btn tp-pill-primary ${!hasSeenPreview ? 'tp-btn-locked' : ''}`} 
+                    <button
+                        className={`tp-pill-btn tp-pill-primary ${!hasSeenPreview ? 'tp-btn-locked' : ''}`}
                         onClick={handleCustomize}
                         disabled={!hasSeenPreview}
                     >
@@ -292,12 +292,12 @@ export default function TemplatePreview() {
                         <div className="tp-pill-arrow">
                             {hasSeenPreview ? (
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                    <polyline points="9 18 15 12 9 6"/>
+                                    <polyline points="9 18 15 12 9 6" />
                                 </svg>
                             ) : (
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                                 </svg>
                             )}
                         </div>

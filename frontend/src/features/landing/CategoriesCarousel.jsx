@@ -185,13 +185,38 @@ export default function CategoriesCarousel() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       const stage = stageRef.current
-      const canvas = canvasRef.current
+      if (!stage) return
+
       const dimmer = document.getElementById('dimmer')
       const dynamicBg = document.getElementById('dynamic-bg')
       const overlay = overlayRef.current
-      if (!stage) return
 
       let transitionTrigger = null
+      let playReverseFunc = null
+      
+      const handleHardLock = (e) => {
+        const isWheel = e.type === 'wheel'
+        const delta = isWheel ? e.deltaY : -1 
+        
+        // CRITICAL: We check progress <= 0.05. If user is at the top and scrolls UP:
+        if (delta < 0 && transitionTrigger && transitionTrigger.progress <= 0.05 && transitionTrigger.animHasPlayed) {
+          // ALWAYS prevent the scroll if we are in the transition zone and moving UP
+          e.preventDefault()
+          e.stopPropagation()
+          
+          // Only trigger if not already running
+          if (!transitionTrigger.animIsRunning) {
+            window.dispatchEvent(new CustomEvent('triggerReverse'))
+          }
+        }
+      }
+
+      // 2. Attach native listeners
+      if (sectionRef.current) {
+        sectionRef.current.addEventListener('wheel', handleHardLock, { passive: false })
+        sectionRef.current.addEventListener('touchmove', handleHardLock, { passive: false })
+      }
+
       const carouselContent = sectionRef.current?.querySelector('.carousel-content-wrapper')
 
       // Hide carousel immediately before animation
@@ -203,91 +228,117 @@ export default function CategoriesCarousel() {
         const blocks = overlay.querySelectorAll('.ct-block')
         const text = overlay.querySelector('.ct-text')
 
-        const master = gsap.timeline({
-          paused: true
-        })
+        const master = gsap.timeline({ paused: true })
 
-        // Phase 1: Blocks descend from TOP
-        master.fromTo(
-          blocks,
-          { y: '-100%' },
-          { y: '0%', duration: 1.2, stagger: 0.15, ease: 'power4.inOut' }
-        )
+        // Initial States
+        master.set(sectionRef.current, { backgroundColor: 'transparent' }, 0)
+        master.set('.hero, .hero-clone', { opacity: 1 }, 0)
 
-        // Phase 2: Text Reveal
-        master.to(
-          text,
-          { opacity: 1, scale: 1, duration: 1.0, ease: 'power3.out' },
-          0.7
-        )
+        // Phase 1: Blocks descend
+        master.fromTo(blocks, { y: '-100%' }, { y: '0%', duration: 0.8, stagger: 0.1, ease: 'power4.inOut' }, 0)
 
-        // Phase 3: Hold
-        master.to({}, { duration: 1.0 })
+        // Phase 2: Toggle
+        master.to(sectionRef.current, { backgroundColor: '#050505', duration: 0.01 }, 0.8)
+        master.set('.hero, .hero-clone', { opacity: 0 }, 0.8)
 
-        // Phase 4: Text out and Blocks continue DOWN
-        master.to(
-          text,
-          { opacity: 0, scale: 1.05, duration: 0.6, ease: 'power2.inOut' }
-        )
-        
-        master.to(
-          blocks,
-          { 
-            y: '-100%', 
-            duration: 1.2, 
-            stagger: 0.1, 
-            ease: 'expo.inOut'
-          },
-          "-=0.2"
-        )
-        
+        // Phase 3: Text Reveal
+        master.to(text, { opacity: 1, scale: 1, duration: 0.6, ease: 'power3.out' }, 0.8)
+
+        // Phase 4: Hold
+        master.to({}, { duration: 0.6 })
+
+        // Phase 5: Text out
+        master.to(text, { opacity: 0, scale: 1.05, duration: 0.5, ease: 'power2.out' })
+
+        // Phase 6: Blocks exit
+        master.to(blocks, { y: '-100%', duration: 0.8, stagger: 0.08, ease: 'expo.inOut' })
+
         if (carouselContent) {
           master.set(carouselContent, { opacity: 1, scale: 1 }, "<")
         }
 
-        // Switch the background to dark exactly when blocks fully cover the screen (approx 1.5s in)
-        master.to(sectionRef.current, { backgroundColor: '#050505', duration: 0.01 }, 1.5)
-        master.set('.hero, .hero-clone', { opacity: 0 }, 1.5)
+        let animHasPlayed = false
+        let animIsRunning = false
 
-        // ScrollTrigger — trigger when the section naturally hits the top
+        function playForward() {
+          if (animIsRunning || animHasPlayed) return
+          animIsRunning = true
+          if (window.lenis) window.lenis.stop()
+          overlay.classList.remove('ct-hidden')
+          const textEl = overlay.querySelector('.ct-text')
+          if (textEl) textEl.textContent = 'MOMENTS'
+          master.play(0)
+          master.eventCallback('onComplete', () => {
+            animIsRunning = false
+            animHasPlayed = true
+            transitionPlayed.current = true
+            overlay.classList.add('ct-hidden')
+            window.lenis?.start()
+            if (transitionTrigger) {
+               transitionTrigger.animHasPlayed = true
+               transitionTrigger.animIsRunning = false
+            }
+          })
+        }
+
+        function playReverse() {
+          if (animIsRunning || !animHasPlayed) return
+          animIsRunning = true
+          if (window.lenis) window.lenis.stop()
+          overlay.classList.remove('ct-hidden')
+          const textEl = overlay.querySelector('.ct-text')
+          if (textEl) textEl.textContent = 'PUNCH LINES'
+          master.reverse()
+          master.eventCallback('onReverseComplete', () => {
+            animIsRunning = false
+            animHasPlayed = false
+            transitionPlayed.current = false
+            overlay.classList.add('ct-hidden')
+            window.lenis?.start()
+            if (transitionTrigger) {
+               transitionTrigger.animHasPlayed = false
+               transitionTrigger.animIsRunning = false
+            }
+          })
+        }
+
+        playReverseFunc = playReverse
+        window.addEventListener('triggerReverse', playReverseFunc)
+
         transitionTrigger = ScrollTrigger.create({
           trigger: sectionRef.current,
           start: 'top top',
           end: '+=100%',
           pin: true,
           pinSpacing: true,
+          onEnter: () => playForward(),
           onUpdate: (self) => {
-            // Forward Play: Triggered as soon as we enter the pin going down
-            if (self.direction === 1 && self.progress > 0 && self.progress < 0.1 && master.progress() === 0) {
-              if (window.lenis) window.lenis.stop()
-              overlay.classList.remove('ct-hidden')
-              
-              const textEl = overlay.querySelector('.ct-text')
-              if (textEl) textEl.textContent = 'MOMENTS'
-
-              master.play()
-              master.eventCallback("onComplete", () => {
-                transitionPlayed.current = true
-                overlay.classList.add('ct-hidden')
-                window.lenis?.start()
-              })
-            }
-            // Reverse Play: Triggered as we are about to leave the pin going up
-            else if (self.direction === -1 && self.progress < 0.1 && self.progress > 0 && master.progress() === 1) {
-              if (window.lenis) window.lenis.stop()
-              overlay.classList.remove('ct-hidden')
-
-              const textEl = overlay.querySelector('.ct-text')
-              if (textEl) textEl.textContent = 'PUNCH LINES'
-
-              master.reverse()
-              master.eventCallback("onReverseComplete", () => {
-                transitionPlayed.current = false
-                window.lenis?.start()
-              })
+            if (self.direction === -1 && self.progress < 0.05 && animHasPlayed && !animIsRunning) {
+              playReverse()
             }
           },
+          onLeaveBack: () => {
+            if (animHasPlayed && !animIsRunning) {
+              if (sectionRef.current) window.scrollTo({ top: sectionRef.current.offsetTop, behavior: 'instant' })
+              playReverse()
+            }
+          },
+          onEnterBack: () => {
+            if (!animHasPlayed && !animIsRunning) playForward()
+          },
+          onLeave: () => {
+            if (!animHasPlayed && !animIsRunning) {
+              master.progress(1, false)
+              animHasPlayed = true
+              transitionPlayed.current = true
+              overlay.classList.add('ct-hidden')
+              if (carouselContent) gsap.set(carouselContent, { opacity: 1, scale: 1 })
+            }
+          }
         })
+        // Attach flags to trigger for handleHardLock access
+        transitionTrigger.animHasPlayed = false
+        transitionTrigger.animIsRunning = false
       }
 
       const TOTAL = 10; const ANGLE = 360 / TOTAL
@@ -357,11 +408,9 @@ export default function CategoriesCarousel() {
 
       dimmer.onclick = unfocusCard
 
-      // Carousel ticker
       let carouselTickerActive = false
       function carouselTick() {
         if (!carouselTickerActive) return
-        // Auto-rotation remains ON even in full-screen interaction mode to keep it looking alive
         if (!isInteracting && !isFocused) targetRotation += autoRotationSpeed * currentDirection
         rotationValue += (targetRotation - rotationValue) * 0.08
         cards.forEach((card, i) => { gsap.set(card, { rotationY: (i * ANGLE) + rotationValue }) })
@@ -372,8 +421,8 @@ export default function CategoriesCarousel() {
       const sectionEl = sectionRef.current
       if (sectionEl) carouselObs.observe(sectionEl)
 
-      window.addEventListener('resize', updateRadius)
-      updateRadius()
+      const resizeHandler = () => updateRadius()
+      window.addEventListener('resize', resizeHandler)
 
       let interactionTimeout
       const viewportEl = document.querySelector('.viewport')
@@ -389,28 +438,19 @@ export default function CategoriesCarousel() {
         sliderObserver.disable()
       }
 
-      // Interact/Exit buttons
       const interactBtn = document.getElementById('interact-btn')
       const exitBtn = document.getElementById('exit-btn')
       let isFullscreen = false
       const handleInteract = () => {
         if (isFullscreen) return; isFullscreen = true
-
-        // Force the browser to physically snap the section to perfectly fill the screen
-        if (window.lenis && sectionRef.current) {
-          window.lenis.scrollTo(sectionRef.current, { immediate: true, force: true })
-        }
-
+        if (window.lenis && sectionRef.current) window.lenis.scrollTo(sectionRef.current, { immediate: true, force: true })
         viewportEl?.classList.add('fullscreen')
         document.getElementById('page-dim-blur')?.classList.add('visible')
         document.body.style.overflow = 'hidden'
-        window.lenis?.stop() // Lock the main page entirely
-        sliderObserver?.enable()
+        window.lenis?.stop(); sliderObserver?.enable()
         exitBtn?.classList.add('visible')
         if (interactBtn) interactBtn.style.display = 'none'
         gsap.to(stage, { scale: 1.02, duration: 0.5, ease: 'power2.out', yoyo: true, repeat: 1 })
-
-        // Stop drifting and gracefully snap the nearest card precisely to the center
         snapToGrid()
       }
       const handleExit = () => {
@@ -418,44 +458,34 @@ export default function CategoriesCarousel() {
         viewportEl?.classList.remove('fullscreen')
         document.getElementById('page-dim-blur')?.classList.remove('visible')
         document.body.style.overflow = ''
-        window.lenis?.start() // Release the page scroll
-        sliderObserver?.disable()
+        window.lenis?.start(); sliderObserver?.disable()
         exitBtn?.classList.remove('visible')
         if (interactBtn) interactBtn.style.display = 'inline-block'
       }
       interactBtn?.addEventListener('click', handleInteract)
       exitBtn?.addEventListener('click', handleExit)
 
-      // Allow power users to exit using the ESC key natively
       const handleKeyDown = (e) => { if (e.key === 'Escape' && isFullscreen) handleExit() }
       window.addEventListener('keydown', handleKeyDown)
 
       function snapToGrid() { if (isFocused) return; targetRotation = Math.round(targetRotation / ANGLE) * ANGLE }
 
-      // Gentle float
       const floatTween = gsap.to(stage, { y: '-=10', duration: 3, repeat: -1, yoyo: true, ease: 'sine.inOut' })
-
-      // Scroll entry animations
       const scrollFrom = gsap.from(cards, {
         scrollTrigger: { trigger: sectionRef.current, start: 'top 80%' },
-        y: 300,
-        z: -850,
-        rotationX: 35,
-        opacity: 0,
-        stagger: 0.1,
-        duration: 1.5,
-        ease: 'back.out(1.2)'
+        y: 300, z: -850, rotationX: 35, opacity: 0, stagger: 0.1, duration: 1.5, ease: 'back.out(1.2)'
       })
-
-      const resizeHandler = () => { updateRadius() }
-      window.addEventListener('resize', resizeHandler)
 
       return () => {
         gsap.ticker.remove(carouselTick)
         carouselObs.disconnect()
         floatTween.kill()
         transitionTrigger?.kill()
-        window.removeEventListener('resize', updateRadius)
+        if (playReverseFunc) window.removeEventListener('triggerReverse', playReverseFunc)
+        if (sectionRef.current) {
+          sectionRef.current.removeEventListener('wheel', handleHardLock)
+          sectionRef.current.removeEventListener('touchmove', handleHardLock)
+        }
         window.removeEventListener('resize', resizeHandler)
         window.removeEventListener('mousemove', mouseMoveHandler)
         window.removeEventListener('keydown', handleKeyDown)
@@ -468,11 +498,8 @@ export default function CategoriesCarousel() {
         if (dimmer) dimmer.onclick = null
         stage.replaceChildren()
       }
-    }, sectionRef) // End of gsap.context
-
-    return () => {
-      ctx.revert()
-    }
+    }, sectionRef)
+    return () => ctx.revert()
   }, [])
 
   return (
@@ -483,17 +510,11 @@ export default function CategoriesCarousel() {
             <div key={i} className={`ct-block ct-block-${i + 1}`} />
           ))}
         </div>
-        <div className="ct-text-wrapper">
-          <div className="ct-text">MOMENTS</div>
-        </div>
+        <div className="ct-text-wrapper"><div className="ct-text">MOMENTS</div></div>
       </div>
-
-      {/* ── Carousel Content ── */}
       <div className="carousel-content-wrapper" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
-        {/* Massive atmospheric neon orbs providing spatial depth behind the monolith */}
         <div className="ambient-glow ambient-glow-1"></div>
         <div className="ambient-glow ambient-glow-2"></div>
-        {/* The Ultimate Premium Background: Static Vertical Monolith */}
         <div className="bg-monolith">MOMENTS</div>
         <div id="dynamic-bg"></div>
         <div id="dimmer"></div>

@@ -52,11 +52,11 @@ export const AuthProvider = ({ children }) => {
         if (!user) return
         const userRef = doc(db, 'users', user.uid)
         await setDoc(userRef, {
-            uid:         user.uid,
+            uid: user.uid,
             displayName: user.displayName || '',
-            email:       user.email || '',
-            photoURL:    user.photoURL || '',
-            updatedAt:   serverTimestamp(),
+            email: user.email || '',
+            photoURL: user.photoURL || '',
+            updatedAt: serverTimestamp(),
         }, { merge: true }) // merge:true — won't overwrite existing fields like createdAt
     }
 
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
                 try {
                     const res = await getFavorites()
                     if (res && res.favorites) setFavorites(res.favorites)
-                } catch(e) {
+                } catch (e) {
                     console.error("Error fetching favorites", e)
                 }
             } else {

@@ -78,7 +78,7 @@ export default function DotGrid({
     // Use Math.ceil and add 1 extra row/col to guarantee it completely overshoots the viewport
     const cols = Math.ceil(width / cell) + 1
     const rows = Math.ceil(height / cell) + 1
-    
+
     // Start strictly at the 0 boundary (plus dotSize/2 to prevent clipping)
     const startX = dotSize / 2
     const startY = dotSize / 2

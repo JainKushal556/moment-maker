@@ -55,15 +55,14 @@ export const NavProvider = ({ children }) => {
         }
 
         const transition = transitionRef.current
-        const shouldSkip = nextView === 'landing'
 
-        if (!transition || shouldSkip) {
+        if (!transition) {
             setCurrentView(nextView)
             return
         }
 
         isTransitioning.current = true
-        
+
         // playPromise resolves at the midpoint of the SVG animation
         transition.play(nextView).then(() => {
             setCurrentView(nextView)
@@ -73,7 +72,7 @@ export const NavProvider = ({ children }) => {
     }, [currentView])
 
     return (
-        <ViewContext.Provider value={[currentView, navigateTo, selectedTemplate, setSelectedTemplate, templateCustomization, setTemplateCustomization, transitionRef, sharedMomentId, setSharedMomentId, editingMomentId, setEditingMomentId, selectedIntroId, setSelectedIntroId]}>
+        <ViewContext.Provider value={[currentView, navigateTo, selectedTemplate, setSelectedTemplate, templateCustomization, setTemplateCustomization, transitionRef, sharedMomentId, setSharedMomentId, editingMomentId, setEditingMomentId, selectedIntroId, setSelectedIntroId, setCurrentView]}>
             <NavbarColorContext.Provider value={[navColor, setNavColor]}>
                 <NavbarContext.Provider value={[navOpen, setNavOpen]}>
                     {children}

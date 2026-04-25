@@ -20,20 +20,20 @@ const FullScreenNav = ({ requireAuth }) => {
 
 
     const [navOpen, setNavOpen] = useContext(NavbarContext)
-    const [, setCurrentView] = useContext(ViewContext)
+    const [currentView, navigateTo, , , , , , , , , , , , setCurrentView] = useContext(ViewContext)
     const { currentUser } = useAuth()
 
     // Build the master timeline once
     useGSAP(() => {
-        const tl = gsap.timeline({ 
-            paused: true, 
+        const tl = gsap.timeline({
+            paused: true,
             defaults: { overwrite: "auto" },
             onReverseComplete: () => {
                 // Fully hide the nav element after reverse so it can't block anything
                 gsap.set('.fullscreennav', { display: 'none' })
             }
         })
-        
+
         tl.to('.fullscreennav', {
             display: 'block'
         })
@@ -88,33 +88,33 @@ const FullScreenNav = ({ requireAuth }) => {
     }, [])
 
     const closeNavAndSwitch = (nextView) => {
-        // Switch view immediately so the new page renders behind the closing nav
-        // The nav reverse animation plays on top and reveals the new page as it exits
-        setCurrentView(nextView)
+        // Use transition-aware navigation
+        navigateTo(nextView)
         setNavOpen(false)
     }
 
     const handleHomeAction = () => {
         if (window.lenis) window.lenis.start()
-        
-        // Immediate scroll and state switch
+
+        // Start closing the nav immediately
         setNavOpen(false)
-        
-        // Use a small timeout to ensure Lenis has restarted and navigation is clearing
+
+        // Wait a tiny bit before swapping the view so the nav animation starts first
+        // This prevents a sudden jump behind the static nav
         setTimeout(() => {
             setCurrentView('landing')
             if (window.lenis) {
                 window.lenis.scrollTo(0, { immediate: true, force: true })
             }
             window.scrollTo(0, 0)
-        }, 100)
+        }, 120)
     }
 
     // Navigation items with their view actions
     const navItems = [
-        { 
-            title: "Home", 
-            label: "Return Home", 
+        {
+            title: "Home",
+            label: "Return Home",
             action: handleHomeAction
         },
         { title: "Categories", label: "Explore Categories", action: () => { closeNavAndSwitch('categories') } },
@@ -148,10 +148,10 @@ const FullScreenNav = ({ requireAuth }) => {
                     <div className='stairing h-0 w-1/5 bg-[#050508]'></div>
                 </div>
             </div>
-            
+
             {/* Scrollable area for the links and footer */}
             <div ref={fullNavLinksRef} className='relative h-full overflow-y-auto overflow-x-hidden flex flex-col no-scrollbar'>
-                
+
                 <div className="navlink opacity-0 flex w-full justify-end lg:p-8 p-4 items-start pt-8 pointer-events-none shrink-0">
                     <div onClick={() => {
                         if (viewSwitchTimeoutRef.current) clearTimeout(viewSwitchTimeoutRef.current)
@@ -189,7 +189,7 @@ const FullScreenNav = ({ requireAuth }) => {
                 <div className='nav-footer opacity-0 translate-y-5 flex lg:flex-row flex-col justify-between items-start lg:items-end w-full lg:p-12 p-6 shrink-0 gap-8'>
                     <div className='flex flex-col gap-2'>
                         <h4 className='text-white/50 text-sm font-semibold uppercase tracking-widest'>Our Office</h4>
-                        <p className='text-lg'>123 Cinematic Blvd.<br/>Los Angeles, CA 90028</p>
+                        <p className='text-lg'>123 Cinematic Blvd.<br />Los Angeles, CA 90028</p>
                     </div>
                     <div className='flex flex-col gap-2'>
                         <h4 className='text-white/50 text-sm font-semibold uppercase tracking-widest'>Get In Touch</h4>

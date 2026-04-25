@@ -14,10 +14,10 @@ export default function EditorView() {
   const { currentUser, openAuthModal } = useAuth()
   const [isSharing, setIsSharing] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
-  
+
   // New States for Intro
   const [step, setStep] = useState(0) // 0: Intro Selection, 1: Moment Edit
-  
+
   const [customization, setCustomization] = useState({
     recipientName: '',
     message: '',
@@ -72,108 +72,108 @@ export default function EditorView() {
 
     setSaveStatus('saving')
     try {
-        await updateMoment(editingMomentId, {
-            templateId: selectedTemplate.id,
-            title: selectedTemplate.title,
-            status: 'shared',
-            customization: customization,
-            introId: selectedIntroId,
-            senderName: currentUser?.displayName || currentUser?.email?.split('@')[0] || "Someone Special"
-        })
-        setSharedMomentId(editingMomentId)
-        setSaveStatus('saved')
-        navigateTo('share')
+      await updateMoment(editingMomentId, {
+        templateId: selectedTemplate.id,
+        title: selectedTemplate.title,
+        status: 'shared',
+        customization: customization,
+        introId: selectedIntroId,
+        senderName: currentUser?.displayName || currentUser?.email?.split('@')[0] || "Someone Special"
+      })
+      setSharedMomentId(editingMomentId)
+      setSaveStatus('saved')
+      navigateTo('share')
     } catch (error) {
-        console.error("Failed to share moment:", error)
-        alert("Could not create share link. Please try again.")
-        setSaveStatus('saved')
+      console.error("Failed to share moment:", error)
+      alert("Could not create share link. Please try again.")
+      setSaveStatus('saved')
     }
   }
 
   const handleSave = async () => {
     if (!currentUser) {
-        openAuthModal()
-        return
+      openAuthModal()
+      return
     }
 
     if (!selectedTemplate) return
 
     setSaveStatus('saving')
     try {
-        // 1. Prepare customization (strictly following schema)
-        const schemaKeys = selectedTemplate.schema.map(f => f.stateKey)
-        const filteredCustomization = {}
-        
-        // Only keep keys that are in the schema
-        schemaKeys.forEach(key => {
-            if (customization[key] !== undefined) {
-                filteredCustomization[key] = customization[key]
+      // 1. Prepare customization (strictly following schema)
+      const schemaKeys = selectedTemplate.schema.map(f => f.stateKey)
+      const filteredCustomization = {}
+
+      // Only keep keys that are in the schema
+      schemaKeys.forEach(key => {
+        if (customization[key] !== undefined) {
+          filteredCustomization[key] = customization[key]
+        }
+      })
+
+      const token = await getFirebaseToken()
+
+      // Scan for base64 images and upload them in the filtered data
+      for (const key in filteredCustomization) {
+        const value = filteredCustomization[key]
+
+        if (Array.isArray(value)) {
+          const newArray = [...value]
+          let changed = false
+          for (let i = 0; i < newArray.length; i++) {
+            if (typeof newArray[i] === 'string' && newArray[i].startsWith('data:image')) {
+              const file = base64ToFile(newArray[i], `image_${i}.jpg`)
+              const url = await uploadImage(file, token)
+              newArray[i] = url
+              changed = true
             }
-        })
-
-        const token = await getFirebaseToken()
-
-        // Scan for base64 images and upload them in the filtered data
-        for (const key in filteredCustomization) {
-            const value = filteredCustomization[key]
-            
-            if (Array.isArray(value)) {
-                const newArray = [...value]
-                let changed = false
-                for (let i = 0; i < newArray.length; i++) {
-                    if (typeof newArray[i] === 'string' && newArray[i].startsWith('data:image')) {
-                        const file = base64ToFile(newArray[i], `image_${i}.jpg`)
-                        const url = await uploadImage(file, token)
-                        newArray[i] = url
-                        changed = true
-                    }
-                }
-                if (changed) filteredCustomization[key] = newArray
-            } 
-            else if (typeof value === 'string' && value.startsWith('data:image')) {
-                const file = base64ToFile(value, 'image.jpg')
-                const url = await uploadImage(file, token)
-                filteredCustomization[key] = url
-            }
+          }
+          if (changed) filteredCustomization[key] = newArray
         }
-
-        // 2. Prepare payload
-        const momentData = {
-            templateId: selectedTemplate.id,
-            customization: filteredCustomization,
-            status: 'draft',
-            title: selectedTemplate.title,
-            introId: selectedIntroId,
-            senderName: currentUser?.displayName || currentUser?.email?.split('@')[0] || "Someone Special"
+        else if (typeof value === 'string' && value.startsWith('data:image')) {
+          const file = base64ToFile(value, 'image.jpg')
+          const url = await uploadImage(file, token)
+          filteredCustomization[key] = url
         }
+      }
 
-        // 3. Save or Update in database
-        let savedMoment
-        if (editingMomentId) {
-            savedMoment = await updateMoment(editingMomentId, momentData)
-        } else {
-            savedMoment = await saveMoment(momentData)
-            if (savedMoment?.id) {
-                setEditingMomentId(savedMoment.id)
-            }
-        }
+      // 2. Prepare payload
+      const momentData = {
+        templateId: selectedTemplate.id,
+        customization: filteredCustomization,
+        status: 'draft',
+        title: selectedTemplate.title,
+        introId: selectedIntroId,
+        senderName: currentUser?.displayName || currentUser?.email?.split('@')[0] || "Someone Special"
+      }
 
-        // 4. Update local state
-        if (setTemplateCustomization) {
-            setTemplateCustomization(prev => ({ ...prev, [selectedTemplate.id]: filteredCustomization }))
+      // 3. Save or Update in database
+      let savedMoment
+      if (editingMomentId) {
+        savedMoment = await updateMoment(editingMomentId, momentData)
+      } else {
+        savedMoment = await saveMoment(momentData)
+        if (savedMoment?.id) {
+          setEditingMomentId(savedMoment.id)
         }
-        setCustomization(filteredCustomization)
-        setSaveStatus('saved')
-        
-        // Force a re-render of the LivePreviewer
-        setRefreshKey(prev => prev + 1)
-        
-        return true // Success
+      }
+
+      // 4. Update local state
+      if (setTemplateCustomization) {
+        setTemplateCustomization(prev => ({ ...prev, [selectedTemplate.id]: filteredCustomization }))
+      }
+      setCustomization(filteredCustomization)
+      setSaveStatus('saved')
+
+      // Force a re-render of the LivePreviewer
+      setRefreshKey(prev => prev + 1)
+
+      return true // Success
     } catch (error) {
-        console.error("Failed to save moment:", error)
-        setSaveStatus('idle')
-        alert("Something went wrong! Save failed. Please try again.")
-        return false // Failed
+      console.error("Failed to save moment:", error)
+      setSaveStatus('idle')
+      alert("Something went wrong! Save failed. Please try again.")
+      return false // Failed
     }
   }
 
@@ -183,12 +183,12 @@ export default function EditorView() {
   return (
     <div className="editor-container animate-in fade-in duration-700">
       <EditorHeader />
-      
+
       <main className="editor-main">
-        <DynamicFormBuilder 
+        <DynamicFormBuilder
           template={selectedTemplate}
-          customization={customization} 
-          onUpdate={handleUpdate} 
+          customization={customization}
+          onUpdate={handleUpdate}
           onSave={handleSave}
           onShare={handleShare}
           saveStatus={saveStatus}
@@ -196,10 +196,10 @@ export default function EditorView() {
           selectedIntroId={selectedIntroId}
           setSelectedIntroId={setSelectedIntroId}
         />
-        
-        <LivePreviewer 
-          template={selectedTemplate} 
-          customization={customization} 
+
+        <LivePreviewer
+          template={selectedTemplate}
+          customization={customization}
           refreshKey={refreshKey}
           introId={selectedIntroId}
           senderName={currentUser?.displayName || currentUser?.email?.split('@')[0]}

@@ -22,6 +22,7 @@ const SvgTransition = forwardRef(function SvgTransition(_, ref) {
         preview: ['#6E44FF', '#d59fdfff'],
         editor: ['#ff3d6a', '#d5ababff'],
         share: ['#39e6d0', '#88e7d3ff'],
+        about: ['#ff3d6a', '#d5ababff'],
     }
 
     const play = contextSafe((targetView) => {

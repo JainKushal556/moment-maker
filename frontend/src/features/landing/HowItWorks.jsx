@@ -97,7 +97,7 @@ export default function HowItWorks() {
 
     let animRAF; let isAnimating = false
     let lastActiveIdx = -1
-    const zones = [{ start: 0, end: 0.25, recedeEnd: 0.40 }, { start: 0.25, end: 0.55, recedeEnd: 0.70 }, { start: 0.55, end: 1.0, recedeEnd: 1.0 }]
+    const zones = [{ start: 0, end: 0.25, recedeEnd: 0.40 }, { start: 0.25, end: 0.55, recedeEnd: 0.70 }, { start: 0.55, end: 1.5, recedeEnd: 1.5 }]
 
     let cachedScrollProgress = 0
     const scrollHandler = () => {

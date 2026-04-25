@@ -13,7 +13,7 @@ export default function LivePreviewer({ template, customization, refreshKey, int
     const [iframeScale, setIframeScale] = useState(1)
     const frameRef = useRef(null)
     const [internalRefreshKey, setInternalRefreshKey] = useState(0)
-    
+
     // Intro Playback State
     const [showIntro, setShowIntro] = useState(false)
     const introConfig = useMemo(() => introId ? getIntroById(introId) : null, [introId])
@@ -52,7 +52,7 @@ export default function LivePreviewer({ template, customization, refreshKey, int
 
     useEffect(() => {
         if (!iframeContainerRef.current) return;
-        
+
         const observer = new ResizeObserver((entries) => {
             for (let entry of entries) {
                 let baseWidth = 1280;
@@ -61,7 +61,7 @@ export default function LivePreviewer({ template, customization, refreshKey, int
                 setIframeScale(entry.contentRect.width / baseWidth);
             }
         });
-        
+
         observer.observe(iframeContainerRef.current);
         return () => observer.disconnect();
     }, [device]);
@@ -98,9 +98,9 @@ export default function LivePreviewer({ template, customization, refreshKey, int
                 }
             case 'desktop':
             default:
-                return { 
+                return {
                     width: '90%', maxWidth: '1000px', borderRadius: '16px', display: 'flex', flexDirection: 'column',
-                    boxShadow: '0 30px 80px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.08)' 
+                    boxShadow: '0 30px 80px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.08)'
                 }
         }
     }
@@ -136,9 +136,9 @@ export default function LivePreviewer({ template, customization, refreshKey, int
 
             <div className="absolute top-6 right-6 flex flex-col items-center gap-2 p-2 bg-[#1a1a1a]/95 backdrop-blur-2xl border border-white/10 rounded-2xl z-50 shadow-2xl">
                 {[
-                    { id: 'desktop', label: 'Desktop', icon: <><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></> },
-                    { id: 'tablet', label: 'Tablet', icon: <><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></> },
-                    { id: 'mobile', label: 'Phone', icon: <><rect width="12" height="20" x="6" y="2" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></> }
+                    { id: 'desktop', label: 'Desktop', icon: <><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></> },
+                    { id: 'tablet', label: 'Tablet', icon: <><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></> },
+                    { id: 'mobile', label: 'Phone', icon: <><rect width="12" height="20" x="6" y="2" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></> }
                 ].map(d => (
                     <button
                         key={d.id}
@@ -159,9 +159,9 @@ export default function LivePreviewer({ template, customization, refreshKey, int
                         <div className="browser-dot" style={{ background: '#27c93f' }} />
                     </div>
                     <div className="browser-address relative">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="mr-2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="mr-2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                         momentcrafter.app/v/moment
-                        <button 
+                        <button
                             onClick={handleManualRefresh}
                             className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white/80 hover:text-white transition-all active:scale-90 z-20"
                             title="Refresh Preview"
@@ -174,9 +174,9 @@ export default function LivePreviewer({ template, customization, refreshKey, int
                 <div className="browser-content bg-black relative overflow-hidden flex-1" ref={iframeContainerRef} style={getContentAspectStyle()}>
                     {showIntro && IntroComp ? (
                         <div className="absolute inset-0 z-50 bg-black">
-                            <IntroComp 
+                            <IntroComp
                                 key={internalRefreshKey}
-                                senderName={senderName || "Your Name"} 
+                                senderName={senderName || "Your Name"}
                                 onFinish={() => setShowIntro(false)}
                             />
                         </div>
@@ -187,9 +187,9 @@ export default function LivePreviewer({ template, customization, refreshKey, int
                             src={getIframeSrc()}
                             title="Preview"
                             className="bg-black border-0 absolute top-0 left-0"
-                            style={{ 
-                                width: `${iWidth}px`, 
-                                height: `${iHeight}px`, 
+                            style={{
+                                width: `${iWidth}px`,
+                                height: `${iHeight}px`,
                                 transform: `scale(${iframeScale})`,
                                 transformOrigin: 'top left'
                             }}

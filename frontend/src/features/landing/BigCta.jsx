@@ -100,13 +100,13 @@ export default function BigCta() {
         </p>
 
         <div className="big-cta__actions">
-          <button 
+          <button
             className="big-cta__btn"
             onClick={() => navigateTo('categories')}
           >
             Start Creating
           </button>
-          <button 
+          <button
             onClick={() => navigateTo('categories')}
             className="big-cta__link"
           >

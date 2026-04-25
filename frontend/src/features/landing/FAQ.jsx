@@ -54,9 +54,17 @@ export default function FAQ() {
         const parent = pill.closest('.faq-also-item')
         if (!parent) return
         const answer = parent.querySelector('.faq-also-answer')
-        if (!answer || !answer.classList.contains('is-open')) return
-        gsap.killTweensOf(answer); gsap.set(answer, { scale: 0, opacity: 0 })
-        answer.style.display = 'none'; answer.classList.remove('is-open')
+        const wrapper = parent.querySelector('.faq-also-answer-wrapper')
+        if (!answer || !wrapper || !answer.classList.contains('is-open')) return
+        
+        gsap.killTweensOf(answer)
+        gsap.killTweensOf(wrapper)
+        
+        gsap.to(answer, { scale: 0, opacity: 0, duration: 0.5, ease: 'power3.inOut' })
+        gsap.to(wrapper, { height: 0, duration: 0.5, ease: 'power3.inOut', onComplete: () => {
+            answer.style.display = 'none'
+            answer.classList.remove('is-open')
+        }})
       }
 
 
@@ -98,24 +106,38 @@ export default function FAQ() {
                 onClick={(e) => {
                   const parent = e.currentTarget.closest('.faq-also-item')
                   const answer = parent?.querySelector('.faq-also-answer')
-                  if (!answer) return
+                  const wrapper = parent?.querySelector('.faq-also-answer-wrapper')
+                  if (!answer || !wrapper) return
                   const isOpen = answer.classList.contains('is-open')
                   if (isOpen) {
-                    gsap.to(answer, { scale: 0, opacity: 0, duration: 0.5, ease: 'power3.in', onComplete: () => { answer.style.display = 'none'; answer.classList.remove('is-open') } })
+                    gsap.to(answer, { scale: 0, opacity: 0, duration: 0.5, ease: 'power3.inOut' })
+                    gsap.to(wrapper, { height: 0, duration: 0.5, ease: 'power3.inOut', onComplete: () => { 
+                      answer.style.display = 'none'; 
+                      answer.classList.remove('is-open') 
+                    }})
                   } else {
-                    answer.style.display = 'block'; answer.classList.add('is-open')
-                    gsap.fromTo(answer, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: 'power3.out' })
+                    answer.style.display = 'block'; 
+                    answer.classList.add('is-open')
+                    
+                    gsap.set(wrapper, { height: 'auto' })
+                    const targetHeight = wrapper.offsetHeight
+                    gsap.set(wrapper, { height: 0 })
+                    
+                    gsap.to(wrapper, { height: targetHeight, duration: 0.5, ease: 'power3.out', onComplete: () => { gsap.set(wrapper, { height: 'auto' }) } })
+                    gsap.fromTo(answer, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'power3.out' })
                   }
                 }}
               >
                 {item.question}
               </div>
-              <div className="faq-also-answer">
-                {item.answer}
-                <div className="faq-answer-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                    <path d="M9 18l6-6-6-6" />
-                  </svg>
+              <div className="faq-also-answer-wrapper" style={{ height: 0, display: 'flex', flexDirection: 'column', width: '100%' }}>
+                <div className="faq-also-answer">
+                  {item.answer}
+                  <div className="faq-answer-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
