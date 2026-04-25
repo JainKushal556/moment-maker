@@ -61,9 +61,9 @@ const BentoCard = ({ category, templateCount, onClick }) => {
     // Strict mobile layout mapping from user diagram (only for screens < 768px)
     const getMobileSpans = (id) => {
         switch (id) {
-            case 'thank-you': return 'col-span-1 row-span-2'; // Tall Left
-            case 'friendship': return 'col-span-1 row-span-1'; // Small Right Top
-            case 'miss-you': return 'col-span-1 row-span-1'; // Small Right Bottom
+            case 'thank-you': return 'col-span-2 row-span-1'; // Wide Full (Top)
+            case 'friendship': return 'col-span-1 row-span-1'; // Small Left (Below Thank You)
+            case 'miss-you': return 'col-span-1 row-span-1'; // Small Right (Below Thank You)
             case 'proposal': return 'col-span-2 row-span-1'; // Wide Full
             case 'confession': return 'col-span-1 row-span-1'; // Small Left
             case 'birthday': return 'col-span-1 row-span-1'; // Small Right
