@@ -149,6 +149,16 @@ body {
     backface-visibility: hidden;
 }
 
+.title-proposal-celebration {
+    font-size: clamp(1.8rem, 8vw, 2.2rem) !important;
+}
+
+@media (min-width: 768px) {
+    .title-proposal-celebration {
+        font-size: clamp(0.9rem, 2vw, 1.35rem) !important;
+    }
+}
+
 .bento-card::after {
     content: '';
     position: absolute;

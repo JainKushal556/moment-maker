@@ -65,7 +65,7 @@
 }
 
 .tp-device-switcher {
-    display: flex;
+    display: none;
     align-items: center;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -73,6 +73,12 @@
     border-radius: 50px;
     padding: 4px;
     gap: 4px;
+}
+
+@media (min-width: 768px) {
+    .tp-device-switcher {
+        display: flex;
+    }
 }
 
 .tp-device-btn {
@@ -177,7 +183,7 @@
 
 .tp-card-wrapper.view-desktop { max-width: min(1050px, 105vh); }
 .tp-card-wrapper.view-tablet { max-width: min(600px, 80vh); }
-.tp-card-wrapper.view-mobile { max-width: min(350px, 70vh); }
+.tp-card-wrapper.view-mobile { max-width: min(440px, 85vh); }
 
 .tp-card-inner {
     background: rgba(255, 255, 255, 0.03);
@@ -439,6 +445,10 @@
     .tp-nav-meta {
         display: none;
     }
+    .tp-content-main {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
     .tp-card-wrapper {
         margin-top: 1rem;
     }
@@ -449,9 +459,19 @@
     .tp-card-glass {
         border-radius: 20px;
     }
-    .tp-info-section {
-        margin-top: 2rem;
-        gap: 2rem;
+    .tp-info-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+    .tp-touch-card-mini {
+        border-left: none;
+        padding-left: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 1.5rem;
+        width: 100%;
+        justify-content: flex-start;
     }
     .tp-actions-pills {
         flex-direction: column;
@@ -462,4 +482,13 @@
         width: 100%;
         justify-content: center;
     }
+}
+
+@keyframes toast-progress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+.animate-toast-progress {
+    animation: toast-progress 4s linear forwards;
 }
