@@ -1,4 +1,4 @@
-import React, { useRef, useContext } from "react";
+import React, { useRef, useContext, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/all";
 import { useGSAP } from "@gsap/react";
@@ -190,20 +190,20 @@ export default function AboutUs() {
       });
     }
 
-    // Team Grid Staggered Reveal
-    gsap.from(".team-member", {
-      scrollTrigger: {
-        trigger: ".team-grid",
-        start: "top 90%",
-        end: "bottom 80%",
-        toggleActions: "play none none reverse"
-      },
-      y: 80,
-      opacity: 0,
-      stagger: 0.2,
-      duration: 1.5,
-      ease: "power4.out"
-    });
+    // Team Grid Staggered Reveal — disabled (.team-member class removed from DOM)
+    // gsap.from(".team-member", {
+    //   scrollTrigger: {
+    //     trigger: ".team-grid",
+    //     start: "top 90%",
+    //     end: "bottom 80%",
+    //     toggleActions: "play none none reverse"
+    //   },
+    //   y: 80,
+    //   opacity: 0,
+    //   stagger: 0.2,
+    //   duration: 1.5,
+    //   ease: "power4.out"
+    // });
 
     // Magnetic Buttons
     gsap.utils.toArray(".magnetic-btn").forEach((btn) => {
@@ -250,6 +250,16 @@ export default function AboutUs() {
     ScrollTrigger.refresh();
 
   }, { scope: containerRef });
+
+  // Force reflow and layout recalculation on mount for proper hydration
+  useEffect(() => {
+    // Trigger layout recalculation
+    if (containerRef.current) {
+      containerRef.current.offsetHeight;
+    }
+    // Refresh ScrollTrigger after DOM is ready
+    ScrollTrigger.refresh();
+  }, []);
 
   return (
     <div ref={containerRef} className="bg-[#020204] bg-linear-to-br from-[#0a0c14] via-[#020204] to-[#050508] text-white selection:bg-sun-gold selection:text-cyan-500 relative">
