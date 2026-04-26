@@ -83,7 +83,10 @@ function AppContent() {
 
       document.body.style.overflow = ''
       if (currentView === 'editor' || currentView === 'share' || currentView === 'preview') {
-        document.body.style.overflow = 'hidden';
+        // Only lock overflow on desktop. Let mobile scroll naturally.
+        if (window.innerWidth > 768) {
+          document.body.style.overflow = 'hidden';
+        }
         // Destroy Lenis so mouse wheel works natively in these views
         if (window.lenis) {
           window.lenis.destroy()

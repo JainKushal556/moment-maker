@@ -26,28 +26,30 @@ const Navbar = () => {
     })
 
     return (
-        <div ref={navWrapperRef} className='z-100 flex fixed top-0 w-full items-start justify-end pointer-events-none mix-blend-difference'>
+        <div ref={navWrapperRef} className='z-100 fixed inset-x-0 top-0 pointer-events-none mix-blend-difference'>
 
             {/* Raw Text Menu Button */}
-            <div className='lg:p-8 p-4 pointer-events-auto'>
-                <div
+            <div className='absolute right-4 top-0.5 lg:right-8 lg:top-1 pointer-events-auto'>
+                <button
+                    type="button"
+                    aria-label="Open menu"
                     id="nav-menu-button"
                     onClick={() => setNavOpen(true)}
-                    className='group h-14 lg:h-16 relative cursor-pointer flex items-center justify-center transition-all duration-300 ease-out'
+                    className='group h-10 lg:h-12 relative cursor-pointer flex items-center justify-center transition-all duration-300 ease-out'
                 >
                     <div className='relative flex items-center justify-center gap-5 pointer-events-none'>
-                        <span className="text-white font-inter tracking-[0.25em] uppercase text-sm lg:text-base font-bold opacity-90 group-hover:opacity-100 transition-opacity">
+                        <span className="text-white font-inter leading-none tracking-[0.25em] uppercase text-sm lg:text-base font-bold opacity-90 group-hover:opacity-100 transition-opacity">
                             Menu
                         </span>
 
                         {/* Elegant 3-line hamburger - slightly larger */}
-                        <div className='flex flex-col items-end gap-[6px] mt-px'>
+                        <div className='flex flex-col items-end gap-[6px]'>
                             <div className="w-6 h-[2.5px] bg-white transition-all duration-300 group-hover:w-8"></div>
                             <div className="w-4 h-[2.5px] bg-white transition-all duration-300 group-hover:w-8"></div>
                             <div className="w-5 h-[2.5px] bg-white transition-all duration-300 group-hover:w-8"></div>
                         </div>
                     </div>
-                </div>
+                </button>
             </div>
 
         </div>

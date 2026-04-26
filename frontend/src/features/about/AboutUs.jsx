@@ -120,7 +120,7 @@ export default function AboutUs() {
         trigger: ".story-section",
         start: "top top",
         end: "+=100%",
-        pin: true,
+        pin: window.innerWidth >= 768,
         scrub: 1
       },
       scale: 1.1,
@@ -265,7 +265,7 @@ export default function AboutUs() {
     <div ref={containerRef} className="bg-[#020204] bg-linear-to-br from-[#0a0c14] via-[#020204] to-[#050508] text-white selection:bg-sun-gold selection:text-cyan-500 relative">
 
       {/* --- PRE-HEADER NAVIGATION --- */}
-      <div className="w-full h-12 flex items-center px-8 md:px-16 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-150">
+      <div className="w-full h-12 flex items-center px-4 sm:px-6 md:px-16 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-150">
         <button
           onClick={() => navigateTo('landing')}
           className="group flex items-center gap-3 text-white/40 hover:text-white transition-colors pointer-events-auto"
@@ -291,9 +291,9 @@ export default function AboutUs() {
       </div>
 
       {/* --- HERO --- */}
-      <section className="hero-section relative min-h-screen flex items-center px-6 md:px-12 pt-24 overflow-hidden">
-        <div className="hero-parallax absolute top-1/4 -left-20 w-96 h-96 bg-love-gradient opacity-10 blur-[120px] rounded-full pointer-events-none"></div>
-        <div className="hero-parallax absolute bottom-1/4 -right-20 w-96 h-96 bg-sun-gold opacity-5 blur-[120px] rounded-full pointer-events-none"></div>
+      <section className="hero-section relative min-h-[100svh] sm:min-h-screen flex items-center px-4 sm:px-6 md:px-12 pt-20 sm:pt-24 pb-16 sm:pb-0 overflow-hidden">
+        <div className="hero-parallax absolute top-1/4 -left-24 sm:-left-20 w-56 h-56 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-love-gradient opacity-10 blur-[90px] md:blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="hero-parallax absolute bottom-1/4 -right-24 sm:-right-20 w-56 h-56 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-sun-gold opacity-5 blur-[90px] md:blur-[120px] rounded-full pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto w-full relative z-10">
           <div className="hero-text inline-block mb-4">
@@ -302,7 +302,7 @@ export default function AboutUs() {
             </span>
           </div>
 
-          <h1 className="font-montserrat font-black uppercase tracking-tighter fluid-h1 mb-12 hero-text">
+          <h1 className="font-montserrat font-black uppercase tracking-tighter fluid-h1 mb-8 sm:mb-12 hero-text break-words">
             WE MAKE<br />
             <span className="text-transparent bg-clip-text bg-linear-to-r from-pink-500 to-violet-500 italic font-playfair lowercase inline-block">moments&nbsp;&nbsp;</span><br />
             <span className="text-transparent block leading-[0.8]" style={{ WebkitTextStroke: '1px var(--sun-gold)' }}>
@@ -310,53 +310,66 @@ export default function AboutUs() {
             </span>
           </h1>
 
-          <div className="grid md:grid-cols-2 gap-24 items-end hero-text">
-            <p className="text-2xl md:text-5xl font-playfair leading-[1.1] text-white/90">
+          <div className="grid md:grid-cols-2 gap-8 sm:gap-12 md:gap-24 items-start md:items-end hero-text">
+            <p className="text-lg sm:text-2xl md:text-5xl font-playfair leading-[1.1] text-white/90 max-w-[14ch] sm:max-w-none">
               We are three friends building digital artifacts that make memories permanent.
             </p>
 
-            <div className="space-y-6">
-              <p className="text-white/40 text-xl leading-relaxed max-w-md">
+            <div className="space-y-4 sm:space-y-6">
+              <p className="text-white/40 text-sm sm:text-lg md:text-xl leading-relaxed max-w-md">
                 No templates. No shortcuts. Only intentional design and clean systems built for the long haul.
               </p>
-              <button
-                onClick={() => navigateTo('categories')}
-                className="magnetic-btn relative px-16 py-8 bg-white/5 backdrop-blur-xl border border-sun-gold/40 text-sun-gold font-montserrat font-black uppercase tracking-[0.4em] text-xs hover:text-white transition-colors duration-500 group overflow-hidden rounded-sm"
-              >
-                <span className="relative z-10">Start Creating</span>
-                <div className="absolute inset-0 bg-linear-to-r from-pink-500 to-violet-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
-              </button>
+              <div className="flex flex-col items-start gap-8">
+                <button
+                  onClick={() => navigateTo('categories')}
+                  className="magnetic-btn relative w-full sm:w-auto px-6 sm:px-12 md:px-16 py-4 sm:py-6 md:py-8 bg-white/5 backdrop-blur-xl border border-sun-gold/40 text-sun-gold font-montserrat font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[10px] sm:text-xs hover:text-white transition-colors duration-500 group overflow-hidden rounded-sm"
+                >
+                  <span className="relative z-10">Start Creating</span>
+                  <div className="absolute inset-0 bg-linear-to-r from-pink-500 to-violet-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
+                </button>
+
+                {/* Mobile Scroll Indicator - only visible on small screens */}
+                <div className="flex md:hidden flex-col items-center gap-2 opacity-40 self-center">
+                  <div className="w-px h-10 bg-linear-to-b from-white/90 to-transparent"></div>
+                  <span className="text-[9px] uppercase tracking-[0.2em] text-white/70 [writing-mode:vertical-rl] [text-orientation:mixed]">
+                    Scroll
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 opacity-30">
-          <div className="w-px h-12 bg-linear-to-b from-white to-transparent"></div>
-          <span className="text-[10px] uppercase tracking-[0.4em] rotate-90 origin-left translate-x-1">Scroll</span>
+        {/* Desktop Scroll Indicator - only visible on md and up */}
+        <div className="hidden md:flex absolute bottom-12 left-1/2 -translate-x-1/2 flex-col items-center gap-4 opacity-30 z-20 pointer-events-none">
+          <div className="w-px h-12 bg-linear-to-b from-white/90 to-transparent"></div>
+          <span className="text-[10px] uppercase tracking-[0.25em] text-white/70 [writing-mode:vertical-rl] [text-orientation:mixed]">
+            Scroll
+          </span>
         </div>
       </section>
 
       {/* --- STORY / PHILOSOPHY --- */}
-      <section className="story-section py-64 px-6 md:px-12 relative overflow-hidden">
+      <section className="story-section py-24 sm:py-32 md:py-64 px-4 sm:px-6 md:px-12 relative overflow-hidden">
         <div className="story-content max-w-4xl mx-auto text-center relative z-10">
-          <h2 className="section-header text-5xl md:text-8xl font-montserrat font-black uppercase mb-12 leading-none">
+          <h2 className="section-header text-4xl sm:text-5xl md:text-8xl font-montserrat font-black uppercase mb-8 sm:mb-12 leading-none">
             WHY WE <span className="italic font-playfair lowercase text-sun-gold">exist</span>
           </h2>
 
-          <p className="section-header text-xl md:text-4xl font-playfair text-white/70 leading-relaxed italic">
+          <p className="section-header text-lg sm:text-xl md:text-4xl font-playfair text-white/70 leading-relaxed italic max-w-[20ch] sm:max-w-none mx-auto">
             "The internet is full of noise. We build things that actually feel something.
             Not just websites — digital time capsules that stay."
           </p>
 
-          <div className="stats-container section-header mt-16 grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="stats-container section-header mt-10 sm:mt-16 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 md:gap-8">
             {[
               { label: "Moments Created", value: "12K+" },
               { label: "Countries Reached", value: "85+" },
               { label: "Design Awards", value: "14" },
               { label: "Lines of Love", value: "∞" }
             ].map((stat, i) => (
-              <div key={i} className="stat-item flex flex-col items-center p-8 bg-white/3 backdrop-blur-md border border-white/10 rounded-2xl hover:bg-white/5 transition-colors">
-                <span className="text-sun-gold font-montserrat font-black text-2xl md:text-4xl mb-1">{stat.value}</span>
+              <div key={i} className="stat-item flex flex-col items-center p-4 sm:p-6 md:p-8 bg-white/3 backdrop-blur-md border border-white/10 rounded-2xl hover:bg-white/5 transition-colors">
+                <span className="text-sun-gold font-montserrat font-black text-xl sm:text-2xl md:text-4xl mb-1">{stat.value}</span>
                 <span className="text-white/30 text-[10px] uppercase tracking-widest font-bold">{stat.label}</span>
               </div>
             ))}
@@ -365,7 +378,7 @@ export default function AboutUs() {
       </section>
 
       {/* --- PROCESS --- */}
-      <section id="process-section" ref={processSectionRef} className="process-section relative pt-24 pb-64 bg-[#0a0a12] overflow-hidden">
+      <section id="process-section" ref={processSectionRef} className="process-section relative pt-20 sm:pt-24 pb-24 sm:pb-32 md:pb-64 bg-[#0a0a12] overflow-hidden">
 
         {/* Central Story Line */}
         <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 hidden md:block">
@@ -373,19 +386,19 @@ export default function AboutUs() {
         </div>
 
         {/* THE PROCESS Heading Overlay - Left corner, above images */}
-        <div className="absolute left-6 md:left-12 top-12 md:top-8 pointer-events-none z-30">
-          <h2 className="text-4xl md:text-8xl font-black font-montserrat uppercase leading-none opacity-100 text-left">
+        <div className="absolute left-4 sm:left-6 md:left-12 top-8 sm:top-12 md:top-8 pointer-events-none z-30">
+          <h2 className="text-3xl sm:text-4xl md:text-8xl font-black font-montserrat uppercase leading-none opacity-100 text-left">
             THE<br /><span className="text-transparent" style={{ WebkitTextStroke: '1px var(--sun-gold)' }}>PROCESS</span>
           </h2>
         </div>
 
-        <div ref={processContainerRef} className="process-container space-y-32 md:space-y-[200px] relative z-10 pt-48 md:pt-64">
+        <div ref={processContainerRef} className="process-container space-y-20 sm:space-y-24 md:space-y-[200px] relative z-10 pt-28 sm:pt-36 md:pt-64">
           {stages.map((stage, i) => (
             <div key={i} className="process-item relative">
-              <div className={`flex flex-col ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-start justify-end gap-16 md:gap-32 max-w-7xl mx-auto px-6 md:px-12`}>
+              <div className={`flex flex-col ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-start justify-end gap-8 sm:gap-10 md:gap-32 max-w-7xl mx-auto px-4 sm:px-6 md:px-12`}>
 
                 {/* Image Side */}
-                <div className="process-image-container w-full md:w-2/5 max-w-sm relative aspect-[4/3] overflow-hidden group rounded-2xl border border-white/5">
+                <div className={`process-image-container w-full md:w-2/5 max-w-none sm:max-w-sm relative aspect-[4/3] overflow-hidden group rounded-2xl border border-white/5 ${i === 1 ? 'md:translate-x-14 lg:translate-x-20' : ''}`}>
                   <img
                     src={stage.image}
                     alt={stage.title}
@@ -395,19 +408,19 @@ export default function AboutUs() {
                 </div>
 
                 {/* Content Side */}
-                <div className="process-content-wrapper w-full md:w-1/2 space-y-6 md:ml-auto md:pl-12">
+                <div className={`process-content-wrapper w-full md:w-1/2 space-y-4 sm:space-y-6 md:ml-auto md:pl-12 ${i % 2 !== 0 ? 'md:-ml-12 lg:-ml-20' : ''}`}>
                   <div className="relative">
-                    <span className="text-8xl md:text-[10rem] font-montserrat font-black text-white/5 absolute -top-12 -left-8 pointer-events-none">{stage.number}</span>
+                    <span className="text-6xl sm:text-7xl md:text-[10rem] font-montserrat font-black text-white/5 absolute -top-8 sm:-top-10 md:-top-12 -left-2 sm:-left-4 md:-left-8 pointer-events-none">{stage.number}</span>
                     <div className="relative z-10">
                       <p className="text-sun-gold font-montserrat font-black uppercase tracking-[0.25em] text-xs mb-3 italic opacity-80">
                         {stage.subtitle}
                       </p>
-                      <h3 className="text-4xl md:text-6xl font-montserrat font-black uppercase tracking-tighter leading-[0.9] wrap-break-word">
+                      <h3 className="max-w-[12ch] sm:max-w-none text-3xl sm:text-4xl md:text-6xl font-montserrat font-black uppercase tracking-tighter leading-[0.9] break-normal">
                         {stage.title}
                       </h3>
                     </div>
                   </div>
-                  <p className="text-xl md:text-2xl text-white/60 font-playfair leading-relaxed max-w-lg">
+                  <p className="text-lg sm:text-xl md:text-2xl text-white/60 font-playfair leading-relaxed max-w-lg">
                     {stage.description}
                   </p>
                   <div className="h-px w-24 bg-sun-gold"></div>
@@ -422,36 +435,36 @@ export default function AboutUs() {
       </section>
 
       {/* --- TEAM --- */}
-      <section className="py-48 md:py-64 px-6 md:px-12 bg-gradient-to-r from-transparent via-white/5 to-transparent relative z-10">
+      <section className="py-24 sm:py-32 md:py-64 px-4 sm:px-6 md:px-12 bg-gradient-to-r from-transparent via-white/5 to-transparent relative z-10">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16 md:mb-24 gap-6 sm:gap-8">
             <div>
-              <h2 className="section-header text-6xl md:text-9xl font-black font-montserrat uppercase leading-none">
+              <h2 className="section-header text-4xl sm:text-5xl md:text-9xl font-black font-montserrat uppercase leading-none">
                 Meet the <span className="text-sun-gold italic font-playfair normal-case">Makers</span>
               </h2>
-              <p className="section-header text-white/40 text-2xl font-playfair italic mt-4">
+              <p className="section-header text-white/40 text-lg sm:text-2xl font-playfair italic mt-3 sm:mt-4">
                 Founding Brothers.
               </p>
             </div>
-            <p className="section-header text-white/50 text-xl font-playfair max-w-md italic">
+            <p className="section-header text-white/50 text-base sm:text-xl font-playfair max-w-md italic">
               Three friends, one mission: to make the digital world feel a little more human.
             </p>
           </div>
 
-          <div className="team-grid grid md:grid-cols-3 gap-16 lg:gap-32">
+          <div className="team-grid grid md:grid-cols-3 gap-8 sm:gap-12 lg:gap-32">
             {team.map((member, i) => (
-              <div key={i} className="group border-l-2 border-white/10 pl-8 py-12 hover:border-sun-gold transition-all duration-500 hover:pl-12">
+              <div key={i} className="group border-l-2 border-white/10 pl-5 sm:pl-8 py-8 sm:py-12 hover:border-sun-gold transition-all duration-500 sm:hover:pl-12">
                 <p className="text-sun-gold uppercase tracking-[0.3em] text-[10px] font-black font-montserrat mb-4">
                   {member.role}
                 </p>
                 
                 {/* mb-6 ekhane name ar bio er majhe gap toiri korbe */}
-                <h4 className="text-4xl md:text-5xl font-montserrat font-black uppercase tracking-tight mb-[50px] leading-[1.1] group-hover:translate-x-2 transition-transform duration-500 whitespace-nowrap">
+                <h4 className="text-3xl sm:text-4xl md:text-5xl font-montserrat font-black uppercase tracking-tight mb-6 sm:mb-[50px] leading-[1.1] sm:group-hover:translate-x-2 transition-transform duration-500 break-words md:whitespace-nowrap">
                   {member.name}
                 </h4>
                 
                 {/* mb-8 ekhane bio ar icons er majhe gap toiri korbe */}
-                <p className="text-white/50 text-lg font-playfair italic leading-relaxed mb-8 max-w-xs">
+                <p className="text-white/50 text-base sm:text-lg font-playfair italic leading-relaxed mb-6 sm:mb-8 max-w-none sm:max-w-xs">
                   "{member.bio}"
                 </p>
                 
@@ -471,18 +484,18 @@ export default function AboutUs() {
       </section>
 
       {/* --- CTA --- */}
-      <section className="py-64 px-6 md:px-12 text-center relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[25vw] font-black font-montserrat text-white/2 uppercase pointer-events-none select-none whitespace-nowrap">
+      <section className="py-24 sm:py-32 md:py-64 px-4 sm:px-6 md:px-12 text-center relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[32vw] sm:text-[25vw] font-black font-montserrat text-white/2 uppercase pointer-events-none select-none whitespace-nowrap">
           CREATE NOW
         </div>
 
         <div className="relative z-10">
-          <h2 className="section-header text-5xl md:text-8xl font-montserrat font-black uppercase mb-12 max-w-5xl mx-auto leading-tight">
+          <h2 className="section-header text-4xl sm:text-5xl md:text-8xl font-montserrat font-black uppercase mb-8 sm:mb-12 max-w-5xl mx-auto leading-tight">
             READY TO MAKE A <span className="text-sun-gold">MOMENT?</span>
           </h2>
           <button
             onClick={() => navigateTo('categories')}
-            className="section-header magnetic-btn relative overflow-hidden px-12 py-6 bg-white text-black font-montserrat font-black uppercase tracking-widest text-lg hover:text-white transition-colors duration-500 group"
+            className="section-header magnetic-btn relative overflow-hidden w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-6 bg-white text-black font-montserrat font-black uppercase tracking-[0.2em] sm:tracking-widest text-sm sm:text-lg hover:text-white transition-colors duration-500 group"
           >
             <span className="relative z-10">Get Started</span>
             <div className="absolute inset-0 bg-sun-gold translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>

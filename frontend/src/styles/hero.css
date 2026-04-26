@@ -1,43 +1,9 @@
 /* =========================================
-   Reset & Base
+   Hero Layout
+   Keep this file scoped to the landing hero so
+   lazy-loaded CSS cannot leak into other views.
    ========================================= */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Inter', sans-serif;
-    background: #111;
-    color: #f0f0f0;
-    overflow-x: hidden;
-}
-
-
-/* =========================================
-   Noise / Grain Overlay
-   ========================================= */
-.noise-overlay {
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    z-index: 9999;
-    pointer-events: none;
-    opacity: 0.04;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    background-repeat: repeat;
-    background-size: 256px 256px;
-}
-
-
-
-/* =========================================
-   Main Sections
-   ========================================= */
-section {
+.hero {
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -46,14 +12,10 @@ section {
     color: #f0f0f0;
     overflow: hidden;
     position: relative;
-}
-
-.hero {
     flex-direction: column;
     background-color: transparent;
     transition: background-color 0.5s ease;
     z-index: 1;
-    position: relative;
     contain: layout style;
 }
 
@@ -216,16 +178,11 @@ section {
         margin-left: 6px;
     }
 
-    .header-block h2 {
-        font-size: 7vw;
-    }
-
     .icon {
         width: clamp(80px, 20vw, 160px);
     }
 
-    h1,
-    h2 {
+    .hero .header-block h2 {
         font-size: 8vw;
         text-align: center;
     }
@@ -877,4 +834,3 @@ section {
         top: -105px;
     }
 }
-

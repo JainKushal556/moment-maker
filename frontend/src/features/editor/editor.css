@@ -901,10 +901,13 @@
 /* =========================================
    Responsive
    ========================================= */
+/* =========================================
+   Responsive & Mobile Experience
+   ========================================= */
 @media (max-width: 1200px) {
     .editor-panel {
-        width: 320px;
-        min-width: 320px;
+        width: 340px;
+        min-width: 340px;
     }
 }
 
@@ -914,22 +917,143 @@
     }
 }
 
-@media (max-width: 640px) {
-    .preview-choice-card {
-        padding: 22px;
+@media (max-width: 768px) {
+    html, body {
+        overflow: visible !important;
+        height: auto !important;
+        scrollbar-width: none !important; /* Firefox */
+        -ms-overflow-style: none !important; /* IE/Edge */
     }
 
-    .preview-choice-copy h1 {
-        font-size: clamp(28px, 10vw, 40px);
+    html::-webkit-scrollbar, 
+    body::-webkit-scrollbar,
+    .editor-container::-webkit-scrollbar {
+        display: none !important; /* Chrome/Safari */
     }
 
-    .preview-choice-actions {
-        grid-template-columns: 1fr;
+    .editor-container {
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow: visible !important;
+        display: block !important;
+        position: relative !important;
+        scrollbar-width: none !important;
     }
 
-    .preview-choice-btn {
-        padding: 16px 18px;
-        border-radius: 18px;
+    .editor-header {
+        position: sticky !important;
+        top: 0;
+        z-index: 1000;
+        height: 50px;
+        background: var(--ep-bg);
+        border-bottom: 1px solid var(--ep-border);
+    }
+
+    .editor-main {
+        flex-direction: column-reverse !important;
+        display: flex !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    /* Sticky Live Preview Area */
+    .editor-preview-area {
+        position: sticky !important;
+        top: 50px; /* Below sticky header */
+        z-index: 900;
+        height: 280px !important;
+        width: 100% !important;
+        background: #000;
+        border-bottom: 1px solid var(--ep-border);
+        padding: 0 !important;
+    }
+
+    .preview-device-frame {
+        width: 100% !important;
+        aspect-ratio: 16 / 9 !important;
+        height: auto !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        background: #000;
+    }
+
+    .browser-header {
+        display: none !important;
+    }
+
+    /* Scrollable Editor Studio Settings */
+    .editor-panel {
+        width: 100% !important;
+        height: auto !important;
+        background: var(--ep-bg);
+        overflow: visible !important;
+        display: block !important;
+    }
+
+    .editor-panel-scroll {
+        padding: 24px 18px;
+        padding-bottom: 40px;
+        height: auto !important;
+        overflow: visible !important;
+        display: block !important;
+    }
+
+    .ep-header {
+        margin-bottom: 24px;
+        padding-top: 5px;
+    }
+
+    .ep-title {
+        font-size: 22px;
+    }
+
+    /* Action Bar (At the end of content) */
+    .ep-action-bar {
+        position: relative !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        padding: 24px 0 !important;
+        background: transparent !important;
+        border-top: 1px solid var(--ep-border);
+        margin-top: 32px;
+        flex-direction: column !important;
+        gap: 12px !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        z-index: 10;
+    }
+
+    .ep-action-status {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+
+    .ep-status-text {
+        font-size: 11px;
+    }
+
+    .ep-save-btn, .ep-share-btn {
+        width: 100% !important;
+        height: 58px !important;
+        border-radius: 16px !important;
+        font-size: 14px !important;
+        font-weight: 900 !important;
+        gap: 10px !important;
+    }
+
+    .ep-save-btn svg, .ep-share-btn svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+
+    .intro-options-scroll::-webkit-scrollbar {
+        display: none !important;
+    }
+    .intro-options-scroll {
+        scrollbar-width: none !important;
     }
 }
 

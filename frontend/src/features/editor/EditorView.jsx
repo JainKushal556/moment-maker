@@ -182,7 +182,7 @@ export default function EditorView() {
 
   return (
     <div className="editor-container animate-in fade-in duration-700">
-      <EditorHeader />
+      <EditorHeader onRefresh={() => setRefreshKey(prev => prev + 1)} />
 
       <main className="editor-main">
         <DynamicFormBuilder

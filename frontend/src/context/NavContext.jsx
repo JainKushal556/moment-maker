@@ -7,6 +7,7 @@ export const ViewContext = createContext(null)
 const SAFE_VIEWS_TO_RESTORE = ['landing', 'categories', 'moments', 'about', 'share']
 const getInitialView = () => {
     const saved = sessionStorage.getItem('currentView')
+    if (saved === 'editor') return 'moments'
     if (saved && SAFE_VIEWS_TO_RESTORE.includes(saved)) {
         return saved
     }
@@ -33,7 +34,7 @@ export const NavProvider = ({ children }) => {
 
     // Save safe views to sessionStorage whenever they change
     useEffect(() => {
-        if (SAFE_VIEWS_TO_RESTORE.includes(currentView)) {
+        if (SAFE_VIEWS_TO_RESTORE.includes(currentView) || currentView === 'editor') {
             sessionStorage.setItem('currentView', currentView)
         }
     }, [currentView])
