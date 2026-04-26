@@ -8,6 +8,7 @@ import {
     updateProfile,
     signOut,
     sendPasswordResetEmail,
+    sendEmailVerification,
 } from 'firebase/auth'
 import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, googleProvider } from '../config/firebase'
@@ -24,6 +25,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null)
+    const [unverifiedUser, setUnverifiedUser] = useState(null)
     const [loading, setLoading] = useState(true)
     const [authModalOpen, setAuthModalOpen] = useState(false)
     const [authCallback, setAuthCallback] = useState(null)
@@ -64,6 +66,14 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
+                if (!user.emailVerified) {
+                    setUnverifiedUser(user)
+                    setCurrentUser(null)
+                    setFavorites([])
+                    setLoading(false)
+                    return
+                }
+
                 // Upsert Firestore user document on every login
                 await createUserDoc(user).catch(console.error)
                 // Fetch favorites
@@ -73,10 +83,13 @@ export const AuthProvider = ({ children }) => {
                 } catch (e) {
                     console.error("Error fetching favorites", e)
                 }
+                setCurrentUser(user)
+                setUnverifiedUser(null)
             } else {
                 setFavorites([])
+                setCurrentUser(null)
+                setUnverifiedUser(null)
             }
-            setCurrentUser(user)
             setLoading(false)
         })
         return unsubscribe
@@ -96,6 +109,7 @@ export const AuthProvider = ({ children }) => {
         if (displayName) {
             await updateProfile(result.user, { displayName })
         }
+        await sendEmailVerification(result.user)
         return result
     }
 
@@ -130,8 +144,36 @@ export const AuthProvider = ({ children }) => {
         return false
     }
 
+    const resendVerificationEmail = () => {
+        if (auth.currentUser && !auth.currentUser.emailVerified) {
+            return sendEmailVerification(auth.currentUser)
+        }
+    }
+
+    const checkEmailVerification = async () => {
+        if (auth.currentUser) {
+            await auth.currentUser.reload()
+            if (auth.currentUser.emailVerified) {
+                // If verified now, trigger the state update manually
+                setUnverifiedUser(null)
+                setCurrentUser({ ...auth.currentUser })
+                
+                await createUserDoc(auth.currentUser).catch(console.error)
+                try {
+                    const res = await getFavorites()
+                    if (res && res.favorites) setFavorites(res.favorites)
+                } catch (e) {
+                    console.error("Error fetching favorites", e)
+                }
+                return true
+            }
+        }
+        return false
+    }
+
     const value = {
         currentUser,
+        unverifiedUser,
         loading,
         authModalOpen,
         openAuthModal,
@@ -145,6 +187,8 @@ export const AuthProvider = ({ children }) => {
         getIdToken,
         favorites,
         handleToggleFavorite,
+        resendVerificationEmail,
+        checkEmailVerification,
     }
 
     // Don't render children until we know auth state, prevents flash of wrong UI

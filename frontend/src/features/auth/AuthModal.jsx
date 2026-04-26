@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import './auth.css'
 
@@ -26,8 +26,20 @@ export default function AuthModal({ onClose, onSuccess }) {
     const [error, setError] = useState('')
     const [message, setMessage] = useState('')
     const [loading, setLoading] = useState(false)
+    const [cooldown, setCooldown] = useState(0)
 
-    const { signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword } = useAuth()
+    const { 
+        signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword,
+        unverifiedUser, resendVerificationEmail, checkEmailVerification, logout
+    } = useAuth()
+
+    useEffect(() => {
+        let timer;
+        if (cooldown > 0) {
+            timer = setInterval(() => setCooldown(c => c - 1), 1000)
+        }
+        return () => clearInterval(timer)
+    }, [cooldown])
 
     const clearMessages = () => { setError(''); setMessage('') }
 
@@ -52,11 +64,17 @@ export default function AuthModal({ onClose, onSuccess }) {
         try {
             if (mode === 'signup') {
                 if (!displayName.trim()) { setError('Please enter your name.'); setLoading(false); return }
-                await signUpWithEmail(email, password, displayName.trim())
-                onSuccess?.()
+                const result = await signUpWithEmail(email, password, displayName.trim())
+                // Do not call onSuccess yet. They must verify email.
+                // The unverifiedUser state will be set via onAuthStateChanged automatically.
+                if (result.user && result.user.emailVerified) {
+                    onSuccess?.()
+                }
             } else if (mode === 'login') {
-                await signInWithEmail(email, password)
-                onSuccess?.()
+                const result = await signInWithEmail(email, password)
+                if (result.user && result.user.emailVerified) {
+                    onSuccess?.()
+                }
             } else if (mode === 'reset') {
                 await resetPassword(email)
                 setMessage('Password reset email sent! Check your inbox.')
@@ -78,6 +96,86 @@ export default function AuthModal({ onClose, onSuccess }) {
     }
 
     const switchMode = (newMode) => { clearMessages(); setMode(newMode) }
+
+    const handleResend = async () => {
+        if (cooldown > 0) return;
+        try {
+            await resendVerificationEmail()
+            clearMessages()
+            setMessage('Verification email sent! Check your inbox.')
+            setCooldown(60) // 60 seconds interval
+        } catch (err) {
+            if (err.code === 'auth/too-many-requests') {
+                setError('Too many attempts. Please wait a bit.')
+            } else {
+                setError('Failed to send verification email. Try again later.')
+            }
+        }
+    }
+
+    const handleCheckVerification = async () => {
+        clearMessages()
+        setLoading(true)
+        const isVerified = await checkEmailVerification()
+        setLoading(false)
+        if (isVerified) {
+            onSuccess?.()
+        } else {
+            setError('Email is not verified yet. Please check your inbox.')
+        }
+    }
+
+    const handleSignOut = async () => {
+        await logout()
+        setMode('signup')
+        clearMessages()
+        setCooldown(0)
+    }
+
+    if (unverifiedUser) {
+        return (
+            <div className="auth-overlay" onClick={(e) => e.target === e.currentTarget && onClose?.()}>
+                <div className={`auth-modal ${loading ? 'auth-modal--loading' : ''}`}>
+                    <div className="auth-glow" />
+                    <div className="auth-glow auth-glow--2" />
+                    <button className="auth-close" onClick={onClose} aria-label="Close">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                    </button>
+                    <div className="auth-brand">
+                        <div className="auth-brand-icon">✦</div>
+                        <span>Moment Crafter</span>
+                    </div>
+                    <div className="auth-heading">
+                        <h2>Verify your email</h2>
+                        <p style={{ marginTop: '0.5rem' }}>We've sent a verification link to<br/><strong>{unverifiedUser.email}</strong>.</p>
+                    </div>
+
+                    {error && <div className="auth-banner auth-banner--error">{error}</div>}
+                    {message && <div className="auth-banner auth-banner--success">{message}</div>}
+
+                    <div className="auth-form" style={{ marginTop: '1rem' }}>
+                        <button className="auth-submit-btn" onClick={handleCheckVerification} disabled={loading}>
+                            {loading ? <span className="auth-spinner" /> : "I've verified my email"}
+                        </button>
+                        
+                        <button 
+                            type="button" 
+                            className="auth-google-btn" 
+                            style={{marginTop: '0.75rem', justifyContent: 'center'}}
+                            onClick={handleResend} 
+                            disabled={cooldown > 0 || loading}
+                        >
+                            {cooldown > 0 ? `Resend email in ${cooldown}s` : 'Resend verification email'}
+                        </button>
+                        
+                        <button type="button" className="auth-forgot-link" style={{marginTop: '1.5rem', textAlign: 'center', width: '100%'}} onClick={handleSignOut}>
+                            Use a different account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="auth-overlay" onClick={(e) => e.target === e.currentTarget && onClose?.()}>

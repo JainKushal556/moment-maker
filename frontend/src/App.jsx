@@ -19,6 +19,8 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 
 // Auth
 import AuthModal from './features/auth/AuthModal'
+import VerifyEmail from './features/auth/VerifyEmail'
+import ResetPassword from './features/auth/ResetPassword'
 
 import PublicViewer from './features/public/PublicViewer'
 
@@ -39,6 +41,12 @@ function AppContent() {
   const { authModalOpen, closeAuthModal, onAuthSuccess, openAuthModal } = useAuth()
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('action') === 'login') {
+      openAuthModal()
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual'
     }
@@ -222,6 +230,27 @@ export default function App() {
   // Check if the URL path starts with /w/
   const path = window.location.pathname
   const momentId = path.startsWith('/w/') ? path.split('/w/')[1] : null
+
+  // Check for email verification params
+  const params = new URLSearchParams(window.location.search)
+  const mode = params.get('mode')
+  const oobCode = params.get('oobCode')
+
+  if (mode === 'verifyEmail' && oobCode) {
+    return (
+      <AuthProvider>
+        <VerifyEmail oobCode={oobCode} />
+      </AuthProvider>
+    )
+  }
+
+  if (mode === 'resetPassword' && oobCode) {
+    return (
+      <AuthProvider>
+        <ResetPassword oobCode={oobCode} />
+      </AuthProvider>
+    )
+  }
 
   // Completely bypass the main SPA if a public share link is detected
   if (momentId) {
