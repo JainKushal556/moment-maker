@@ -1,4 +1,4 @@
-import React, { useRef, useContext } from "react";
+import React, { useRef, useContext, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/all";
 import { useGSAP } from "@gsap/react";
@@ -190,20 +190,20 @@ export default function AboutUs() {
       });
     }
 
-    // Team Grid Staggered Reveal
-    gsap.from(".team-member", {
-      scrollTrigger: {
-        trigger: ".team-grid",
-        start: "top 90%",
-        end: "bottom 80%",
-        toggleActions: "play none none reverse"
-      },
-      y: 80,
-      opacity: 0,
-      stagger: 0.2,
-      duration: 1.5,
-      ease: "power4.out"
-    });
+    // Team Grid Staggered Reveal — disabled (.team-member class removed from DOM)
+    // gsap.from(".team-member", {
+    //   scrollTrigger: {
+    //     trigger: ".team-grid",
+    //     start: "top 90%",
+    //     end: "bottom 80%",
+    //     toggleActions: "play none none reverse"
+    //   },
+    //   y: 80,
+    //   opacity: 0,
+    //   stagger: 0.2,
+    //   duration: 1.5,
+    //   ease: "power4.out"
+    // });
 
     // Magnetic Buttons
     gsap.utils.toArray(".magnetic-btn").forEach((btn) => {
@@ -251,8 +251,18 @@ export default function AboutUs() {
 
   }, { scope: containerRef });
 
+  // Force reflow and layout recalculation on mount for proper hydration
+  useEffect(() => {
+    // Trigger layout recalculation
+    if (containerRef.current) {
+      containerRef.current.offsetHeight;
+    }
+    // Refresh ScrollTrigger after DOM is ready
+    ScrollTrigger.refresh();
+  }, []);
+
   return (
-    <div ref={containerRef} className="bg-[#020204] bg-linear-to-br from-[#0a0c14] via-[#020204] to-[#050508] text-white selection:bg-sun-gold selection:text-black relative">
+    <div ref={containerRef} className="bg-[#020204] bg-linear-to-br from-[#0a0c14] via-[#020204] to-[#050508] text-white selection:bg-sun-gold selection:text-cyan-500 relative">
 
       {/* --- PRE-HEADER NAVIGATION --- */}
       <div className="w-full h-12 flex items-center px-8 md:px-16 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-150">
@@ -287,14 +297,14 @@ export default function AboutUs() {
 
         <div className="max-w-7xl mx-auto w-full relative z-10">
           <div className="hero-text inline-block mb-4">
-            <span className="px-4 py-1 border border-white/20 rounded-full text-xs font-montserrat uppercase tracking-widest text-white/60">
+            <span className="px-4 py-3 border border-white/20 rounded-full text-xs font-montserrat uppercase tracking-widest text-white/60">
               The Creators
             </span>
           </div>
 
           <h1 className="font-montserrat font-black uppercase tracking-tighter fluid-h1 mb-12 hero-text">
             WE MAKE<br />
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-pink-500 to-violet-500 italic font-playfair lowercase">moments</span><br />
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-pink-500 to-violet-500 italic font-playfair lowercase inline-block">moments&nbsp;&nbsp;</span><br />
             <span className="text-transparent block leading-[0.8]" style={{ WebkitTextStroke: '1px var(--sun-gold)' }}>
               LIVE FOREVER
             </span>
@@ -311,10 +321,10 @@ export default function AboutUs() {
               </p>
               <button
                 onClick={() => navigateTo('categories')}
-                className="group flex items-center gap-4 text-sun-gold font-montserrat font-bold uppercase tracking-widest text-sm"
+                className="magnetic-btn relative px-16 py-8 bg-white/5 backdrop-blur-xl border border-sun-gold/40 text-sun-gold font-montserrat font-black uppercase tracking-[0.4em] text-xs hover:text-white transition-colors duration-500 group overflow-hidden rounded-sm"
               >
-                Start Creating
-                <span className="w-8 h-px bg-sun-gold group-hover:w-12 transition-all duration-300"></span>
+                <span className="relative z-10">Start Creating</span>
+                <div className="absolute inset-0 bg-linear-to-r from-pink-500 to-violet-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
               </button>
             </div>
           </div>
@@ -355,25 +365,27 @@ export default function AboutUs() {
       </section>
 
       {/* --- PROCESS --- */}
-      <section id="process-section" ref={processSectionRef} className="process-section relative py-32 md:py-64 bg-[#0a0a12] overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 mb-32 relative z-20">
-          <h2 className="text-4xl md:text-8xl font-black font-montserrat uppercase leading-none opacity-20">
-            THE <span className="text-transparent" style={{ WebkitTextStroke: '1px var(--sun-gold)' }}>PROCESS</span>
-          </h2>
-        </div>
+      <section id="process-section" ref={processSectionRef} className="process-section relative pt-24 pb-64 bg-[#0a0a12] overflow-hidden">
 
         {/* Central Story Line */}
         <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 hidden md:block">
           <div className="process-glow-line absolute top-0 left-0 w-full bg-linear-to-b from-sun-gold via-pink-500 to-transparent h-0 shadow-[0_0_20px_rgba(255,215,0,0.3)]"></div>
         </div>
 
-        <div ref={processContainerRef} className="process-container space-y-32 md:space-y-64 relative z-10">
+        {/* THE PROCESS Heading Overlay - Left corner, above images */}
+        <div className="absolute left-6 md:left-12 top-12 md:top-8 pointer-events-none z-30">
+          <h2 className="text-4xl md:text-8xl font-black font-montserrat uppercase leading-none opacity-100 text-left">
+            THE<br /><span className="text-transparent" style={{ WebkitTextStroke: '1px var(--sun-gold)' }}>PROCESS</span>
+          </h2>
+        </div>
+
+        <div ref={processContainerRef} className="process-container space-y-32 md:space-y-[200px] relative z-10 pt-48 md:pt-64">
           {stages.map((stage, i) => (
             <div key={i} className="process-item relative">
-              <div className={`flex flex-col ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-16 md:gap-32 max-w-7xl mx-auto px-6 md:px-12`}>
+              <div className={`flex flex-col ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-start justify-end gap-16 md:gap-32 max-w-7xl mx-auto px-6 md:px-12`}>
 
                 {/* Image Side */}
-                <div className="process-image-container w-full md:w-1/2 relative aspect-square overflow-hidden group rounded-2xl border border-white/5">
+                <div className="process-image-container w-full md:w-2/5 max-w-sm relative aspect-[4/3] overflow-hidden group rounded-2xl border border-white/5">
                   <img
                     src={stage.image}
                     alt={stage.title}
@@ -383,7 +395,7 @@ export default function AboutUs() {
                 </div>
 
                 {/* Content Side */}
-                <div className="process-content-wrapper w-full md:w-1/2 space-y-6">
+                <div className="process-content-wrapper w-full md:w-1/2 space-y-6 md:ml-auto md:pl-12">
                   <div className="relative">
                     <span className="text-8xl md:text-[10rem] font-montserrat font-black text-white/5 absolute -top-12 -left-8 pointer-events-none">{stage.number}</span>
                     <div className="relative z-10">
@@ -410,7 +422,7 @@ export default function AboutUs() {
       </section>
 
       {/* --- TEAM --- */}
-      <section className="py-64 px-6 md:px-12 bg-linear-to-r from-transparent via-white/2 to-transparent">
+      <section className="py-48 md:py-64 px-6 md:px-12 bg-gradient-to-r from-transparent via-white/5 to-transparent relative z-10">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
             <div>
@@ -428,23 +440,33 @@ export default function AboutUs() {
 
           <div className="team-grid grid md:grid-cols-3 gap-16 lg:gap-32">
             {team.map((member, i) => (
-              <div key={i} className="team-member group border-l border-white/10 pl-8 py-12 hover:border-sun-gold transition-colors duration-500">
-                <p className="text-sun-gold uppercase tracking-[0.3em] text-[10px] font-black font-montserrat mb-4">{member.role}</p>
-                <h4 className="text-4xl md:text-5xl font-montserrat font-black uppercase tracking-tight mb-6 group-hover:translate-x-2 transition-transform duration-500">{member.name}</h4>
+              <div key={i} className="group border-l-2 border-white/10 pl-8 py-12 hover:border-sun-gold transition-all duration-500 hover:pl-12">
+                <p className="text-sun-gold uppercase tracking-[0.3em] text-[10px] font-black font-montserrat mb-4">
+                  {member.role}
+                </p>
+                
+                {/* mb-6 ekhane name ar bio er majhe gap toiri korbe */}
+                <h4 className="text-4xl md:text-5xl font-montserrat font-black uppercase tracking-tight mb-[50px] leading-[1.1] group-hover:translate-x-2 transition-transform duration-500 whitespace-nowrap">
+                  {member.name}
+                </h4>
+                
+                {/* mb-8 ekhane bio ar icons er majhe gap toiri korbe */}
                 <p className="text-white/50 text-lg font-playfair italic leading-relaxed mb-8 max-w-xs">
                   "{member.bio}"
                 </p>
+                
                 <div className="flex gap-6">
-                  <a href={member.github} target="_blank" rel="noopener noreferrer" className="magnetic-btn text-white/30 hover:text-white transition-colors">
+                  <a href={member.github} target="_blank" rel="noopener noreferrer" className="magnetic-btn text-white/30 hover:text-white hover:bg-white/5 transition-all duration-300 flex items-center justify-center w-12 h-12 rounded-full border border-white/10 hover:border-sun-gold">
                     <i className="fab fa-github text-xl"></i>
                   </a>
-                  <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="magnetic-btn text-white/30 hover:text-white transition-colors">
+                  <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="magnetic-btn text-white/30 hover:text-white hover:bg-white/5 transition-all duration-300 flex items-center justify-center w-12 h-12 rounded-full border border-white/10 hover:border-sun-gold">
                     <i className="fab fa-linkedin-in text-xl"></i>
                   </a>
                 </div>
               </div>
             ))}
           </div>
+
         </div>
       </section>
 

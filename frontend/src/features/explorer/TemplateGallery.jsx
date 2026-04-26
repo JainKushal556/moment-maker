@@ -45,17 +45,17 @@ const TemplateGallery = ({ category, onBack }) => {
             {/* Header section */}
             <div ref={headerRef} className="mb-24 md:mb-40 space-y-12 md:space-y-20">
                 <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 lg:gap-20">
-                    <div className="min-w-0">
-                        <div className="flex items-center gap-3 mb-6 md:mb-8">
-                            <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-fuchsia-400 font-black">
+                    <div className="min-w-0 flex flex-col items-start text-left">
+                        <div className="flex items-center justify-start gap-3 mb-6 md:mb-8 w-full text-left">
+                            <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-fuchsia-400 font-black text-left">
                                 {category?.tag} VIBE
                             </span>
                         </div>
-                        <h2 className="font-montserrat font-black uppercase tracking-tighter leading-[0.9] text-white"
-                            style={{ fontSize: 'clamp(3.5rem, 8vw, 8.25rem)' }}
+                        <h2 className="font-montserrat font-black uppercase tracking-tighter leading-[0.9] text-white text-left"
+                            style={{ fontSize: 'clamp(3.5rem, 8vw, 8.25rem)', textAlign: 'left' }}
                         >
                             {category?.title} <br />
-                            <span className="text-white/20 text-[42%] tracking-[0.12em] block mt-6 border-t-4 border-[#f472b6]/30 pt-6 w-fit">GALLERY</span>
+                            <span className="text-white/20 text-[42%] tracking-[0.12em] block mt-6 border-t-4 border-[#f472b6]/30 pt-6 w-fit text-left">GALLERY</span>
                         </h2>
                     </div>
 

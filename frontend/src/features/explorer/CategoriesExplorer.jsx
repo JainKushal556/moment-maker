@@ -307,33 +307,33 @@ const CategoriesExplorer = () => {
                 style={{
                     maxWidth: '1600px',
                     margin: '0 auto',
-                    paddingLeft: '32px',
-                    paddingRight: '32px',
-                    paddingTop: '96px',
+                    paddingLeft: 'clamp(20px, 5vw, 32px)',
+                    paddingRight: 'clamp(20px, 5vw, 32px)',
+                    paddingTop: 'clamp(60px, 10vw, 96px)',
                 }}
             >
                 {internalView === 'categories' ? (
                     <div style={{ paddingBottom: '10rem' }}>
                         {/* SOFT ROMANTIC HEADER */}
-                        <header ref={headerRef} className="mb-24 md:mb-40 space-y-12 md:space-y-20">
-                            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 lg:gap-20">
-                                <div className="min-w-0">
-                                    {/* Moved to top header */}
+                        <header ref={headerRef} className="mb-12 md:mb-32 lg:mb-40 w-full flex flex-col items-start text-left">
+                            <div className="flex flex-row items-end justify-between w-full text-left items-end">
+                                <div className="min-w-0 flex-1 flex flex-col items-start text-left">
                                     <h1
-                                        className="text-6xl md:text-8xl lg:text-[11rem] font-black tracking-tighter leading-[0.85] text-white"
+                                        className="text-[36px] sm:text-6xl md:text-8xl lg:text-[11rem] font-black tracking-tighter leading-[0.85] text-white text-left"
+                                        style={{ textAlign: 'left' }}
                                     >
                                         The<br />
                                         <span className="text-transparent bg-clip-text bg-linear-to-br from-fuchsia-500 via-pink-400 to-orange-400">Moments.</span>
                                     </h1>
                                 </div>
 
-                                <div className="lg:pb-4 lg:ml-auto">
-                                    <div className="flex items-stretch gap-10 max-w-[360px]">
+                                <div className="pb-1 sm:pb-4 lg:pb-6 shrink-0 ml-4 flex flex-col items-start text-left">
+                                    <div className="flex items-stretch gap-3 sm:gap-6 md:gap-10 max-w-[140px] sm:max-w-[360px] text-left">
                                         <div className="w-px bg-white/10 shrink-0" />
-                                        <div className="text-white/40 text-sm md:text-base font-medium leading-relaxed space-y-2 text-right">
-                                            <p>Pick a vibe.</p>
-                                            <p>Choose a template.</p>
-                                            <p>Share a personal moment.</p>
+                                        <div className="text-white/40 text-[9px] sm:text-[11px] md:text-sm lg:text-base font-medium leading-tight sm:leading-relaxed space-y-0.5 sm:space-y-1 md:space-y-2 text-left">
+                                            <p className="text-left">Pick a vibe.</p>
+                                            <p className="text-left">Choose a template.</p>
+                                            <p className="text-left">Share a personal moment.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -341,12 +341,12 @@ const CategoriesExplorer = () => {
                         </header>
 
                         <div style={{ height: '60px' }} className="hidden md:block" />
-                        <div style={{ height: '30px' }} className="md:hidden" />
+                        <div style={{ height: '20px' }} className="md:hidden" />
 
                         {/* Bento Grid */}
                         <div
                             ref={gridRef}
-                            className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6 md:gap-8 md:auto-rows-[300px]"
+                            className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8 auto-rows-[240px] md:auto-rows-[300px] grid-flow-dense"
                         >
                             {categories.map((cat) => {
                                 const count = templates.filter(t => t.category === cat.id).length

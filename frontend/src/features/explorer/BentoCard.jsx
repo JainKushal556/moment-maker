@@ -58,12 +58,31 @@ const BentoCard = ({ category, templateCount, onClick }) => {
         })
     }
 
-    // Grid sizing
+    // Strict mobile layout mapping from user diagram (only for screens < 768px)
+    const getMobileSpans = (id) => {
+        switch (id) {
+            case 'thank-you': return 'col-span-2 row-span-1'; // Wide Full (Top)
+            case 'friendship': return 'col-span-1 row-span-1'; // Small Left (Below Thank You)
+            case 'miss-you': return 'col-span-1 row-span-1'; // Small Right (Below Thank You)
+            case 'proposal': return 'col-span-2 row-span-1'; // Wide Full
+            case 'confession': return 'col-span-1 row-span-1'; // Small Left
+            case 'birthday': return 'col-span-1 row-span-1'; // Small Right
+            case 'celebration': return 'col-span-2 row-span-1'; // Wide Full
+            case 'sorry': return 'col-span-1 row-span-1'; // Small Left
+            case 'romantic': return 'col-span-1 row-span-1'; // Small Right
+            case 'special': return 'col-span-1 row-span-1'; // Small (Below Sorry & Romantic)
+            default: return 'col-span-1 row-span-1';
+        }
+    }
+
+    const mobileSpans = getMobileSpans(category.id);
+
+    // Grid sizing: uses strict diagram mapping for mobile, original logic for desktop
     const sizeClasses = isLarge
-        ? 'md:col-span-2 md:row-span-2 min-h-[480px] md:min-h-0'
+        ? `${mobileSpans} md:col-span-2 md:row-span-2`
         : isMedium
-            ? 'md:col-span-2 row-span-1 min-h-[260px] md:min-h-0'
-            : 'col-span-1 row-span-1 min-h-[260px] md:min-h-0'
+            ? `${mobileSpans} md:col-span-2 md:row-span-1`
+            : `${mobileSpans} md:col-span-1 md:row-span-1`
 
     return (
         <div
@@ -74,7 +93,7 @@ const BentoCard = ({ category, templateCount, onClick }) => {
             className={`bento-card group relative overflow-hidden transition-all duration-500 bg-[#0a0a12]
                 ${sizeClasses}
                 ${isComingSoon ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-[#f472b6]/50'}
-                rounded-3xl border border-white/10
+                rounded-2xl md:rounded-3xl border border-white/10
             `}
             data-category-id={category.id}
         >
@@ -97,11 +116,15 @@ const BentoCard = ({ category, templateCount, onClick }) => {
             <div 
                 ref={contentRef}
                 className="relative h-full flex flex-col justify-between z-20"
-                style={{ padding: isLarge ? '3.5rem' : '1.75rem' }}
+                style={{ 
+                    padding: isLarge 
+                        ? 'clamp(1.5rem, 5vw, 3.5rem)' 
+                        : 'clamp(1rem, 3vw, 1.75rem)' 
+                }}
             >
                 {/* Top Header */}
-                <div className="flex justify-between items-start">
-                    <div className="flex gap-3 items-center">
+                <div className="flex justify-between items-start gap-2">
+                    <div className="flex gap-2 md:gap-3 items-center">
                         <div
                             ref={iconRef}
                             className="bento-icon flex items-center justify-center text-white/60"
@@ -110,7 +133,7 @@ const BentoCard = ({ category, templateCount, onClick }) => {
                             {category.icon}
                         </div>
                         {isLarge && !isComingSoon && (
-                            <span className="font-mono text-[9px] text-[#f472b6] tracking-[0.3em] uppercase">
+                            <span className="font-mono text-[8px] md:text-[9px] text-[#f472b6] tracking-[0.2em] md:tracking-[0.3em] uppercase">
                                 FEELING: LOVELY
                             </span>
                         )}
@@ -119,11 +142,11 @@ const BentoCard = ({ category, templateCount, onClick }) => {
                     {/* Template Count / Coming Soon Tag */}
                     <div className="flex flex-col items-end gap-2">
                         {isComingSoon ? (
-                            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 bg-white/5 px-4 py-1.5 border border-white/10 backdrop-blur-md rounded-full">
+                            <span className="text-[7px] md:text-[10px] font-bold uppercase tracking-[0.15em] md:tracking-[0.3em] text-white/40 bg-white/5 px-2 md:px-4 py-1 md:py-1.5 border border-white/10 backdrop-blur-md rounded-full">
                                 COMING SOON
                             </span>
                         ) : (
-                            <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#f472b6] bg-[#f472b6]/10 px-4 py-1.5 border border-[#f472b6]/30 backdrop-blur-md rounded-full shadow-[0_0_15px_rgba(244,114,182,0.2)]">
+                            <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-[#f472b6] bg-[#f472b6]/10 px-3 md:px-4 py-1 md:py-1.5 border border-[#f472b6]/30 backdrop-blur-md rounded-full shadow-[0_0_15px_rgba(244,114,182,0.2)]">
                                 {templateCount} {templateCount === 1 ? 'MOMENT' : 'MOMENTS'}
                             </span>
                         )}
@@ -131,22 +154,30 @@ const BentoCard = ({ category, templateCount, onClick }) => {
                 </div>
 
                 {/* Bottom Body */}
-                <div>
-                    <p className="font-mono text-[10px] text-[#f472b6] uppercase tracking-[0.3em] mb-4 opacity-70">
+                <div className="w-full">
+                    <p className="font-mono text-[9px] md:text-[10px] text-[#f472b6] uppercase tracking-[0.2em] md:tracking-[0.3em] mb-2 md:mb-4 opacity-70">
                         {category.subtitle}
                     </p>
                     <h3
-                        className="font-montserrat font-black tracking-tighter text-white leading-[1] uppercase transition-colors"
+                        className={`font-montserrat font-black tracking-tighter text-white leading-[1] uppercase transition-colors break-words ${['proposal', 'celebration'].includes(category.id) ? 'title-proposal-celebration' : ''}`}
                         style={{
-                            fontSize: isLarge ? 'clamp(2.5rem, 5vw, 4.5rem)' : isMedium ? 'clamp(1.8rem, 3vw, 2.8rem)' : 'clamp(1.2rem, 2vw, 2.2rem)',
-                            marginBottom: isComingSoon ? '0.5rem' : '1.25rem'
+                            fontSize: ['proposal', 'celebration'].includes(category.id)
+                                ? undefined
+                                : isLarge 
+                                    ? 'clamp(1.8rem, 5vw, 4.5rem)' 
+                                    : isMedium 
+                                        ? 'clamp(1.3rem, 3.5vw, 2.4rem)' 
+                                        : ['miss-you', 'confession', 'special', 'romantic'].includes(category.id)
+                                            ? 'clamp(1.25rem, 5vw, 1.45rem)' 
+                                            : 'clamp(0.9rem, 2vw, 1.45rem)',
+                            marginBottom: isComingSoon ? '0.25rem' : '1rem'
                         }}
                     >
                         {category.title}
                     </h3>
                     
                     {(isLarge || isMedium) && !isComingSoon && (
-                        <div className="overflow-hidden">
+                        <div className="hidden sm:block overflow-hidden">
                             <p className="text-white/50 text-[11px] font-mono uppercase tracking-widest leading-relaxed border-l-2 border-[#f472b6]/30 pl-4 max-w-[90%] transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100">
                                 {category.desc}
                             </p>
@@ -156,6 +187,7 @@ const BentoCard = ({ category, templateCount, onClick }) => {
             </div>
         </div>
     )
+
 }
 
 export default BentoCard

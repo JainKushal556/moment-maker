@@ -1,12 +1,29 @@
 @import "tailwindcss";
 
+/* =========================================
+   Tailwind v4 Theme Registration
+   ========================================= */
+@theme {
+    --color-sun-gold: #FFD700;
+    --color-planet-blue: #4facfe;
+    --color-planet-purple: #a855f7;
+    --color-planet-pink: #f472b6;
+    --color-planet-teal: #00f2fe;
+    --color-cute-yellow: #fde047;
+    --color-dark-space: #0a0a12;
+    --color-deep-space: #050508;
+    --color-star-light: #ffffff;
+    --color-surface: rgba(255, 255, 255, 0.05);
+    --color-surface-border: rgba(255, 255, 255, 0.08);
+}
 
 /* =========================================
    Reset & Base
+   (Tailwind v4 preflight handles margin/padding reset)
    ========================================= */
-* {
-    margin: 0;
-    padding: 0;
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
@@ -147,6 +164,16 @@ body {
 .bento-card {
     will-change: transform, opacity;
     backface-visibility: hidden;
+}
+
+.title-proposal-celebration {
+    font-size: clamp(1.8rem, 8vw, 2.2rem) !important;
+}
+
+@media (min-width: 768px) {
+    .title-proposal-celebration {
+        font-size: clamp(0.9rem, 2vw, 1.35rem) !important;
+    }
 }
 
 .bento-card::after {

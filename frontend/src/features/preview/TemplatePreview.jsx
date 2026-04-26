@@ -136,10 +136,15 @@ export default function TemplatePreview() {
 
     if (currentView !== 'preview' || !selectedTemplate) return null
 
+    const [showUnlockWarning, setShowUnlockWarning] = useState(false)
+
     const handleCustomize = () => {
+        if (!hasSeenPreview) {
+            setShowUnlockWarning(true)
+            setTimeout(() => setShowUnlockWarning(false), 4000) // Auto-hide after 4s
+            return
+        }
         if (!currentUser) {
-            // User not logged in — open the auth modal.
-            // After successful login, send them straight to the editor.
             openAuthModal(() => setCurrentView('editor'))
             return
         }
@@ -172,11 +177,11 @@ export default function TemplatePreview() {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:-translate-x-1 transition-transform">
                             <polyline points="15 18 9 12 15 6" />
                         </svg>
-                        <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">Back to Explorers</span>
+                        <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">Back to Gallery</span>
                     </button>
 
                     {/* Premium Device Switcher */}
-                    <div className="tp-device-switcher">
+                    <div className="tp-device-switcher hidden md:flex mr-4 md:mr-24">
                         <button
                             className={`tp-device-btn ${deviceView === 'desktop' ? 'active' : ''}`}
                             onClick={() => setDeviceView('desktop')}
@@ -244,15 +249,10 @@ export default function TemplatePreview() {
                         <div className="tp-touch-card-mini">
                             <div className="tp-touch-thumb-mini">
                                 <img src={selectedTemplate.img} alt="" />
-                                <div className="tp-play-icon-mini">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M8 5v14l11-7z" />
-                                    </svg>
-                                </div>
                             </div>
                             <div className="tp-touch-info-mini">
                                 <strong>{selectedTemplate.title}</strong>
-                                <span>{selectedTemplate.category} Template</span>
+                                <span className="capitalize">{selectedTemplate.category}</span>
                             </div>
                         </div>
                     </div>
@@ -286,7 +286,6 @@ export default function TemplatePreview() {
                     <button
                         className={`tp-pill-btn tp-pill-primary ${!hasSeenPreview ? 'tp-btn-locked' : ''}`}
                         onClick={handleCustomize}
-                        disabled={!hasSeenPreview}
                     >
                         <span>{hasSeenPreview ? 'Customize View' : 'Explore to Unlock'}</span>
                         <div className="tp-pill-arrow">
@@ -304,6 +303,33 @@ export default function TemplatePreview() {
                     </button>
                 </div>
             </main>
+
+            {/* Unlock Warning Toast */}
+            {showUnlockWarning && (
+                <div className="fixed bottom-24 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-[480px] z-[10000]">
+                    <div className="relative overflow-hidden bg-[#1a0b2e]/80 backdrop-blur-3xl border border-white/10 p-1.5 rounded-2xl flex items-center gap-4 shadow-[0_25px_60px_rgba(0,0,0,0.6)] animate-in fade-in zoom-in-95 slide-in-from-bottom-10 duration-500">
+                        {/* Inner Glow */}
+                        <div className="absolute inset-0 bg-radial-at-tl from-fuchsia-500/10 via-transparent to-transparent pointer-events-none" />
+                        
+                        <div className="w-11 h-11 rounded-xl bg-linear-to-br from-fuchsia-600/20 to-pink-600/20 flex items-center justify-center shrink-0 border border-fuchsia-500/20 relative group">
+                            <div className="absolute inset-0 bg-fuchsia-500/20 blur-lg rounded-full animate-pulse" />
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f472b6" strokeWidth="2.5" className="relative z-10">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                        </div>
+                        
+                        <div className="flex-1 pr-4">
+                            <p className="text-white/95 text-[11px] md:text-[13px] font-bold leading-snug tracking-tight">
+                                Please watch the full preview to unlock customization ✨
+                            </p>
+                        </div>
+
+                        {/* Subtle Progress Bar */}
+                        <div className="absolute bottom-0 left-0 h-[2px] bg-linear-to-r from-fuchsia-500 to-pink-500 w-full animate-toast-progress" />
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
