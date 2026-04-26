@@ -8,6 +8,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL
  * even when the user is actually logged in (Firebase hasn't hydrated yet).
  */
 function waitForAuthUser() {
+    if (auth.currentUser) return Promise.resolve(auth.currentUser)
     return new Promise((resolve) => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             unsubscribe()

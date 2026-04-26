@@ -1,7 +1,7 @@
 import React, { useState, useMemo, forwardRef, useContext, useEffect } from 'react';
 import {
   Trash2, Sparkles, ArrowUpRight,
-  ChevronRight, Menu, LogOut, AlertTriangle
+  ChevronRight, Menu, LogOut, AlertTriangle, User, Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ViewContext } from '../../context/NavContext';
@@ -20,6 +20,15 @@ export default function MyMomentsView() {
   const [moments, setMoments] = useState([]);
   const [filter, setFilter] = useState('all');
   const [deleteTarget, setDeleteTarget] = useState(null); // State for confirmation modal
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  useEffect(() => {
+    if (showProfileMenu) {
+      const closeMenu = () => setShowProfileMenu(false);
+      window.addEventListener('click', closeMenu);
+      return () => window.removeEventListener('click', closeMenu);
+    }
+  }, [showProfileMenu]);
 
   useEffect(() => {
     if (currentUser) {
@@ -137,63 +146,109 @@ export default function MyMomentsView() {
         <div className="absolute bottom-[10%] right-[-10%] w-[50%] h-[50%] bg-orange-600/5 blur-[120px] rounded-full" />
       </div>
 
-      <nav className="sticky top-0 z-50 bg-black/20 backdrop-blur-md border-b border-white/5 h-12 flex items-center px-8 md:px-16">
+      <nav className="sticky top-0 z-50 bg-black/20 backdrop-blur-md border-b border-white/5 h-14 md:h-12 flex items-center px-4 md:px-16">
         <div className="w-full flex items-center justify-between">
-          <div className="flex items-center gap-4 md:gap-16">
-            <div className="flex items-center gap-3 md:gap-4">
-              <button
-                onClick={() => navigateTo('categories')}
-                className="group flex items-center gap-3 text-white/40 hover:text-white transition-colors"
-                aria-label="Back to categories"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:-translate-x-1 transition-transform">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-                <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">BACK TO MOMENTS</span>
-              </button>
-            </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigateTo('categories')}
+              className="group flex items-center gap-2 md:gap-3 text-white/40 hover:text-white transition-colors"
+              aria-label="Back to categories"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:-translate-x-1 transition-transform">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              <span className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold whitespace-nowrap">BACK TO MOMENTS</span>
+            </button>
           </div>
 
-          <div className="flex items-center gap-3 md:gap-6">
-            <button
-              onClick={handleLogout}
-              className="group flex items-center gap-2 text-white/40 hover:text-white transition-all"
-            >
-              <LogOut size={14} className="group-hover:translate-x-0.5 transition-transform" />
-              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.3em]">LOGOUT</span>
-            </button>
-            <button className="xl:hidden text-white/40 p-2" aria-label="Open menu">
-              <Menu size={24} />
-            </button>
+          <div className="flex items-center gap-2 md:gap-6">
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowProfileMenu(!showProfileMenu);
+                }}
+                className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all active:scale-95 overflow-hidden"
+              >
+                {currentUser?.photoURL ? (
+                  <img src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User size={18} />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {showProfileMenu && (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 z-[100] cursor-default bg-black/20 backdrop-blur-[2px]"
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      className="absolute right-0 mt-3 w-44 md:w-48 bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] z-[110] overflow-hidden"
+                    >
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigateTo('settings');
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+                      >
+                        <Settings size={14} className="group-hover:rotate-45 transition-transform duration-300" />
+                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Settings</span>
+                      </button>
+                      
+                      <div className="h-px bg-white/5 my-1 mx-2" />
+
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          handleLogout();
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all text-left group"
+                      >
+                        <LogOut size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Logout</span>
+                      </button>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </nav>
 
       <main
-        className="w-full pb-12 md:pb-24 relative z-10"
-        style={{ maxWidth: '1600px', margin: '0 auto', paddingLeft: '32px', paddingRight: '32px', paddingTop: '96px' }}
+        className="w-full max-w-[1600px] mx-auto px-6 md:px-12 pt-16 md:pt-24 pb-12 md:pb-24 relative z-10"
       >
-        <header className="mb-24 md:mb-40 space-y-12 md:space-y-20">
-          <div className="space-y-6 md:space-y-8">
-            <h1 className="text-6xl md:text-8xl lg:text-[11rem] font-black tracking-tighter leading-[0.85] text-white">
+        <header className="mb-4 md:mb-8 space-y-8 md:space-y-20">
+          <div className="flex items-end justify-between gap-4 md:gap-12">
+            <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85] text-white">
               My<br />
               <span className="text-transparent bg-clip-text bg-linear-to-br from-fuchsia-500 via-pink-400 to-orange-400">Moments.</span>
             </h1>
 
-            <div className="border-l-2 border-white/5 pl-6 py-1 max-w-xl">
-              <p className="text-white/40 text-sm md:text-base font-medium leading-relaxed">
+            <div className="border-l border-white/10 pl-4 md:pl-6 py-1 max-w-[150px] sm:max-w-xl mb-1 md:mb-6">
+              <p className="text-white/40 text-[9px] sm:text-sm md:text-base font-medium leading-tight sm:leading-relaxed">
                 Your shared wishes and saved designs, preserved in your digital studio.
-                Craft memories, not just messages.
+                <br className="sm:hidden" /> Craft memories, not just messages.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap justify-end gap-4 md:gap-8 w-full pb-2">
+          <div className="flex flex-wrap justify-center sm:justify-end gap-4 md:gap-8 w-full pb-2">
             {['all', 'drafts', 'shared', 'favorites'].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em] relative py-4 transition-all ${filter === f ? 'text-white' : 'text-white/30 hover:text-white/60'
+                className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em] relative pt-4 pb-1 transition-all ${filter === f ? 'text-white' : 'text-white/30 hover:text-white/60'
                   }`}
               >
                 {f}
@@ -208,10 +263,8 @@ export default function MyMomentsView() {
           </div>
         </header>
 
-        <div style={{ height: '60px' }} className="hidden md:block" />
-        <div style={{ height: '30px' }} className="md:hidden" />
 
-        <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="min-h-[60vh] flex items-start justify-center pt-8 md:pt-12">
           <AnimatePresence mode="popLayout">
             {filteredMoments.length > 0 ? (
               <motion.div
@@ -276,10 +329,10 @@ export default function MyMomentsView() {
                 </div>
                 <button
                   onClick={() => navigateTo('categories')}
-                  className="group relative px-16 md:px-24 py-5 md:py-6 bg-linear-to-r from-fuchsia-600 to-orange-500 text-white rounded-full text-sm md:text-base font-black uppercase tracking-wider hover:scale-105 transition-all duration-300 mx-auto inline-flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(217,70,239,0.3)] hover:shadow-[0_0_40px_rgba(217,70,239,0.6)] cursor-pointer whitespace-nowrap"
+                  className="group relative px-8 sm:px-16 md:px-24 py-5 md:py-6 bg-linear-to-r from-fuchsia-600 to-orange-500 text-white rounded-full text-[10px] sm:text-sm md:text-base font-black uppercase tracking-wider hover:scale-105 transition-all duration-300 mx-auto inline-flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(217,70,239,0.3)] hover:shadow-[0_0_40px_rgba(217,70,239,0.6)] cursor-pointer"
                 >
-                  {filter === 'all' ? 'Create Your First Moment' : 'Explore Templates'}
-                  <ArrowUpRight size={16} strokeWidth={3} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
+                  <span className="whitespace-nowrap">{filter === 'all' ? 'Create Your First Moment' : 'Explore Templates'}</span>
+                  <ArrowUpRight size={16} strokeWidth={3} className="shrink-0 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
                 </button>
               </div>
             )}

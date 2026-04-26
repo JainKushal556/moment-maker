@@ -9,9 +9,16 @@ import {
     signOut,
     sendPasswordResetEmail,
     sendEmailVerification,
+    linkWithPopup,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
+    updatePassword,
 } from 'firebase/auth'
-import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore'
-import { auth, googleProvider } from '../config/firebase'
+import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { auth, googleProvider, storage } from '../config/firebase'
+
+import { uploadImage, deleteImage } from '../services/cloudinary'
 
 const db = getFirestore()
 
@@ -52,14 +59,35 @@ export const AuthProvider = ({ children }) => {
     // Create (or update) a user profile document in Firestore
     const createUserDoc = async (user) => {
         if (!user) return
+        
+        // Find photo from providers if not on main object (important for linked accounts)
+        const googlePhoto = user.providerData?.find(p => p.providerId === 'google.com')?.photoURL
+        const photoURL = user.photoURL || googlePhoto || ''
+        
         const userRef = doc(db, 'users', user.uid)
-        await setDoc(userRef, {
+        const data = {
             uid: user.uid,
             displayName: user.displayName || '',
             email: user.email || '',
-            photoURL: user.photoURL || '',
+            photoURL: photoURL,
             updatedAt: serverTimestamp(),
-        }, { merge: true }) // merge:true — won't overwrite existing fields like createdAt
+        }
+        await setDoc(userRef, data, { merge: true })
+        return data
+    }
+
+    const mapUserObject = (user, profileData = {}) => {
+        if (!user) return null
+        return {
+            uid: user.uid,
+            email: user.email,
+            displayName: profileData.displayName || user.displayName,
+            photoURL: profileData.photoURL || user.photoURL,
+            emailVerified: user.emailVerified,
+            providerData: user.providerData,
+            getIdToken: (...args) => user.getIdToken(...args),
+            reload: (...args) => user.reload(...args),
+        }
     }
 
     // Track Firebase auth state changes globally
@@ -74,29 +102,53 @@ export const AuthProvider = ({ children }) => {
                     return
                 }
 
-                // Upsert Firestore user document on every login
-                await createUserDoc(user).catch(console.error)
-                // Fetch favorites
+                // 1. Set initial user from Auth immediately
+                setCurrentUser(mapUserObject(user))
+                setUnverifiedUser(null)
+                setLoading(false)
+
+                // 2. Sync with Firestore
                 try {
+                    const userRef = doc(db, 'users', user.uid)
+                    let docSnap = await getDoc(userRef)
+                    
+                    let profileData;
+                    if (!docSnap.exists()) {
+                        profileData = await createUserDoc(user)
+                    } else {
+                        profileData = docSnap.data()
+                    }
+
+                    // 3. Update with full merged data
+                    setCurrentUser(mapUserObject(user, profileData))
+
+                    // 4. Fetch favorites
                     const res = await getFavorites()
                     if (res && res.favorites) setFavorites(res.favorites)
                 } catch (e) {
-                    console.error("Error fetching favorites", e)
+                    console.error("Auth sync error:", e)
                 }
-                setCurrentUser(user)
-                setUnverifiedUser(null)
             } else {
                 setFavorites([])
                 setCurrentUser(null)
                 setUnverifiedUser(null)
+                setLoading(false)
             }
-            setLoading(false)
         })
         return unsubscribe
     }, [])
 
     const signInWithGoogle = () => {
         return signInWithPopup(auth, googleProvider)
+    }
+
+    const connectGoogle = async () => {
+        if (!auth.currentUser) return
+        const result = await linkWithPopup(auth.currentUser, googleProvider)
+        // Sync the updated user info (like photoURL if it was missing)
+        const profileData = await createUserDoc(result.user)
+        setCurrentUser(mapUserObject(result.user, profileData))
+        return result
     }
 
     const signInWithEmail = (email, password) => {
@@ -144,6 +196,46 @@ export const AuthProvider = ({ children }) => {
         return false
     }
 
+    const updateUserProfile = async (updates) => {
+        if (!auth.currentUser) return
+        await updateProfile(auth.currentUser, updates)
+        
+        // Sync with Firestore first to ensure photo/name are in DB
+        const profileData = await createUserDoc(auth.currentUser)
+        
+        // Refresh local state using the reliable mapping helper
+        setCurrentUser(mapUserObject(auth.currentUser, profileData))
+    }
+
+    const changeUserPassword = async (currentPassword, newPassword) => {
+        const user = auth.currentUser
+        if (!user || !user.email) return
+        
+        // 1. Re-authenticate
+        const credential = EmailAuthProvider.credential(user.email, currentPassword)
+        await reauthenticateWithCredential(user, credential)
+        
+        // 2. Update Password
+        await updatePassword(user, newPassword)
+    }
+
+    const uploadProfilePicture = async (file) => {
+        if (!auth.currentUser) return
+        
+        const oldPhotoURL = auth.currentUser.photoURL
+        
+        // Avatars only need to be small. 250px @ 60% quality results in ~10-15KB.
+        const photoURL = await uploadImage(file, null, 250, 0.6, 'moment-crafter/profile')
+        await updateUserProfile({ photoURL })
+
+        // Clean up old Cloudinary photo if it exists
+        if (oldPhotoURL && oldPhotoURL.includes('cloudinary.com')) {
+            deleteImage(oldPhotoURL).catch(err => console.warn("Failed to delete old avatar:", err))
+        }
+
+        return photoURL
+    }
+
     const resendVerificationEmail = () => {
         if (auth.currentUser && !auth.currentUser.emailVerified) {
             return sendEmailVerification(auth.currentUser)
@@ -180,6 +272,7 @@ export const AuthProvider = ({ children }) => {
         closeAuthModal,
         onAuthSuccess,
         signInWithGoogle,
+        connectGoogle,
         signInWithEmail,
         signUpWithEmail,
         resetPassword,
@@ -189,6 +282,9 @@ export const AuthProvider = ({ children }) => {
         handleToggleFavorite,
         resendVerificationEmail,
         checkEmailVerification,
+        updateUserProfile,
+        changeUserPassword,
+        uploadProfilePicture,
     }
 
     // Don't render children until we know auth state, prevents flash of wrong UI

@@ -4,7 +4,7 @@ export const NavbarContext = createContext(null)
 export const NavbarColorContext = createContext(null)
 export const ViewContext = createContext(null)
 
-const SAFE_VIEWS_TO_RESTORE = ['landing', 'categories', 'moments', 'about', 'share']
+const SAFE_VIEWS_TO_RESTORE = ['landing', 'categories', 'moments', 'about', 'share', 'settings']
 const getInitialView = () => {
     const saved = sessionStorage.getItem('currentView')
     if (saved === 'editor') return 'moments'
@@ -21,7 +21,7 @@ const getInitialSharedMomentId = () => {
 export const NavProvider = ({ children }) => {
     const [navOpen, setNavOpen] = useState(false)
     const [navColor, setNavColor] = useState('white')
-    const [currentView, setCurrentView] = useState(getInitialView()) // 'landing' | 'categories' | 'preview' | 'editor' | 'share' | 'about' | 'moments'
+    const [currentView, setCurrentView] = useState(getInitialView()) // 'landing' | 'categories' | 'preview' | 'editor' | 'share' | 'about' | 'moments' | 'settings'
     const [selectedTemplate, setSelectedTemplate] = useState(null)
     const [templateCustomization, setTemplateCustomization] = useState({})
     const [sharedMomentId, setSharedMomentId] = useState(getInitialSharedMomentId())

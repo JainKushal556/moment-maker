@@ -31,6 +31,7 @@ const TemplatePreview = lazy(() => import('./features/preview/TemplatePreview'))
 const EditorView = lazy(() => import('./features/editor/EditorView'))
 const ShareView = lazy(() => import('./features/share/ShareView'))
 const MyMomentsView = lazy(() => import('./features/moments/MyMomentsView'))
+const SettingsView = lazy(() => import('./features/settings/SettingsView'))
 const AboutUs = lazy(() => import('./features/about/AboutUs'))
 
 gsap.registerPlugin(ScrollTrigger, Observer)
@@ -125,9 +126,9 @@ function AppContent() {
       prevViewRef.current = currentView
     }
 
-    if (window.lenis && currentView !== 'editor' && currentView !== 'moments' && currentView !== 'preview') {
+    if (window.lenis && currentView !== 'editor' && currentView !== 'moments' && currentView !== 'preview' && currentView !== 'settings') {
       window.lenis.scrollTo(0, { immediate: true, force: true })
-    } else if (currentView !== 'editor' && currentView !== 'moments') {
+    } else if (currentView !== 'editor' && currentView !== 'moments' && currentView !== 'settings') {
       window.scrollTo(0, 0)
     }
 
@@ -147,9 +148,9 @@ function AppContent() {
         />
       )}
 
-      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && <Navbar />}
-      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && <FullScreenNav requireAuth={openAuthModal} />}
-      {currentView !== 'share' && currentView !== 'moments' && currentView !== 'about' && (
+      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && <Navbar />}
+      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && <FullScreenNav requireAuth={openAuthModal} />}
+      {currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && currentView !== 'about' && (
         <DotGrid
           dotSize={10}
           gap={30}
@@ -162,7 +163,7 @@ function AppContent() {
           returnDuration={1.5}
         />
       )}
-      {currentView !== 'share' && currentView !== 'moments' && <NoiseOverlay />}
+      {currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && <NoiseOverlay />}
 
       {currentView === 'landing' && (
         <div className="relative z-10">
@@ -208,6 +209,14 @@ function AppContent() {
         <div className="relative z-20">
           <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#0a0a12]"></div>}>
             <MyMomentsView />
+          </Suspense>
+        </div>
+      )}
+
+      {currentView === 'settings' && (
+        <div className="relative z-20">
+          <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#0a0a12]"></div>}>
+            <SettingsView />
           </Suspense>
         </div>
       )}

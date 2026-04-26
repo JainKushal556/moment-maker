@@ -19,12 +19,11 @@ cloudinary.config(
 @router.post("/image")
 async def upload_image(
     file: UploadFile = File(...),
+    folder: str = "moment-crafter/user-moments",
     user: dict = Depends(get_current_user)
 ):
     """
-    Accepts an image file from the authenticated frontend,
-    uploads it to Cloudinary, and returns the secure CDN URL.
-    The API credentials never leave the server.
+    Accepts an image file, uploads it to a specific folder in Cloudinary.
     """
     # Basic content-type validation
     if not file.content_type or not file.content_type.startswith("image/"):
@@ -38,7 +37,7 @@ async def upload_image(
     try:
         result = cloudinary.uploader.upload(
             contents,
-            folder="moment-crafter",           # organise uploads in a dedicated folder
+            folder=folder,
             resource_type="image",
             overwrite=False,
             unique_filename=True,
@@ -47,6 +46,20 @@ async def upload_image(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Cloudinary upload failed: {str(e)}")
+
+
+@router.delete("/image")
+async def delete_image(
+    url: str,
+    user: dict = Depends(get_current_user)
+):
+    """
+    Deletes an image from Cloudinary using its URL.
+    Only allows deletion if the URL belongs to our Cloudinary folder.
+    """
+    delete_cloudinary_image(url)
+    return {"status": "success", "message": "Image deleted if it existed"}
+
 
 def delete_cloudinary_image(url: str):
     """
