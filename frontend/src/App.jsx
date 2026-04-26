@@ -152,7 +152,7 @@ function AppContent() {
       {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && <FullScreenNav requireAuth={openAuthModal} />}
       {currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && currentView !== 'about' && (
         <DotGrid
-          dotSize={10}
+          dotSize={5}
           gap={30}
           baseColor="#2F293A"
           activeColor="#5227FF"

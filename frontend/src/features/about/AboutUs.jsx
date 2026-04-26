@@ -262,7 +262,7 @@ export default function AboutUs() {
   }, []);
 
   return (
-    <div ref={containerRef} className="bg-[#020204] bg-linear-to-br from-[#0a0c14] via-[#020204] to-[#050508] text-white selection:bg-sun-gold selection:text-cyan-500 relative">
+    <div ref={containerRef} className="bg-[#020204] bg-linear-to-br from-[#0a0c14] via-[#020204] to-[#050508] text-white selection:text-cyan-500 relative">
 
       {/* --- PRE-HEADER NAVIGATION --- */}
       <div className="w-full h-12 flex items-center px-4 sm:px-6 md:px-16 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-150">
