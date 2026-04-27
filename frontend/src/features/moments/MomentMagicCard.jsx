@@ -119,12 +119,14 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
                 <h3 className={`text-xl md:text-2xl font-black tracking-tight text-white group-hover:text-fuchsia-400 transition-colors duration-300 truncate`}>
                   {moment.title}
                 </h3>
-                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border ${moment.status === 'draft'
-                    ? 'bg-orange-500/10 border-orange-500/20 text-orange-400'
-                    : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                  } uppercase tracking-tighter`}>
-                  {moment.status}
-                </span>
+                {!isTemplate && moment.status && (
+                  <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border ${moment.status === 'draft'
+                      ? 'bg-orange-500/10 border-orange-500/20 text-orange-400'
+                      : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                    } uppercase tracking-tighter`}>
+                    {moment.status}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-3 opacity-80 truncate">
                 {!isTemplate && validity && (

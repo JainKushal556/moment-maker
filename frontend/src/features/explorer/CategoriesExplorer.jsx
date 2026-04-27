@@ -171,7 +171,7 @@ const getInitialCategory = () => {
 const CategoriesExplorer = () => {
     const [internalView, setInternalView] = useState(getInitialInternalView())
     const [selectedCategory, setSelectedCategory] = useState(getInitialCategory())
-    const [, setCurrentView, , , , , transitionRef] = useContext(ViewContext)
+    const [, navigateTo, , , , , transitionRef] = useContext(ViewContext)
 
     useEffect(() => {
         sessionStorage.setItem('explorerInternalView', internalView)
@@ -271,8 +271,8 @@ const CategoriesExplorer = () => {
         sessionStorage.removeItem('explorerInternalView')
         sessionStorage.removeItem('explorerSelectedCategory')
 
-        setCurrentView('landing')
-    }, [setCurrentView])
+        navigateTo('landing')
+    }, [navigateTo])
 
     return (
         <section

@@ -42,38 +42,53 @@ export default function VerifyEmail({ oobCode }) {
     }, [oobCode])
 
     const handleContinue = () => {
-        // Redirect to home page to reload the app normally
         window.location.href = '/'
     }
 
     return (
-        <div style={{ backgroundColor: '#050508', width: '100vw', height: '100vh', position: 'relative' }}>
-            <div className="auth-overlay" style={{ position: 'absolute' }}>
-                <div className="auth-modal">
-                    <div className="auth-glow" />
-                    <div className="auth-glow auth-glow--2" />
-                    
+        <div className="auth-overlay">
+            <div className="auth-page">
+                {/* Brand + Heading */}
+                <div className="auth-top">
                     <div className="auth-brand">
                         <div className="auth-brand-icon">✦</div>
-                        <span>Moment Crafter</span>
+                        <span>MOMENT CRAFTER</span>
                     </div>
+                    <h1 className="auth-title">
+                        {status === 'verifying' && 'Verifying...'}
+                        {status === 'success' && 'Email Verified'}
+                        {status === 'error' && 'Verification Failed'}
+                    </h1>
+                    <p className="auth-subtitle">
+                        {status === 'verifying' 
+                            ? 'Hold on, we are securing your account...' 
+                            : message}
+                    </p>
+                </div>
 
-                    <div className="auth-heading">
-                        <h2>
-                            {status === 'verifying' && 'Verifying...'}
-                            {status === 'success' && 'Email Verified'}
-                            {status === 'error' && 'Verification Failed'}
-                        </h2>
-                        <p style={{ marginTop: '0.5rem', marginBottom: '1.5rem', color: 'rgba(255,255,255,0.7)' }}>{message}</p>
+                <div className="auth-card" style={{ marginTop: '2rem' }}>
+                    <div className="auth-form">
+                        {status === 'verifying' ? (
+                            <div className="flex items-center justify-center p-8">
+                                <span className="auth-spinner" style={{ width: '40px', height: '40px' }} />
+                            </div>
+                        ) : (
+                            <>
+                                {status === 'success' ? (
+                                    <div className="auth-banner auth-banner--success">
+                                        Your account is now ready to use!
+                                    </div>
+                                ) : (
+                                    <div className="auth-banner auth-banner--error">
+                                        {message}
+                                    </div>
+                                )}
+                                <button className="auth-submit-btn" onClick={handleContinue} style={{ marginTop: '1rem' }}>
+                                    Start Crafting
+                                </button>
+                            </>
+                        )}
                     </div>
-
-                    {status !== 'verifying' && (
-                        <div className="auth-form" style={{ marginTop: '1rem' }}>
-                            <button className="auth-submit-btn" onClick={handleContinue}>
-                                Continue to App
-                            </button>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

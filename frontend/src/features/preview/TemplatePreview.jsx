@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import './template-preview.css'
 
 export default function TemplatePreview() {
-    const [currentView, setCurrentView, selectedTemplate, , templateCustomization] = useContext(ViewContext)
+    const [currentView, navigateTo, selectedTemplate, , templateCustomization] = useContext(ViewContext)
     const { currentUser, openAuthModal, favorites, handleToggleFavorite } = useAuth()
     const containerRef = useRef(null)
     const cardRef = useRef(null)
@@ -145,14 +145,14 @@ export default function TemplatePreview() {
             return
         }
         if (!currentUser) {
-            openAuthModal(() => setCurrentView('editor'))
+            openAuthModal(() => navigateTo('editor'))
             return
         }
-        setCurrentView('editor')
+        navigateTo('editor')
     }
 
     const handleBack = () => {
-        setCurrentView('categories')
+        navigateTo('categories')
     }
 
     const onToggleFavorite = async () => {

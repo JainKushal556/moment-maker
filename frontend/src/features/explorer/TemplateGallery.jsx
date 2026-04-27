@@ -13,7 +13,7 @@ const TemplateGallery = ({ category, onBack }) => {
     const searchInputRef = useRef(null)
     const [searchQuery, setSearchQuery] = useState('')
     const [isSearchOpen, setIsSearchOpen] = useState(false)
-    const [, setCurrentView, , setSelectedTemplate, , setTemplateCustomization, , , , , setEditingMomentId] = useContext(ViewContext)
+    const [currentView, navigateTo, , setSelectedTemplate, , setTemplateCustomization, , , , , setEditingMomentId] = useContext(ViewContext)
 
     const filteredTemplates = useMemo(() => {
         return templates.filter(t =>
@@ -36,17 +36,17 @@ const TemplateGallery = ({ category, onBack }) => {
         }
 
         setSelectedTemplate(template)
-        setCurrentView('preview')
+        navigateTo('preview')
     }
 
     return (
         <div ref={containerRef} className="w-full text-white">
 
             {/* Header section */}
-            <div ref={headerRef} className="mb-24 md:mb-40 space-y-12 md:space-y-20">
+            <div ref={headerRef} className="mb-12 md:mb-40 space-y-8 md:space-y-20">
                 <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 lg:gap-20">
                     <div className="min-w-0 flex flex-col items-start text-left">
-                        <div className="flex items-center justify-start gap-3 mb-6 md:mb-8 w-full text-left">
+                        <div className="flex items-center justify-start gap-3 mb-3 md:mb-8 w-full text-left">
                             <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-fuchsia-400 font-black text-left">
                                 {category?.tag} VIBE
                             </span>
@@ -55,7 +55,7 @@ const TemplateGallery = ({ category, onBack }) => {
                             style={{ fontSize: 'clamp(3.5rem, 8vw, 8.25rem)', textAlign: 'left' }}
                         >
                             {category?.title} <br />
-                            <span className="text-white/20 text-[42%] tracking-[0.12em] block mt-6 border-t-4 border-[#f472b6]/30 pt-6 w-fit text-left">GALLERY</span>
+                            <span className="text-white/20 text-[42%] tracking-[0.12em] block mt-4 md:mt-6 border-t-[3px] md:border-t-4 border-[#f472b6]/30 pt-4 md:pt-6 w-fit text-left">GALLERY</span>
                         </h2>
                     </div>
 
@@ -115,15 +115,15 @@ const TemplateGallery = ({ category, onBack }) => {
 
                 {/* Blank Data State */}
                 {filteredTemplates.length === 0 && (
-                    <div className="col-span-full border border-dashed border-[#f472b6]/20 rounded-3xl flex flex-col items-center justify-center p-20 text-center gap-6 text-white/40 min-h-[400px] bg-[#0d0d16]">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f472b6" strokeWidth="1.5">
+                    <div className="col-span-full border border-dashed border-[#f472b6]/20 rounded-[2rem] flex flex-col items-center justify-center p-10 md:p-20 text-center gap-4 md:gap-6 text-white/40 min-h-[300px] md:min-h-[400px] bg-[#0d0d16]">
+                        <svg className="w-8 h-8 md:w-10 md:h-10" viewBox="0 0 24 24" fill="none" stroke="#f472b6" strokeWidth="1.5">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
                         <div>
-                            <p className="font-mono text-lg font-bold uppercase tracking-[0.3em] text-[#f472b6] mb-2">
+                            <p className="font-mono text-sm md:text-lg font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-[#f472b6] mb-1 md:mb-2">
                                 NO MOMENTS FOUND
                             </p>
-                            <p className="text-xs font-mono uppercase tracking-widest text-white/30 max-w-sm mx-auto">
+                            <p className="text-[10px] md:text-xs font-mono uppercase tracking-widest text-white/30 max-w-[200px] md:max-w-sm mx-auto">
                                 We couldn't find any memories matching your search. Try another vibe!
                             </p>
                         </div>

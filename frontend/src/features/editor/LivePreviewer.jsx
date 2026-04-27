@@ -7,7 +7,7 @@ import { uploadImage, base64ToFile, getFirebaseToken } from '../../services/clou
 import { getIntroById } from '../../data/intros'
 
 export default function LivePreviewer({ template, customization, refreshKey, introId, senderName }) {
-    const [, setCurrentView, , , , , , , setSharedMomentId, editingMomentId, setEditingMomentId] = useContext(ViewContext)
+    const [, navigateTo, , , , , , , setSharedMomentId, editingMomentId, setEditingMomentId] = useContext(ViewContext)
     const [device, setDevice] = useState('desktop')
     const iframeContainerRef = useRef(null)
     const [iframeScale, setIframeScale] = useState(1)

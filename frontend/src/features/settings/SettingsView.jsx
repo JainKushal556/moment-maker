@@ -8,7 +8,7 @@ import PhotoUploadModal from './PhotoUploadModal';
 
 export default function SettingsView() {
   const [currentView, navigateTo] = useContext(ViewContext);
-  const { currentUser, logout, updateUserProfile, uploadProfilePicture, connectGoogle, changeUserPassword } = useAuth();
+  const { currentUser, logout, updateUserProfile, uploadProfilePicture, connectGoogle, disconnectGoogle, changeUserPassword } = useAuth();
   const [activeTab, setActiveTab] = useState('profile & account');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [newName, setNewName] = useState(currentUser?.displayName || '');
@@ -21,6 +21,7 @@ export default function SettingsView() {
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
   const [pwdFeedback, setPwdFeedback] = useState({ message: '', type: '' }); // type: 'success' | 'error'
+  const [connectFeedback, setConnectFeedback] = useState({ message: '', type: '' });
 
   const isPasswordUser = currentUser?.providerData?.some(p => p.providerId === 'password');
 
@@ -31,6 +32,25 @@ export default function SettingsView() {
       setNewName(currentUser.displayName);
     }
   }, [currentUser?.displayName]);
+
+  useEffect(() => {
+    setConnectFeedback({ message: '', type: '' });
+    setPwdFeedback({ message: '', type: '' });
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (connectFeedback.message) {
+      const timer = setTimeout(() => setConnectFeedback({ message: '', type: '' }), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [connectFeedback.message]);
+
+  useEffect(() => {
+    if (pwdFeedback.message) {
+      const timer = setTimeout(() => setPwdFeedback({ message: '', type: '' }), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [pwdFeedback.message]);
 
   const handleSaveName = async () => {
     if (!isNameChanged || isSaving) return;
@@ -53,11 +73,32 @@ export default function SettingsView() {
   };
 
   const handleConnectGoogle = async () => {
+    setConnectFeedback({ message: '', type: '' });
     try {
       setIsSaving(true);
       await connectGoogle();
+      setConnectFeedback({ message: 'Google account connected successfully!', type: 'success' });
     } catch (error) {
       console.error("Failed to connect Google:", error);
+      let msg = "Failed to connect Google account.";
+      if (error.code === 'auth/credential-already-in-use') {
+        msg = "This Google account is already linked to another profile.";
+      }
+      setConnectFeedback({ message: msg, type: 'error' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDisconnectGoogle = async () => {
+    setConnectFeedback({ message: '', type: '' });
+    try {
+      setIsSaving(true);
+      await disconnectGoogle();
+      setConnectFeedback({ message: 'Google account disconnected successfully!', type: 'success' });
+    } catch (error) {
+      console.error("Failed to disconnect Google:", error);
+      setConnectFeedback({ message: 'Failed to disconnect Google account.', type: 'error' });
     } finally {
       setIsSaving(false);
     }
@@ -153,12 +194,12 @@ export default function SettingsView() {
             <button
               onClick={() => navigateTo('moments')}
               className="group flex items-center gap-2 md:gap-3 text-white/40 hover:text-white transition-colors"
-              aria-label="Back to moments"
+              aria-label="Back to my moments"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:-translate-x-1 transition-transform">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              <span className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold whitespace-nowrap">BACK TO MOMENTS</span>
+              <span className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold whitespace-nowrap">BACK TO MY MOMENTS</span>
             </button>
           </div>
 
@@ -390,10 +431,15 @@ export default function SettingsView() {
                           
                           {currentUser?.providerData?.some(p => p.providerId === 'google.com') ? (
                             <button 
-                              disabled
-                              className="bg-white/5 border border-white/5 opacity-50 cursor-not-allowed rounded-xl px-5 py-2.5 text-white/40 text-[10px] md:text-xs font-black uppercase tracking-widest"
+                              onClick={handleDisconnectGoogle}
+                              disabled={isSaving || !isPasswordUser}
+                              className={`rounded-xl px-5 py-2.5 text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${
+                                isPasswordUser 
+                                  ? 'bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 active:scale-95' 
+                                  : 'bg-white/5 border border-white/5 opacity-50 cursor-not-allowed text-white/40'
+                              }`}
                             >
-                              Disconnect
+                              {isSaving ? '...' : 'Disconnect'}
                             </button>
                           ) : (
                             <button 
@@ -410,10 +456,54 @@ export default function SettingsView() {
                       {currentUser?.providerData?.some(p => p.providerId === 'google.com') && (
                         <div>
                           <p className="text-white/50 text-sm md:text-[15px] leading-relaxed max-w-3xl">
-                            <strong className="text-white/80 font-bold">Note:</strong> This account is needed for login and can't be disconnected. <button className="text-[#3b82f6] hover:text-[#60a5fa] font-medium transition-colors">Contact us</button> for more info. We are working on improving this experience
+                            <strong className="text-white/80 font-bold">Note:</strong> 
+                            {isPasswordUser 
+                              ? " Google Authentication is currently linked as a primary sign-in method. You may safely disconnect it since an alternative password is set."
+                              : " To ensure uninterrupted access to your account, Google Authentication cannot be disconnected until a password is established in the Privacy & Security tab."}
                           </p>
                         </div>
                       )}
+
+                      <AnimatePresence>
+                        {connectFeedback.message && (
+                          <motion.div 
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className={`flex items-center gap-4 p-5 rounded-2xl border backdrop-blur-xl max-w-2xl shadow-2xl relative overflow-hidden ${
+                              connectFeedback.type === 'success' 
+                                ? 'bg-emerald-500/5 border-emerald-500/20 shadow-emerald-500/5' 
+                                : 'bg-red-500/5 border-red-500/20 shadow-red-500/5'
+                            }`}
+                          >
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                              connectFeedback.type === 'success' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+                            }`}>
+                              {connectFeedback.type === 'success' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
+                            </div>
+                            <div className="space-y-1">
+                              <p className={`text-[10px] font-mono font-black uppercase tracking-[0.2em] ${
+                                connectFeedback.type === 'success' ? 'text-emerald-400' : 'text-red-400'
+                              }`}>
+                                {connectFeedback.type === 'success' ? 'Success' : 'Alert'}
+                              </p>
+                              <p className="text-xs md:text-sm text-white/70 font-medium leading-relaxed">
+                                {connectFeedback.message}
+                              </p>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/5 overflow-hidden">
+                              <motion.div 
+                                initial={{ width: '100%' }}
+                                animate={{ width: 0 }}
+                                transition={{ duration: 5, ease: 'linear' }}
+                                className={`h-full ${connectFeedback.type === 'success' ? 'bg-emerald-500/40' : 'bg-red-500/40'}`}
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
                 )}
@@ -421,22 +511,46 @@ export default function SettingsView() {
                 {activeTab === 'privacy & security' && (
                   <div className="space-y-8 mt-6">
                     {!isPasswordUser ? (
-                      <div className="p-8 md:p-12 rounded-[2rem] bg-white/5 border border-white/10 flex flex-col items-center text-center space-y-6 backdrop-blur-xl">
-                        <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-fuchsia-500/20 to-pink-500/20 border border-white/10 flex items-center justify-center text-fuchsia-400 shadow-[0_0_30px_rgba(217,70,239,0.1)]">
-                          <Shield size={32} />
-                        </div>
-                        <div className="space-y-3">
-                          <h3 className="text-xl md:text-2xl font-black text-white tracking-tight">Social Login Account</h3>
-                          <p className="text-white/40 text-sm md:text-base max-w-sm leading-relaxed">
-                            Your account is secured via <span className="text-white font-bold">Google</span>. Password management and security settings are handled directly through your Google account.
-                          </p>
-                        </div>
-                        <button 
-                          onClick={() => window.open('https://myaccount.google.com/security', '_blank')}
-                          className="px-8 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95"
+                      <div className="relative py-12 md:py-20 flex flex-col items-center text-center">
+                        {/* Decorative Background Elements */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-fuchsia-500/10 blur-[120px] rounded-full -z-10 pointer-events-none" />
+                        
+                        <motion.div 
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="relative mb-12"
                         >
-                          Manage Google Security
-                        </button>
+                          <div className="w-24 h-24 md:w-32 md:h-32 rounded-[2.5rem] bg-zinc-950 border border-white/10 flex items-center justify-center text-fuchsia-500 shadow-[0_20px_50px_rgba(217,70,239,0.15)] relative z-10 overflow-hidden">
+                            <Shield size={48} className="relative z-10" />
+                            {/* Inner Glow */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/10 to-transparent" />
+                          </div>
+                          {/* Orbital Rings */}
+                          <div className="absolute inset-0 rounded-[2.5rem] border border-fuchsia-500/20 animate-[ping_3s_linear_infinite] scale-125" />
+                          <div className="absolute inset-0 rounded-[2.5rem] border border-fuchsia-500/10 animate-[ping_4s_linear_infinite] scale-150" />
+                        </motion.div>
+
+                        <div className="max-w-xl space-y-6">
+                          <h3 className="text-3xl md:text-5xl font-black tracking-tighter text-white leading-tight">
+                            Secured via <br/>
+                            <span className="text-transparent bg-clip-text bg-linear-to-r from-fuchsia-400 via-pink-400 to-orange-400">Google Authentication.</span>
+                          </h3>
+                          <p className="text-white/40 text-sm md:text-lg font-medium leading-relaxed max-w-md mx-auto">
+                            Your account is protected by industry-leading security. Password and recovery settings are managed through your Google account.
+                          </p>
+                          
+                          <div className="pt-8">
+                            <button 
+                              onClick={() => window.open('https://myaccount.google.com/security', '_blank')}
+                              className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-[10px] md:text-xs uppercase tracking-[0.3em] hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 shadow-2xl"
+                            >
+                              <span>Manage Security</span>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform">
+                                <path d="M5 12h14M12 5l7 7-7 7" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     ) : (
                       <div className="space-y-10">
@@ -561,12 +675,40 @@ export default function SettingsView() {
                           <div className="flex flex-col gap-4">
                             {pwdFeedback.message && (
                               <motion.div 
-                                initial={{ opacity: 0, y: -10 }}
+                                initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className={`flex items-center gap-3 p-4 rounded-2xl border ${pwdFeedback.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className={`flex items-center gap-4 p-5 rounded-2xl border backdrop-blur-xl relative overflow-hidden shadow-2xl ${
+                                  pwdFeedback.type === 'success' 
+                                    ? 'bg-emerald-500/5 border-emerald-500/20 shadow-emerald-500/5' 
+                                    : 'bg-red-500/5 border-red-500/20 shadow-red-500/5'
+                                }`}
                               >
-                                {pwdFeedback.type === 'success' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
-                                <span className="text-sm font-medium">{pwdFeedback.message}</span>
+                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                                  pwdFeedback.type === 'success' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+                                }`}>
+                                  {pwdFeedback.type === 'success' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
+                                </div>
+                                <div className="space-y-1">
+                                  <p className={`text-[10px] font-mono font-black uppercase tracking-[0.2em] ${
+                                    pwdFeedback.type === 'success' ? 'text-emerald-400' : 'text-red-400'
+                                  }`}>
+                                    {pwdFeedback.type === 'success' ? 'Success' : 'Alert'}
+                                  </p>
+                                  <p className="text-xs md:text-sm text-white/70 font-medium leading-relaxed">
+                                    {pwdFeedback.message}
+                                  </p>
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/5 overflow-hidden">
+                                  <motion.div 
+                                    initial={{ width: '100%' }}
+                                    animate={{ width: 0 }}
+                                    transition={{ duration: 5, ease: 'linear' }}
+                                    className={`h-full ${pwdFeedback.type === 'success' ? 'bg-emerald-500/40' : 'bg-red-500/40'}`}
+                                  />
+                                </div>
                               </motion.div>
                             )}
                             

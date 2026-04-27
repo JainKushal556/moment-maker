@@ -47,12 +47,24 @@ export const NavProvider = ({ children }) => {
         }
     }, [sharedMomentId])
 
-    // Transition-aware navigation — plays SVG transition then swaps view at midpoint
-    const navigateTo = useCallback((nextView) => {
+    // 1. Initialize history state on mount
+    useEffect(() => {
+        if (!window.history.state) {
+            window.history.replaceState({ view: currentView }, '', '');
+        }
+    }, []);
+
+    // 2. Transition-aware navigation — plays SVG transition then swaps view at midpoint
+    const navigateTo = useCallback((nextView, shouldPush = true) => {
         // If already transitioning or same view, just set directly
         if (isTransitioning.current || nextView === currentView) {
             setCurrentView(nextView)
             return
+        }
+
+        // Push to history if requested (default behavior for UI clicks)
+        if (shouldPush) {
+            window.history.pushState({ view: nextView }, '', '');
         }
 
         const transition = transitionRef.current
@@ -71,6 +83,19 @@ export const NavProvider = ({ children }) => {
             setTimeout(() => { isTransitioning.current = false }, 1500)
         })
     }, [currentView])
+
+    // 3. Listen for popstate (back/forward buttons)
+    useEffect(() => {
+        const handlePopState = (event) => {
+            if (event.state && event.state.view) {
+                // Navigate without pushing state again to avoid history loops
+                navigateTo(event.state.view, false);
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [navigateTo]);
 
     return (
         <ViewContext.Provider value={[currentView, navigateTo, selectedTemplate, setSelectedTemplate, templateCustomization, setTemplateCustomization, transitionRef, sharedMomentId, setSharedMomentId, editingMomentId, setEditingMomentId, selectedIntroId, setSelectedIntroId, setCurrentView]}>

@@ -3,7 +3,7 @@ import { ViewContext } from '../../context/NavContext'
 import './share.css'
 
 export default function ShareView() {
-    const [currentView, setCurrentView, , , , , , sharedMomentId] = useContext(ViewContext)
+    const [currentView, navigateTo, , , , , , sharedMomentId] = useContext(ViewContext)
     const [copied, setCopied] = useState(false)
     const [generatedLink, setGeneratedLink] = useState('')
     const [isLoaded, setIsLoaded] = useState(false)
@@ -54,14 +54,14 @@ export default function ShareView() {
 
             <nav className="share-topbar">
                 <div className="share-topbar-inner">
-                    <button className="share-nav-btn" onClick={() => setCurrentView('editor')}>
+                    <button className="share-nav-btn" onClick={() => navigateTo('editor')}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <polyline points="15 18 9 12 15 6" />
                         </svg>
                         <span>Back to Editor</span>
                     </button>
 
-                    <button className="share-nav-btn share-nav-btn-secondary" onClick={() => setCurrentView('categories')}>
+                    <button className="share-nav-btn share-nav-btn-secondary" onClick={() => navigateTo('categories')}>
                         <span>New Moment</span>
                     </button>
                 </div>
@@ -139,7 +139,7 @@ export default function ShareView() {
                     </div>
 
                     <div className="share-actions">
-                        <button className="share-preview-btn" onClick={() => setCurrentView('editor')}>
+                        <button className="share-preview-btn" onClick={() => navigateTo('editor')}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
                                 <circle cx="12" cy="12" r="3" />
@@ -147,7 +147,7 @@ export default function ShareView() {
                             Preview Again
                         </button>
 
-                        <button className="share-create-btn" onClick={() => setCurrentView('moments')}>
+                        <button className="share-create-btn" onClick={() => navigateTo('moments')}>
                             My Moments
                         </button>
                     </div>

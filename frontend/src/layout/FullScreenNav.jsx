@@ -184,15 +184,8 @@ const FullScreenNav = ({ requireAuth }) => {
         // Start closing the nav immediately
         setNavOpen(false)
 
-        // Wait a tiny bit before swapping the view so the nav animation starts first
-        // This prevents a sudden jump behind the static nav
-        setTimeout(() => {
-            setCurrentView('landing')
-            if (window.lenis) {
-                window.lenis.scrollTo(0, { immediate: true, force: true })
-            }
-            window.scrollTo(0, 0)
-        }, 120)
+        // Use navigateTo for history and transition support
+        navigateTo('landing')
     }
 
     // Navigation items with their view actions
@@ -213,7 +206,7 @@ const FullScreenNav = ({ requireAuth }) => {
                     setNavOpen(false)
                     // Give nav time to close, then open auth modal
                     setTimeout(() => {
-                        requireAuth?.(() => setCurrentView('moments'))
+                        requireAuth?.(() => navigateTo('moments'))
                     }, 280)
                 }
             }
@@ -222,8 +215,8 @@ const FullScreenNav = ({ requireAuth }) => {
     ]
 
     return (
-        <div ref={fullScreenRef} className='fullscreennav hidden text-white h-[100svh] min-h-[100svh] w-full z-100 fixed top-0 left-0'>
-            <div className='h-[100svh] min-h-[100svh] w-full fixed inset-0 pointer-events-none'>
+        <div ref={fullScreenRef} className='fullscreennav hidden text-white fixed inset-0 w-full h-full z-[9999]'>
+            <div className='fixed inset-0 w-full h-full pointer-events-none'>
                 <div className='h-full w-full flex'>
                     {/* Stairing backgrounds using the deep space color styling */}
                     <div className='stairing h-0 w-1/5 bg-[#050508]'></div>

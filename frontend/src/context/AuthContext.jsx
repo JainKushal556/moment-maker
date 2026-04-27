@@ -13,6 +13,7 @@ import {
     EmailAuthProvider,
     reauthenticateWithCredential,
     updatePassword,
+    unlink,
 } from 'firebase/auth'
 import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
@@ -151,6 +152,15 @@ export const AuthProvider = ({ children }) => {
         return result
     }
 
+    const disconnectGoogle = async () => {
+        if (!auth.currentUser) return
+        const result = await unlink(auth.currentUser, 'google.com')
+        // Sync the updated user info
+        const profileData = await createUserDoc(result)
+        setCurrentUser(mapUserObject(result, profileData))
+        return result
+    }
+
     const signInWithEmail = (email, password) => {
         return signInWithEmailAndPassword(auth, email, password)
     }
@@ -273,6 +283,7 @@ export const AuthProvider = ({ children }) => {
         onAuthSuccess,
         signInWithGoogle,
         connectGoogle,
+        disconnectGoogle,
         signInWithEmail,
         signUpWithEmail,
         resetPassword,

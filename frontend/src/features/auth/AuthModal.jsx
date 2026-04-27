@@ -117,6 +117,12 @@ export default function AuthModal({ onClose, onSuccess }) {
         try {
             if (mode === 'signup') {
                 if (!displayName.trim()) { setError('Please enter your name.'); setLoading(false); return }
+                const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{6,}$/
+                if (!passwordRegex.test(password)) {
+                    setError('Password must be at least 6 characters and include a letter, a digit, and a special character.')
+                    setLoading(false)
+                    return
+                }
                 const result = await signUpWithEmail(email, password, displayName.trim())
                 if (result.user?.emailVerified) onSuccess?.()
             } else if (mode === 'login') {
