@@ -65,6 +65,33 @@ export default function Footer() {
     Events.on(mouseConstraint, 'startdrag', () => playground.style.cursor = 'grabbing')
     Events.on(mouseConstraint, 'enddrag', () => playground.style.cursor = 'grab')
 
+    // COMPLEX EVENT BYPASS (Mobile Scroll Fix)
+    // 1. Remove Matter.js aggressive default touch listeners that block all scrolling
+    playground.removeEventListener('touchstart', mouse.mousedown);
+    playground.removeEventListener('touchmove', mouse.mousemove);
+    playground.removeEventListener('touchend', mouse.mouseup);
+
+    // 2. Add SMART touch listeners
+    playground.addEventListener('touchstart', (e) => {
+      // Only intercept if touching a blob or pill
+      if (e.target.closest('.footer-blob') || e.target.closest('.footer-pill')) {
+        if (e.cancelable) e.preventDefault(); // Stop native scroll for smooth drag
+        mouse.mousedown(e); 
+      }
+    }, { passive: false });
+
+    playground.addEventListener('touchmove', (e) => {
+      // If Matter.js mouse is active (dragging), keep updating and blocking scroll
+      if (mouse.button === 0) {
+        if (e.cancelable) e.preventDefault();
+        mouse.mousemove(e);
+      }
+    }, { passive: false });
+
+    playground.addEventListener('touchend', (e) => {
+      if (mouse.button === 0) { mouse.mouseup(e); }
+    });
+
     Events.on(engine, 'afterUpdate', () => {
       const floor = playFloor()
       for (const { body } of items) {
