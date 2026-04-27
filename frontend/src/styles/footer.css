@@ -1,341 +1,390 @@
 /* ================================================================
-   INTERACTIVE FOOTER — Full Overlay on Playground
+   INTERACTIVE FOOTER — Dark Theme, Pixel-Perfect v2
    ================================================================ */
 
-/* ===== FOOTER WRAPPER ===== */
 .footer-section {
     position: relative;
     width: 100%;
-    background: #f0efeb;
-    min-height: 0;
-    padding: 0;
-    margin: 0;
-    display: block;
+    background: #050508;
+    padding: 0; margin: 0;
     overflow: hidden;
     z-index: 1;
 }
 
-/* ================================================================
-   PLAYGROUND AREA — the single footer canvas
-   ================================================================ */
+/* ── PLAYGROUND (canvas — untouched logic) ── */
 .footer-playground {
     position: relative;
     width: 100%;
-    height: 700px;
+    height: 900px;
     overflow: hidden;
     cursor: grab;
     user-select: none;
-    background: #f0efeb;
+    background: radial-gradient(ellipse at 50% 40%, #0d0d18 0%, #050508 100%);
 }
+.footer-playground:active { cursor: grabbing; }
 
-.footer-playground:active {
-    cursor: grabbing;
-}
-
-/* ===== BLOB SHAPES ===== */
+/* ── BLOBS ── */
 .footer-blob {
     position: absolute;
-    width: 280px;
-    height: 280px;
+    width: 280px; height: 280px;
     will-change: transform;
     transition: filter 0.3s ease;
     pointer-events: all;
     cursor: grab;
+    z-index: 1;
 }
+.footer-blob:active { cursor: grabbing; }
+.footer-blob:hover { filter: brightness(1.2) saturate(1.3) drop-shadow(0 0 25px rgba(255,255,255,0.2)); }
+.footer-blob svg { width: 100%; height: 100%; display: block; }
 
-.footer-blob:active {
-    cursor: grabbing;
-}
+/* Per-blob neon glow */
+.footer-blob:nth-child(1) { filter: drop-shadow(0 0 20px rgba(250, 255, 0, 0.4)); }       /* Yellow */
+.footer-blob:nth-child(2) { filter: drop-shadow(0 0 20px rgba(143, 154, 255, 0.4)); }     /* Lavender */
+.footer-blob:nth-child(3) { filter: drop-shadow(0 0 20px rgba(255, 142, 89, 0.4)); }      /* Orange */
+.footer-blob:nth-child(4) { filter: drop-shadow(0 0 20px rgba(94, 155, 255, 0.4)); }      /* Blue */
+.footer-blob:nth-child(5) { filter: drop-shadow(0 0 20px rgba(255, 189, 249, 0.4)); }     /* Pink */
+.footer-blob:nth-child(6) { filter: drop-shadow(0 0 20px rgba(218, 239, 104, 0.4)); }     /* Lime */
 
-.footer-blob:hover {
-    filter: brightness(1.08) saturate(1.15);
-}
-
-.footer-blob svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-/* ===== GREEN PILL BUTTONS ===== */
+/* ── GLASS PILLS ── */
 .footer-pill {
     position: absolute;
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    align-items: center; justify-content: center;
     padding: 12px 24px;
-    background: #47E68F;
-    color: #111;
-    font-family: 'Inter', 'Poppins', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 600;
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem; font-weight: 600;
     text-decoration: none;
     border-radius: 50px;
     white-space: nowrap;
     cursor: pointer;
     will-change: transform;
-    transition: background 0.25s ease, box-shadow 0.25s ease;
+    transition: all 0.3s ease;
     overflow: hidden;
     pointer-events: all;
     z-index: 2;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
-
 .footer-pill:hover {
-    background: #3BD87F;
-    box-shadow: 0 4px 15px rgba(71, 230, 143, 0.4);
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.25);
 }
-
 .footer-pill .pill-text,
 .footer-pill .pill-hover-text {
     display: block;
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-        opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s cubic-bezier(0.4,0,0.2,1);
 }
-
 .footer-pill .pill-hover-text {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, 100%);
-    opacity: 0;
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, 100%); opacity: 0;
 }
-
-.footer-pill:hover .pill-text {
-    transform: translateY(-100%);
-    opacity: 0;
-}
-
-.footer-pill:hover .pill-hover-text {
-    transform: translate(-50%, -50%);
-    opacity: 1;
-}
+.footer-pill:hover .pill-text { transform: translateY(-100%); opacity: 0; }
+.footer-pill:hover .pill-hover-text { transform: translate(-50%, -50%); opacity: 1; }
+.pill-icon { margin-right: 8px; font-size: 14px; opacity: 0.8; }
 
 /* ================================================================
-   FOOTER OVERLAY — rich glassmorphism panel anchored to bottom
+   OVERLAY CARD — glassmorphic floating card with glowing border
    ================================================================ */
 .footer-playground-overlay {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 12px;
+    left: 16px;
+    right: 16px;
     z-index: 10;
     pointer-events: none;
-
-    /* Rich glass effect */
-    background: rgba(255, 255, 255, 0.48);
-    backdrop-filter: blur(28px) saturate(1.8) brightness(1.05);
-    -webkit-backdrop-filter: blur(28px) saturate(1.8) brightness(1.05);
-    border-top: 1px solid rgba(255, 255, 255, 0.9);
+    background: rgba(8, 8, 16, 0.35);
+    backdrop-filter: blur(40px) saturate(1.6);
+    -webkit-backdrop-filter: blur(40px) saturate(1.6);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 24px;
     box-shadow:
-        0 -12px 40px rgba(0, 0, 0, 0.06),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
-
-    padding: 2.6rem 4.5rem 1.8rem;
+        /* tight border glow */
+        0 0 0 1px rgba(255, 255, 255, 0.06),
+        /* close glow */
+        0 0 8px rgba(255, 255, 255, 0.08),
+        0 0 20px rgba(180, 140, 255, 0.08),
+        /* wider glow */
+        0 0 40px rgba(130, 80, 220, 0.06),
+        /* inner top shine */
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        /* depth */
+        0 20px 60px rgba(0, 0, 0, 0.5);
+    padding: 1.6rem 2.5rem 1.2rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
 }
+.footer-playground-overlay * { pointer-events: auto; }
 
-/* Re-enable pointer events on all interactive children */
-.footer-playground-overlay * {
-    pointer-events: auto;
-}
-
-/* ================================================================
-   TOP ROW: brand left + nav columns right
-   ================================================================ */
+/* ── TOP: brand + columns ── */
 .fpo-top {
-    display: flex;
-    align-items: flex-start;
-    gap: 15rem;
+    display: grid;
+    grid-template-columns: 1.1fr 3fr;
+    gap: 2rem;
+    align-items: start;
 }
 
-/* ---- Brand ---- */
+/* Brand */
 .fpo-brand {
     display: flex;
     flex-direction: column;
-    gap: 0.55rem;
-    min-width: 160px;
-    flex-shrink: 0;
+    gap: 0.3rem;
+    min-width: 170px;
 }
-
-.footer-logo-link {
-    display: inline-block;
-    text-decoration: none;
-    transition: opacity 0.2s ease;
-}
-
-.footer-logo-link:hover {
-    opacity: 0.7;
-}
-
-.footer-logo-svg {
-    width: 160px;
-    height: auto;
-    display: block;
-}
-
+.footer-logo-link { display: inline-block; text-decoration: none; transition: opacity 0.2s; }
+.footer-logo-link:hover { opacity: 0.8; }
+.footer-logo-svg { width: 180px; height: auto; display: block; }
 .fpo-tagline {
     font-family: 'Inter', sans-serif;
-    font-size: 0.78rem;
-    color: #555;
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.35);
     line-height: 1.7;
     margin: 0;
-    letter-spacing: 0.01em;
 }
 
-/* ---- Nav columns wrapper ---- */
+/* Newsletter */
+.footer-newsletter {
+    margin-top: 0.8rem;
+    padding: 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    max-width: 260px;
+}
+.newsletter-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.newsletter-icon {
+    width: 34px; height: 34px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #ff2d95; font-size: 15px; flex-shrink: 0;
+}
+.newsletter-info { display: flex; flex-direction: column; }
+.newsletter-title { font-size: 13px; font-weight: 700; color: #fff; font-family: 'Inter', sans-serif; }
+.newsletter-sub { font-size: 10.5px; color: rgba(255,255,255,0.32); margin-top: 2px; font-family: 'Inter', sans-serif; }
+.newsletter-form { position: relative; display: flex; align-items: center; }
+.newsletter-input {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 50px;
+    padding: 10px 46px 10px 16px;
+    color: #fff; font-size: 12px; font-family: 'Inter', sans-serif;
+    outline: none; transition: border-color 0.3s;
+}
+.newsletter-input::placeholder { color: rgba(255,255,255,0.22); }
+.newsletter-input:focus { border-color: #ff2d95; }
+.newsletter-btn {
+    position: absolute; right: 4px;
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #ff2d95, #ff6b6b);
+    border: none; border-radius: 50%;
+    color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 12px rgba(255,45,149,0.35);
+}
+.newsletter-btn:hover { transform: scale(1.1); box-shadow: 0 6px 18px rgba(255,45,149,0.5); }
+
+/* ── Nav Columns ── */
 .fpo-nav-cols {
-    display: flex;
-    gap: 8.5rem;
-    /* increased gap between 4 columns slightly */
-    flex: 1;
-    justify-content: flex-start;
-    /* keep group near logo block instead of flushing right */
-    align-items: flex-start;
-    padding-left: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+.fpo-col { display: flex; flex-direction: column; gap: 0; align-items: flex-start; }
+
+/* Column Header */
+.fpo-col-header {
+    display: flex; align-items: center; gap: 9px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px; font-weight: 800;
+    letter-spacing: 0.12em;
+    color: #fff; text-transform: uppercase;
+    margin-bottom: 4px; padding-bottom: 10px;
+    position: relative;
+}
+.fpo-col-header::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0;
+    width: 20px; height: 2.5px; border-radius: 2px;
 }
 
-/* ---- Single column ---- */
-.fpo-col {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: flex-start;
-}
+/* Icon+underline colors per column */
+.fpo-col:nth-child(1) .fpo-col-header .col-icon { color: #ff2d95; }
+.fpo-col:nth-child(1) .fpo-col-header::after { background: #ff2d95; }
+.fpo-col:nth-child(2) .fpo-col-header .col-icon { color: #a855f7; }
+.fpo-col:nth-child(2) .fpo-col-header::after { background: #a855f7; }
+.fpo-col:nth-child(3) .fpo-col-header .col-icon { color: #3b82f6; }
+.fpo-col:nth-child(3) .fpo-col-header::after { background: #3b82f6; }
+.fpo-col:nth-child(4) .fpo-col-header .col-icon { color: #22c55e; }
+.fpo-col:nth-child(4) .fpo-col-header::after { background: #22c55e; }
 
-/* First link in each column acts as a heading — slightly more prominent */
-.fpo-col a:first-child {
-    font-weight: 700;
-    color: #111;
-    letter-spacing: 0.08em;
-    margin-bottom: 0.15rem;
-}
-
+/* Links with > arrow */
 .fpo-col a {
     font-family: 'Inter', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 400;
-    color: #3a3a3a;
+    font-size: 0.82rem; font-weight: 400;
+    color: rgba(255,255,255,0.4);
     text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    transition: color 0.18s ease, transform 0.18s ease;
-    display: inline-block;
-    white-space: nowrap;
-}
-
-.fpo-col a:hover {
-    color: #000;
-    transform: translateX(3px);
-}
-
-/* ================================================================
-   DIVIDER
-   ================================================================ */
-.fpo-divider {
+    display: flex; align-items: center; justify-content: space-between;
     width: 100%;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.12);
+    padding: 5px 0;
+    transition: color 0.2s, transform 0.2s;
 }
+.fpo-col a::after {
+    content: '›';
+    font-size: 16px; font-weight: 300;
+    color: rgba(255,255,255,0.15);
+    margin-left: 12px;
+    transition: color 0.2s, transform 0.2s;
+}
+.fpo-col a:hover { color: #fff; }
+.fpo-col a:hover::after { color: rgba(255,255,255,0.5); transform: translateX(3px); }
 
 /* ================================================================
-   BOTTOM ROW: centered socials + copyright (matching reference)
+   BOTTOM SECTION
    ================================================================ */
-.fpo-bottom {
+.fpo-bottom-section {
+    margin-top: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.05);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.7rem;
-}
-
-/* Social icons row — outlined circles like reference */
-.fpo-socials {
-    display: flex;
     gap: 0.6rem;
+    position: relative;
+    padding-bottom: 0.5rem;
 }
 
-.fpo-social-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: transparent;
-    border: 1.5px solid rgba(0, 0, 0, 0.28);
+/* Pink accent line at very bottom of card */
+.fpo-bottom-section::after {
+    content: '';
+    position: absolute;
+    bottom: -1.8rem;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ff2d95, #a855f7, #3b82f6, transparent);
+    border-radius: 2px;
+    opacity: 0.5;
+}
+
+/* Curvy wave lines behind bottom content */
+.footer-waves {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.8;
+}
+
+/* Ensure content sits above waves */
+.fpo-bottom-row { position: relative; z-index: 1; }
+.fpo-copy { position: relative; z-index: 1; }
+
+/* Main row: love | socials | trust — all ONE LINE */
+.fpo-bottom-row {
+    width: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: #333;
-    font-size: 0.78rem;
+    justify-content: space-between;
+}
+
+/* Social icons — center */
+.fpo-socials { display: flex; gap: 0.8rem; }
+.fpo-social-icon {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.55);
+    font-size: 1rem;
     text-decoration: none;
-    transition: all 0.22s ease;
-    cursor: pointer;
+    transition: all 0.3s ease;
 }
-
 .fpo-social-icon:hover {
-    background: #111;
-    border-color: #111;
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.3);
     color: #fff;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
-/* Copyright text — centered below icons */
+/* Made with love — LEFT */
+.made-with-love {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Playfair Display', 'Georgia', serif;
+    font-style: italic;
+    color: rgba(255, 80, 140, 0.6);
+    font-size: 14px; line-height: 1.3;
+    min-width: 180px;
+}
+.love-hearts {
+    font-size: 26px;
+    font-style: normal; line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(255, 45, 149, 0.5);
+}
+.love-text { display: flex; flex-direction: column; }
+
+/* Trust badge — RIGHT (pill container) */
+.footer-trust {
+    display: flex; align-items: center; gap: 10px;
+    min-width: 180px;
+    justify-content: flex-end;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 50px;
+    padding: 8px 18px 8px 10px;
+}
+.trust-icon {
+    width: 26px; height: 26px;
+    background: #22c55e;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 12px; flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(34,197,94,0.3);
+}
+.trust-text { display: flex; flex-direction: column; font-family: 'Inter', sans-serif; }
+.trust-title { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); }
+.trust-sub { font-size: 10px; color: rgba(255,255,255,0.3); letter-spacing: 0.02em; margin-top: 2px; }
+
+/* Copyright — centered below */
 .fpo-copy {
     font-family: 'Inter', sans-serif;
-    font-size: 0.74rem;
-    color: #666;
-    letter-spacing: 0.03em;
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.3);
     text-align: center;
 }
 
-/* ================================================================
-   RESPONSIVE
-   ================================================================ */
-@media (max-width: 960px) {
-    .footer-playground {
-        height: 580px;
-    }
-
-    .footer-blob {
-        transform: scale(0.75);
-    }
-
-    .footer-playground-overlay {
-        padding: 2rem 2.5rem 1.4rem;
-        gap: 1.2rem;
-    }
-
-    .fpo-top {
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-
-    .fpo-nav-cols {
-        justify-content: flex-start;
-        gap: 2rem;
-        flex-wrap: wrap;
-    }
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+    .fpo-top { grid-template-columns: 1fr; gap: 3rem; }
+    .fpo-nav-cols { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+    .fpo-brand { align-items: center; text-align: center; }
+    .newsletter-form { max-width: 320px; margin: 0 auto; }
+    .footer-newsletter { max-width: 100%; align-items: center; text-align: center; }
+    .newsletter-header { justify-content: center; }
+    .fpo-bottom-row { flex-direction: column; gap: 1.5rem; align-items: center; }
+    .made-with-love { min-width: auto; justify-content: center; }
 }
-
 @media (max-width: 640px) {
-    .footer-playground {
-        height: 700px;
-    }
-
-    .footer-blob {
-        transform: scale(0.55);
-    }
-
-    .footer-pill {
-        font-size: 0.75rem;
-        padding: 10px 18px;
-    }
-
-    .footer-playground-overlay {
-        padding: 1.5rem 1.25rem 1.2rem;
-    }
-
-    .fpo-nav-cols {
-        gap: 1.5rem;
-    }
+    .footer-playground { height: 1400px; }
+    .footer-blob { width: 140px; height: 140px; }
+    .footer-pill { font-size: 0.75rem; padding: 10px 18px; }
+    .footer-playground-overlay { padding: 2rem 1.5rem; border-radius: 20px 20px 0 0; }
+    .fpo-nav-cols { grid-template-columns: 1fr; gap: 2.5rem; }
+    .fpo-col { align-items: center; text-align: center; }
+    .fpo-col a { justify-content: center; }
+    .fpo-col-header::after { left: 50%; transform: translateX(-50%); }
+    .newsletter-form { width: 100%; }
 }

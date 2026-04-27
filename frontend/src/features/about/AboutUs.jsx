@@ -262,7 +262,7 @@ export default function AboutUs() {
   }, []);
 
   return (
-    <div ref={containerRef} className="bg-[#020204] bg-linear-to-br from-[#0a0c14] via-[#020204] to-[#050508] text-white selection:text-cyan-500 relative">
+    <div ref={containerRef} className="bg-[#020204] bg-linear-to-br from-[#0a0c14] via-[#020204] to-[#050508] text-white selection:bg-sun-gold selection:text-cyan-500 relative">
 
       {/* --- PRE-HEADER NAVIGATION --- */}
       <div className="w-full h-12 flex items-center px-4 sm:px-6 md:px-16 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-150">
@@ -457,17 +457,17 @@ export default function AboutUs() {
                 <p className="text-sun-gold uppercase tracking-[0.3em] text-[10px] font-black font-montserrat mb-4">
                   {member.role}
                 </p>
-                
+
                 {/* mb-6 ekhane name ar bio er majhe gap toiri korbe */}
                 <h4 className="text-3xl sm:text-4xl md:text-5xl font-montserrat font-black uppercase tracking-tight mb-6 sm:mb-[50px] leading-[1.1] sm:group-hover:translate-x-2 transition-transform duration-500 break-words md:whitespace-nowrap">
                   {member.name}
                 </h4>
-                
+
                 {/* mb-8 ekhane bio ar icons er majhe gap toiri korbe */}
                 <p className="text-white/50 text-base sm:text-lg font-playfair italic leading-relaxed mb-6 sm:mb-8 max-w-none sm:max-w-xs">
                   "{member.bio}"
                 </p>
-                
+
                 <div className="flex gap-6">
                   <a href={member.github} target="_blank" rel="noopener noreferrer" className="magnetic-btn text-white/30 hover:text-white hover:bg-white/5 transition-all duration-300 flex items-center justify-center w-12 h-12 rounded-full border border-white/10 hover:border-sun-gold">
                     <i className="fab fa-github text-xl"></i>

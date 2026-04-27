@@ -18,27 +18,35 @@ export default function Footer() {
 
     const engine = Engine.create({ gravity: { x: 0, y: 0.7 } })
     let pW = playground.clientWidth; let pH = playground.clientHeight
-    function playFloor() { return pH - getOverlayHeight() - 8 }
+    function playFloor() { 
+      const overlayH = getOverlayHeight();
+      // Ensure the floor is always at least 300px from top, so balls ALWAYS have space
+      return Math.max(300, pH - overlayH - 8); 
+    }
     const wallT = 60
 
     function createWalls() {
       const floor = playFloor()
       return [
         Bodies.rectangle(pW / 2, floor + wallT / 2, pW + 200, wallT, { isStatic: true, label: 'floor' }),
-        Bodies.rectangle(-wallT / 2, floor / 2, wallT, floor * 2, { isStatic: true }),
-        Bodies.rectangle(pW + wallT / 2, floor / 2, wallT, floor * 2, { isStatic: true }),
+        Bodies.rectangle(-wallT / 2, pH / 2, wallT, pH * 2, { isStatic: true }),
+        Bodies.rectangle(pW + wallT / 2, pH / 2, wallT, pH * 2, { isStatic: true }),
         Bodies.rectangle(pW / 2, -wallT / 2, pW + 200, wallT, { isStatic: true })
       ]
     }
 
     let walls = createWalls(); Composite.add(engine.world, walls)
-    const items = []; const MAX_SPEED = 28; const blobSize = 280; const blobR = blobSize / 2
+    const items = []; const MAX_SPEED = 28;
 
+    const isMobile = window.innerWidth <= 640;
+    const blobSize = isMobile ? 140 : 280;
     const blobStartPositions = [{ x: 0.12, y: 0.10 }, { x: 0.80, y: 0.12 }, { x: 0.38, y: 0.08 }, { x: 0.58, y: 0.18 }, { x: 0.15, y: 0.28 }, { x: 0.70, y: 0.06 }]
+    
     const blobEls = playground.querySelectorAll('.footer-blob')
     blobEls.forEach((el, i) => {
+      const bRadius = blobSize / 2;
       const pos = blobStartPositions[i] || { x: Math.random(), y: 0.15 }; const floor = playFloor()
-      const body = Bodies.circle(pW * pos.x, floor * pos.y, blobR * 0.65, { restitution: 0.45, friction: 0.25, frictionAir: 0.018, density: 0.002, angle: (Math.random() - 0.5) * 0.6 })
+      const body = Bodies.circle(pW * pos.x, floor * pos.y, bRadius * 0.65, { restitution: 0.45, friction: 0.25, frictionAir: 0.018, density: 0.002, angle: (Math.random() - 0.5) * 0.6 })
       Composite.add(engine.world, body); items.push({ el, body, w: blobSize, h: blobSize, isBlob: true })
     })
 
@@ -64,7 +72,13 @@ export default function Footer() {
         if (spd > MAX_SPEED) { const scale = MAX_SPEED / spd; Body.setVelocity(body, { x: body.velocity.x * scale, y: body.velocity.y * scale }) }
         const margin = 20; let px = body.position.x; let py = body.position.y; let clamped = false
         if (px < margin) { px = margin; clamped = true }; if (px > pW - margin) { px = pW - margin; clamped = true }
-        if (py < margin) { py = margin; clamped = true }; if (py > floor - margin) { py = floor - margin; clamped = true }
+        
+        // Only clamp Y if the floor provides enough space
+        if (floor > margin * 2) {
+          if (py < margin) { py = margin; clamped = true }; 
+          if (py > floor - margin) { py = floor - margin; clamped = true }
+        }
+        
         if (clamped) { Body.setPosition(body, { x: px, y: py }); Body.setVelocity(body, { x: 0, y: 0 }) }
       }
     })
@@ -179,64 +193,96 @@ export default function Footer() {
         {/* Full Footer Overlay on Playground */}
         <div className="footer-playground-overlay">
 
-          {/* Top: Logo + Nav columns */}
+          {/* Top: Brand + Nav columns */}
           <div className="fpo-top">
-            {/* Brand */}
+            {/* Brand + Newsletter */}
             <div className="fpo-brand">
               <a href="#" className="footer-logo-link" aria-label="Moment Crafter Home">
                 <svg className="footer-logo-svg" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
-                  <polygon points="16,2 18.5,11 28,11 20.5,16.5 23,26 16,21 9,26 11.5,16.5 4,11 13.5,11" fill="#111" />
-                  <line x1="16" y1="0" x2="16" y2="3" stroke="#111" strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="16" y1="27" x2="16" y2="30" stroke="#111" strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="30" y1="14" x2="33" y2="14" stroke="#111" strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="0" y1="14" x2="3" y2="14" stroke="#111" strokeWidth="1.8" strokeLinecap="round" />
-                  <text x="42" y="20" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="700" fontSize="14" fill="#111" letterSpacing="0.5">MOMENT</text>
-                  <text x="42" y="36" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="300" fontSize="10.5" fill="#444" letterSpacing="2.5">CRAFTER</text>
+                  <polygon points="16,2 18.5,11 28,11 20.5,16.5 23,26 16,21 9,26 11.5,16.5 4,11 13.5,11" fill="#ff69b4" />
+                  <line x1="16" y1="0" x2="16" y2="3" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
+                  <line x1="16" y1="27" x2="16" y2="30" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
+                  <line x1="30" y1="14" x2="33" y2="14" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
+                  <line x1="0" y1="14" x2="3" y2="14" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
+                  <text x="42" y="20" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="700" fontSize="14" fill="#fff" letterSpacing="0.5">MOMENT</text>
+                  <text x="42" y="36" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="300" fontSize="10.5" fill="rgba(255,255,255,0.5)" letterSpacing="2.5">CRAFTER</text>
                 </svg>
               </a>
               <p className="fpo-tagline">Craft memories,<br />not just messages.</p>
+
+              {/* Newsletter */}
+              <div className="footer-newsletter">
+                <div className="newsletter-header">
+                  <div className="newsletter-icon"><i className="fas fa-envelope"></i></div>
+                  <div className="newsletter-info">
+                    <span className="newsletter-title">Stay in the loop</span>
+                    <span className="newsletter-sub">Get ideas & updates in your inbox.</span>
+                  </div>
+                </div>
+                <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
+                  <input type="email" placeholder="Enter your email" className="newsletter-input" />
+                  <button type="submit" className="newsletter-btn" aria-label="Subscribe"><i className="fas fa-arrow-right"></i></button>
+                </form>
+              </div>
             </div>
 
-            {/* Nav columns */}
+            {/* Nav columns with iconic headers */}
             <div className="fpo-nav-cols">
               <div className="fpo-col">
-                <a href="#">Home</a>
-                <a href="#categories">Browse Categories</a>
-                <a href="#create">Customize a Wish</a>
-                <a href="#">Send a Wish</a>
-              </div>
-              <div className="fpo-col">
-                <a href="#">Templates</a>
+                <div className="fpo-col-header"><i className="fas fa-home col-icon"></i> HOME</div>
+                <a href="#">Interactive carousel</a>
                 <a href="#">How It Works</a>
-                <a href="#">Blog</a>
+                <a href="#">Personalize The Magic</a>
               </div>
               <div className="fpo-col">
-                <a href="#">Showcase</a>
-                <a href="#">Themes</a>
-                <a href="#">Support</a>
+                <div className="fpo-col-header"><i className="fas fa-clipboard-list col-icon"></i> TEMPLATES</div>
+                <a href="#categories">Browse Categories</a>
+                <a href="#">Popular Wishes</a>
               </div>
               <div className="fpo-col">
-                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('about'); }}>About Us</a>
-                <a href="#">Contact Us</a>
-                <a href="#">Affiliates</a>
-                <a href="#">Resources</a>
+                <div className="fpo-col-header"><i className="fas fa-info-circle col-icon"></i> ABOUT US</div>
+                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('about'); }}>The Process</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('about'); }}>Makers</a>
+              </div>
+              <div className="fpo-col">
+                <div className="fpo-col-header"><i className="fas fa-headset col-icon"></i> CONTACT & SUPPORT</div>
+                <a href="#">Help & Support</a>
+                <a href="#">FAQs</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
               </div>
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="fpo-divider"></div>
+          {/* Bottom section */}
+          <div className="fpo-bottom-section">
+            {/* Curvy wave lines */}
+            <svg className="footer-waves" viewBox="0 0 1200 80" preserveAspectRatio="none">
+              <path d="M0,50 C200,20 400,60 600,35 C800,10 1000,55 1200,30" fill="none" stroke="rgba(255,45,149,0.12)" strokeWidth="1.2" />
+              <path d="M0,55 C150,30 350,65 550,40 C750,15 950,58 1200,38" fill="none" stroke="rgba(168,85,247,0.08)" strokeWidth="1" />
+              <path d="M0,60 C250,35 450,70 650,45 C850,20 1050,60 1200,42" fill="none" stroke="rgba(59,130,246,0.06)" strokeWidth="0.8" />
+            </svg>
+            {/* Single row: love LEFT | socials CENTER | trust RIGHT */}
+            <div className="fpo-bottom-row">
+              <div className="made-with-love">
+                <span className="love-hearts">♥♥</span>
+                <div className="love-text">
+                  <span>Made with love</span>
+                  <span>for every memory</span>
+                </div>
+              </div>
 
-          {/* Bottom: Centered socials + copyright */}
-          <div className="fpo-bottom">
-            <div className="fpo-socials">
-              <a href="#" className="fpo-social-icon" aria-label="Facebook"><i className="fab fa-facebook-f"></i></a>
-              <a href="#" className="fpo-social-icon" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
-              <a href="#" className="fpo-social-icon" aria-label="RSS"><i className="fas fa-rss"></i></a>
-              <a href="#" className="fpo-social-icon" aria-label="Google"><i className="fab fa-google-plus-g"></i></a>
-              <a href="#" className="fpo-social-icon" aria-label="Flickr"><i className="fab fa-flickr"></i></a>
+              <div className="fpo-socials">
+                <a href="#" className="fpo-social-icon" aria-label="Facebook"><i className="fab fa-facebook-f"></i></a>
+                <a href="#" className="fpo-social-icon" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
+                <a href="#" className="fpo-social-icon" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
+                <a href="#" className="fpo-social-icon" aria-label="Pinterest"><i className="fab fa-pinterest-p"></i></a>
+                <a href="#" className="fpo-social-icon" aria-label="YouTube"><i className="fab fa-youtube"></i></a>
+              </div>
             </div>
-            <span className="fpo-copy">&copy;Copyright. All rights reserved.</span>
+
+            {/* Copyright centered below */}
+            <span className="fpo-copy">&copy; 2026 Moment Crafter. All rights reserved.</span>
           </div>
 
         </div>
