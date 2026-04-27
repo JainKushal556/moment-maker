@@ -13,13 +13,51 @@ const cinematicImgs = [
 ]
 
 const FullScreenNav = ({ requireAuth }) => {
+    const [hoveredIndex, setHoveredIndex] = useState(null)
+    const ribbonRef = useRef(null)
+    const ribbonContentRef = useRef(null)
     const fullNavLinksRef = useRef(null)
     const fullScreenRef = useRef(null)
     const tlRef = useRef(null)
     const viewSwitchTimeoutRef = useRef(null)
     const mobileNavActionTimeoutRef = useRef(null)
     const [activeMobileItem, setActiveMobileItem] = useState(null)
+    const [isDesktop, setIsDesktop] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true)
 
+    useEffect(() => {
+        const handleResize = () => setIsDesktop(window.innerWidth >= 1024)
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
+    useEffect(() => {
+        if (hoveredIndex !== null && ribbonRef.current && ribbonContentRef.current) {
+            const isOutOfBound = hoveredIndex === -1 || hoveredIndex === 4;
+
+            gsap.to(ribbonRef.current, {
+                top: `${hoveredIndex * 25}%`,
+                duration: 0.35,
+                ease: "expo.out",
+                opacity: isOutOfBound ? 0 : 1,
+                overwrite: "auto"
+            })
+            
+            if (!isOutOfBound) {
+                gsap.to(ribbonContentRef.current, {
+                    yPercent: -hoveredIndex * 100,
+                    duration: 0.35,
+                    ease: "expo.out",
+                    overwrite: "auto"
+                })
+            }
+        } else if (ribbonRef.current) {
+            gsap.to(ribbonRef.current, {
+                opacity: 0,
+                duration: 0.35,
+                overwrite: "auto"
+            })
+        }
+    }, [hoveredIndex])
 
     const [navOpen, setNavOpen] = useContext(NavbarContext)
     const [currentView, navigateTo, , , , , , , , , , , , setCurrentView] = useContext(ViewContext)
@@ -38,34 +76,51 @@ const FullScreenNav = ({ requireAuth }) => {
 
         tl.to('.fullscreennav', {
             display: 'block'
-        })
+        }, 0)
+        tl.fromTo('.nav-logo',
+            { y: -50, opacity: 0 },
+            {
+                duration: 0.6,
+                opacity: 1,
+                y: 0,
+                ease: "power3.out"
+            }, 0.1)
+        tl.fromTo('.navlink', 
+            { x: 30, opacity: 0 },
+            {
+                duration: 0.6,
+                opacity: 1,
+                x: 0,
+                ease: "power3.out"
+            }, 0.1)
         tl.to('.stairing', {
-            duration: 0.4,
+            duration: 0.8,
             height: '100%',
             stagger: {
-                amount: -0.15
+                amount: 0.1
             },
-            ease: "power3.inOut"
-        })
+            ease: "expo.out"
+        }, 0)
+        tl.to('.nav-ribbon-mask', {
+            duration: 0.4,
+            opacity: 1,
+            ease: "power3.out"
+        }, 0.3)
         tl.to('.link', {
-            duration: 0.3,
+            duration: 0.6,
             opacity: 1,
             rotateX: 0,
             stagger: {
                 amount: 0.2
             },
-            ease: "power2.out"
-        }, "-=0.3")
+            ease: "power3.out"
+        }, 0.2)
         tl.to('.nav-footer', {
-            duration: 0.3,
+            duration: 0.6,
             opacity: 1,
             y: 0,
-            ease: "power2.out"
-        }, "-=0.3")
-        tl.to('.navlink', {
-            duration: 0.3,
-            opacity: 1
-        }, "<")
+            ease: "power3.out"
+        }, 0.3)
 
         tlRef.current = tl
     }, [])
@@ -79,7 +134,8 @@ const FullScreenNav = ({ requireAuth }) => {
             tlRef.current.timeScale(1).play()
         } else {
             if (window.lenis) window.lenis.start()
-            tlRef.current.timeScale(1.8).reverse()
+            setHoveredIndex(null) // Immediate reset on close start
+            tlRef.current.timeScale(2).reverse()
         }
     }, [navOpen])
 
@@ -93,6 +149,7 @@ const FullScreenNav = ({ requireAuth }) => {
     useEffect(() => {
         if (!navOpen) {
             setActiveMobileItem(null)
+            setHoveredIndex(null)
             if (mobileNavActionTimeoutRef.current) clearTimeout(mobileNavActionTimeoutRef.current)
         }
     }, [navOpen])
@@ -111,6 +168,7 @@ const FullScreenNav = ({ requireAuth }) => {
             return
         }
 
+        setHoveredIndex(id)
         setActiveMobileItem(id)
 
         if (mobileNavActionTimeoutRef.current) clearTimeout(mobileNavActionTimeoutRef.current)
@@ -179,67 +237,98 @@ const FullScreenNav = ({ requireAuth }) => {
             {/* Scrollable area for the links and footer */}
             <div
                 ref={fullNavLinksRef}
-                className='relative h-[100svh] min-h-[100svh] overflow-y-auto overflow-x-hidden flex flex-col no-scrollbar'
-                style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+                onMouseLeave={() => setHoveredIndex(null)}
+                className='relative h-full w-full flex flex-col justify-center lg:justify-start overflow-hidden z-20'
             >
-
-                <div className="navlink opacity-0 relative h-12 sm:h-14 lg:h-14 w-full pointer-events-none shrink-0">
-                    <button type="button" aria-label="Close menu" onClick={() => {
-                        if (viewSwitchTimeoutRef.current) clearTimeout(viewSwitchTimeoutRef.current)
-                        setNavOpen(false)
-                    }} className='absolute right-4 top-0.5 sm:right-5 sm:top-1 lg:right-8 lg:top-1 lg:h-12 h-10 w-10 lg:w-12 cursor-pointer pointer-events-auto group flex items-center justify-center shrink-0'>
-                        {/* Brighter 'Sun Gold' Accent X closing button (Made Much Smaller) */}
-                        <div className='lg:h-10 h-8 lg:w-[2px] w-[2px] -rotate-45 absolute bg-[#FFD700] transition-transform group-hover:bg-white group-hover:scale-110'></div>
-                        <div className='lg:h-10 h-8 lg:w-[2px] w-[2px] rotate-45 absolute bg-[#FFD700] transition-transform group-hover:bg-white group-hover:scale-110'></div>
-                    </button>
+                {/* Logo in top-left: Stylized 'Moment Crafter' */}
+                <div className='nav-logo opacity-0 absolute left-6 lg:left-6 top-[6vw] lg:top-[2.5%] -translate-y-1/2 z-[101] pointer-events-none flex flex-col items-start leading-[0.85]'>
+                    <span className='text-white font-black text-3xl sm:text-3xl lg:text-4xl uppercase tracking-tight'>
+                        Moment
+                    </span>
+                    <span 
+                        className='font-black text-3xl sm:text-3xl lg:text-4xl uppercase tracking-tight'
+                        style={{ 
+                            WebkitTextStroke: '1px #FFD700', 
+                            color: 'transparent' 
+                        }}
+                    >
+                        Crafter
+                    </span>
                 </div>
 
-                <div className='pt-24 sm:pt-20 lg:pt-4 pb-4 sm:pb-6 lg:pb-8 flex flex-col grow w-full min-h-0 justify-center lg:justify-start'>
-                    {navItems.map((item, id, arr) => (
-                        <div
-                            key={id}
-                            onClick={() => triggerNavAction(item.action, id)}
-                            className={`link opacity-0 transform-[rotateX(90deg)] origin-top relative border-t border-white/20 ${id === arr.length - 1 ? 'border-b' : ''} group cursor-pointer hover:bg-white/2 transition-colors shrink-0 ${activeMobileItem === id ? 'mobile-active' : ''}`}
-                        >
-                            <h1 className='font-montserrat font-black text-[clamp(2rem,10.8vw,2.9rem)] sm:text-5xl md:text-6xl lg:text-[5.4vw] xl:text-[5.2vw] text-center leading-[0.9] lg:py-6 py-1.5 sm:py-4 px-4 sm:px-0 uppercase tracking-tighter text-white/90 group-hover:text-white transition-colors duration-300'>
-                                {item.title}
-                            </h1>
-                            <div className='moveLink absolute text-black flex top-0 bg-[#FFD700] w-full h-full pointer-events-none overflow-hidden'>
-                                <div className='moveX flex items-center h-full'>
-                                    {[1, 2, 3].map((_, i) => (
-                                        <div key={i} className='flex items-center'>
-                                            <h2 className='whitespace-nowrap font-montserrat font-black text-[clamp(2rem,10.8vw,2.9rem)] md:text-6xl lg:text-[5.4vw] xl:text-[5.2vw] text-center leading-[0.9] uppercase px-6 md:px-8'>
-                                                {item.label}
+                {/* Independent Close Button (Moved outside row to prevent opacity inheritance issues) */}
+                <button type="button" aria-label="Close menu" onClick={() => {
+                    if (viewSwitchTimeoutRef.current) clearTimeout(viewSwitchTimeoutRef.current)
+                    setNavOpen(false)
+                }} className='navlink opacity-0 absolute right-4 lg:right-0 top-5 lg:top-[1.9%] h-[13.8vw] lg:h-[16.66%] w-20 sm:w-28 lg:w-48 cursor-pointer pointer-events-auto z-[101] group flex items-center justify-center'>
+                    <div className='h-[200%] lg:h-[125%] w-[3px] -rotate-45 absolute bg-white transition-transform group-hover:scale-110'></div>
+                    <div className='h-[200%] lg:h-[125%] w-[3px] rotate-45 absolute bg-white transition-transform group-hover:scale-110'></div>
+                </button>
+
+                {/* Row 1: Empty Top Row */}
+                <div 
+                    onMouseEnter={() => setHoveredIndex(-1)}
+                    className='link opacity-0 h-[13.8vw] lg:h-[16.66%] border-b border-white/50 relative'
+                >
+                </div>
+
+                {/* Mask container to prevent ribbon from crossing the top/bottom boundary lines */}
+                <div 
+                    className='nav-ribbon-mask opacity-0 absolute left-0 w-full pointer-events-none overflow-hidden z-10'
+                    style={{ 
+                        top: isDesktop ? '16.66%' : 'calc(50% - 27.6vw)', 
+                        height: isDesktop ? '66.64%' : '55.2vw' 
+                    }}
+                >
+                    <div 
+                        ref={ribbonRef}
+                        className='absolute left-0 w-full h-[25%] bg-[#FFD700] overflow-hidden opacity-0'
+                        style={{ top: '0%' }}
+                    >
+                        <div ref={ribbonContentRef} className='h-full w-full'>
+                        {navItems.map((item, idx) => (
+                            <div key={idx} className='h-full w-full flex items-center overflow-hidden'>
+                                <div className='moveX flex items-center h-full shrink-0' style={{ animation: 'moveAnimation 30s linear infinite' }}>
+                                    {/* Double the items and animate to -50% for a truly seamless loop */}
+                                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((_, i) => (
+                                         <div key={i} className='flex items-center h-full shrink-0'>
+                                            <h2 className='whitespace-nowrap font-sans font-medium text-[14vw] sm:text-7xl md:text-8xl lg:text-[9vw] xl:text-[8.5vw] text-center uppercase px-0 text-black leading-none flex items-center h-full transform translate-y-[-5%]'>
+                                                {item.title}
                                             </h2>
-                                            <img className='h-12 w-28 md:h-20 md:w-56 lg:h-[8vw] lg:w-[24vw] rounded-full shrink-0 object-cover shadow-2xl brightness-90 saturate-50' src={cinematicImgs[id % cinematicImgs.length]} alt="cinematic" />
+                                             <img 
+                                                className='h-[75%] aspect-[2/1] rounded-full shrink-0 object-cover shadow-2xl brightness-110 contrast-110 mx-6' 
+                                                src={cinematicImgs[idx % cinematicImgs.length]} 
+                                                alt="cinematic" 
+                                                loading="lazy"
+                                            />
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Footer Section inside Navigation */}
-                <div className='nav-footer opacity-0 translate-y-5 flex lg:flex-row flex-col justify-between items-start lg:items-end w-full lg:p-12 px-5 pb-5 pt-8 sm:p-6 shrink-0 gap-8 mt-auto'>
-                    <div className='flex flex-col gap-2 w-full lg:w-auto'>
-                        <h4 className='text-white/50 text-[11px] sm:text-sm font-semibold uppercase tracking-widest'>Our Office</h4>
-                        <p className='text-base sm:text-lg leading-relaxed'>123 Cinematic Blvd.<br />Los Angeles, CA 90028</p>
-                    </div>
-                    <div className='flex flex-col gap-2 w-full lg:w-auto'>
-                        <h4 className='text-white/50 text-[11px] sm:text-sm font-semibold uppercase tracking-widest'>Get In Touch</h4>
-                        <a href="mailto:hello@momentcrafter.com" className='text-lg sm:text-xl border-b border-[#FFD700] inline-block break-all hover:text-[#FFD700] transition-colors'>hello@momentcrafter.com</a>
-                    </div>
-                    <div className='flex flex-col gap-2 w-full lg:w-auto lg:items-end items-start'>
-                        <h4 className='text-white/50 text-[11px] sm:text-sm font-semibold uppercase tracking-widest'>Socials</h4>
-                        <div className='flex flex-wrap gap-x-6 gap-y-2 mt-1 text-base sm:text-lg'>
-                            <a href="#" className='hover:text-[#FFD700] transition-colors'>Instagram</a>
-                            <a href="#" className='hover:text-[#FFD700] transition-colors'>Twitter</a>
-                            <a href="#" className='hover:text-[#FFD700] transition-colors'>Behance</a>
+                        ))}
                         </div>
                     </div>
                 </div>
 
+                {navItems.map((item, id, arr) => (
+                    <div
+                        key={id}
+                        onMouseEnter={() => setHoveredIndex(id)}
+                        onClick={() => triggerNavAction(item.action, id)}
+                        className={`link opacity-0 transform-[rotateX(90deg)] origin-top relative border-b border-white/50 group cursor-pointer hover:bg-white/2 transition-colors h-[13.8vw] lg:h-[16.66%] flex items-center justify-center shrink-0 ${activeMobileItem === id ? 'mobile-active' : ''}`}
+                    >
+                        <h1 className='font-sans font-medium text-[14vw] sm:text-7xl md:text-8xl lg:text-[9vw] xl:text-[8.5vw] text-center leading-none h-full w-full flex items-center lg:items-end justify-center px-0 sm:px-16 lg:px-24 uppercase text-white/90 group-hover:text-white transition-all duration-300 whitespace-nowrap'>
+                            {item.title}
+                        </h1>
+                    </div>
+                ))}
+
+                {/* Row 6: Empty Bottom Row */}
+                <div 
+                    onMouseEnter={() => setHoveredIndex(4)}
+                    className='link opacity-0 h-[13.8vw] lg:h-[16.66%] flex flex-col justify-center'
+                >
+                </div>
             </div>
         </div>
     )

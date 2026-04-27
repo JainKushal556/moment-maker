@@ -13,8 +13,8 @@ const HeartIcon = ({ size = 24 }) => (
     </svg>
 )
 const SparkleIcon = ({ size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 3l1.91 5.89L20 10.8l-5.89 1.91L12 21l-1.91-5.89L4 13.2l5.89-1.91L12 3z" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3L13.5 10.5L21 12L13.5 13.5L12 21L10.5 13.5L3 12L10.5 10.5L12 3Z" />
     </svg>
 )
 const StarIcon = ({ size = 24 }) => (

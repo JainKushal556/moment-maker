@@ -127,7 +127,7 @@ const BentoCard = ({ category, templateCount, onClick }) => {
                     <div className="flex gap-2 md:gap-3 items-center">
                         <div
                             ref={iconRef}
-                            className="bento-icon flex items-center justify-center text-white/60"
+                            className="bento-icon flex items-center justify-center text-white/90"
                             style={{ willChange: 'transform' }}
                         >
                             {category.icon}
@@ -142,7 +142,7 @@ const BentoCard = ({ category, templateCount, onClick }) => {
                     {/* Template Count / Coming Soon Tag */}
                     <div className="flex flex-col items-end gap-2">
                         {isComingSoon ? (
-                            <span className="text-[7px] md:text-[10px] font-bold uppercase tracking-[0.15em] md:tracking-[0.3em] text-white/40 bg-white/5 px-2 md:px-4 py-1 md:py-1.5 border border-white/10 backdrop-blur-md rounded-full">
+                            <span className="text-[7px] md:text-[8px] font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] text-white/40 bg-white/5 px-2 md:px-3 py-1 md:py-1 border border-white/10 backdrop-blur-md rounded-full">
                                 COMING SOON
                             </span>
                         ) : (
