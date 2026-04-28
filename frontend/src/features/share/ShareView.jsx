@@ -22,10 +22,39 @@ export default function ShareView() {
 
     if (currentView !== 'share') return null
 
+    const fallbackCopy = (text) => {
+        const textArea = document.createElement('textarea')
+        textArea.value = text
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        textArea.style.top = '-999999px'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        try {
+            document.execCommand('copy')
+            setCopied(true)
+            setTimeout(() => setCopied(false), 2500)
+        } catch (err) {
+            console.error('Fallback copy failed', err)
+        }
+        document.body.removeChild(textArea)
+    }
+
     const handleCopy = () => {
-        navigator.clipboard?.writeText(`https://${generatedLink}`)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2500)
+        const textToCopy = `https://${generatedLink}`
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 2500)
+                })
+                .catch(() => {
+                    fallbackCopy(textToCopy)
+                })
+        } else {
+            fallbackCopy(textToCopy)
+        }
     }
 
     const handleWhatsApp = () => {

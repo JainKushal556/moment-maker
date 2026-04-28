@@ -24,11 +24,17 @@ export default function ResetPassword({ oobCode }) {
     const [error, setError] = useState('')
 
     useEffect(() => {
+        const originalBodyOverflow = document.body.style.overflow
+        const originalHtmlOverflow = document.documentElement.style.overflow
+
         document.body.style.overflow = 'hidden'
+        document.documentElement.style.overflow = 'hidden'
+
         if (window.lenis) window.lenis.stop()
 
         return () => {
-            document.body.style.overflow = ''
+            document.body.style.overflow = originalBodyOverflow
+            document.documentElement.style.overflow = originalHtmlOverflow
             if (window.lenis) window.lenis.start()
         }
     }, [])

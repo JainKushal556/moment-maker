@@ -1,4 +1,6 @@
 import { createContext, useState, useRef, useCallback, useEffect } from 'react'
+import { useAuth } from './AuthContext'
+import { auth } from '../config/firebase'
 
 export const NavbarContext = createContext(null)
 export const NavbarColorContext = createContext(null)
@@ -28,6 +30,17 @@ export const NavProvider = ({ children }) => {
     const [editingMomentId, setEditingMomentId] = useState(null)
     const [selectedIntroId, setSelectedIntroId] = useState('glass-card')
 
+    const { currentUser, openAuthModal, loading } = useAuth()
+    const PROTECTED_VIEWS = ['editor', 'moments', 'settings', 'share']
+
+    useEffect(() => {
+        const isAuth = auth.currentUser && auth.currentUser.emailVerified
+        if (PROTECTED_VIEWS.includes(currentView) && !isAuth && !loading) {
+            setCurrentView('landing')
+            window.history.replaceState({ view: 'landing' }, '', '')
+        }
+    }, [currentUser, currentView, loading])
+
     // Ref that App.jsx will attach SvgTransition to
     const transitionRef = useRef(null)
     const isTransitioning = useRef(false)
@@ -56,6 +69,14 @@ export const NavProvider = ({ children }) => {
 
     // 2. Transition-aware navigation — plays SVG transition then swaps view at midpoint
     const navigateTo = useCallback((nextView, shouldPush = true) => {
+        const isAuth = auth.currentUser && auth.currentUser.emailVerified
+        if (PROTECTED_VIEWS.includes(nextView) && !isAuth && !loading) {
+            setCurrentView('landing')
+            openAuthModal()
+            window.history.replaceState({ view: 'landing' }, '', '')
+            return
+        }
+
         // If already transitioning or same view, just set directly
         if (isTransitioning.current || nextView === currentView) {
             setCurrentView(nextView)
