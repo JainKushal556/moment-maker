@@ -6,7 +6,7 @@ import { saveMoment, updateMoment } from '../../services/api'
 import { uploadImage, base64ToFile, getFirebaseToken } from '../../services/cloudinary'
 import { getIntroById } from '../../data/intros'
 
-export default function LivePreviewer({ template, customization, refreshKey, introId, senderName }) {
+export default function LivePreviewer({ template, customization, refreshKey, introId, senderName, isMobileFullPreview, setIsMobileFullPreview }) {
     const [, navigateTo, , , , , , , setSharedMomentId, editingMomentId, setEditingMomentId] = useContext(ViewContext)
     const [device, setDevice] = useState('desktop')
     const iframeContainerRef = useRef(null)
@@ -109,12 +109,15 @@ export default function LivePreviewer({ template, customization, refreshKey, int
             overflow: 'hidden',
             background: '#000'
         }
+        if (isMobileFullPreview) {
+            return { ...base, height: '100%', width: '100%', aspectRatio: '9/16', borderRadius: '0' }
+        }
         switch (device) {
             case 'tablet':
-                return { ...base, height: '85%', aspectRatio: '768/1024', borderRadius: '32px' }
+                return { ...base, height: '85%', aspectRatio: '768/1024', borderRadius: '24px' }
             case 'mobile':
                 return {
-                    ...base, height: '90%', aspectRatio: '390/844', borderRadius: '44px'
+                    ...base, height: '90%', aspectRatio: '390/844', borderRadius: '24px'
                 }
             case 'desktop':
             default:
@@ -122,17 +125,22 @@ export default function LivePreviewer({ template, customization, refreshKey, int
                     ...base, 
                     width: '90%', 
                     maxWidth: '1000px', 
-                    aspectRatio: '16/10',
                     borderRadius: '16px'
                 }
         }
     }
 
     const getContentAspectStyle = () => {
-        return { flex: 1, width: '100%', position: 'relative' }
+        if (isMobileFullPreview) {
+            return { flex: 1, width: '100%', position: 'relative' }
+        }
+        return { flex: device === 'desktop' ? 'none' : 1, width: '100%', position: 'relative', aspectRatio: device === 'desktop' ? '16/9' : undefined }
     }
 
     const getIframeDimensions = () => {
+        if (isMobileFullPreview) {
+            return { width: 393, height: 852 }
+        }
         switch (device) {
             case 'tablet': return { width: 768, height: 1024 }
             case 'mobile': return { width: 393, height: 852 }
@@ -153,7 +161,7 @@ export default function LivePreviewer({ template, customization, refreshKey, int
     return (
         <div className="editor-preview-area relative pt-0 md:pt-20">
 
-            <div className="hidden md:flex absolute top-6 right-6 flex flex-col items-center gap-2 p-2 bg-[#1a1a1a]/95 backdrop-blur-2xl border border-white/10 rounded-2xl z-50 shadow-2xl">
+            <div className="hidden md:flex absolute top-6 right-6 flex flex-col items-center gap-1.5 p-1 bg-[#1a1a1a]/95 backdrop-blur-2xl border border-white/10 rounded-2xl z-50 shadow-2xl">
                 {[
                     { id: 'desktop', label: 'Desktop', icon: <><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></> },
                     { id: 'tablet', label: 'Tablet', icon: <><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></> },
@@ -163,7 +171,7 @@ export default function LivePreviewer({ template, customization, refreshKey, int
                         key={d.id}
                         onClick={() => setDevice(d.id)}
                         title={d.label}
-                        className={`w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 ${device === d.id ? 'bg-white/15 text-white shadow-lg' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                        className={`w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 ${device === d.id ? 'bg-white/15 text-white shadow-lg' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
                     >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{d.icon}</svg>
                     </button>
@@ -196,7 +204,7 @@ export default function LivePreviewer({ template, customization, refreshKey, int
                     {showIntro && IntroComp ? (
                         <div 
                             className="absolute inset-0 z-50 bg-black"
-                            style={{
+                            style={isMobileFullPreview ? { width: '100%', height: '100%' } : {
                                 width: `${iWidth}px`,
                                 height: `${iHeight}px`,
                                 transform: `scale(${iframeScale})`,
@@ -216,7 +224,7 @@ export default function LivePreviewer({ template, customization, refreshKey, int
                             src={getIframeSrc()}
                             title="Preview"
                             className="bg-black border-0 absolute top-0 left-0"
-                            style={{
+                            style={isMobileFullPreview ? { width: '100%', height: '100%' } : {
                                 width: `${iWidth}px`,
                                 height: `${iHeight}px`,
                                 transform: `scale(${iframeScale})`,

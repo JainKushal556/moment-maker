@@ -195,7 +195,15 @@ const FullScreenNav = ({ requireAuth }) => {
             label: "Return Home",
             action: handleHomeAction
         },
-        { title: "Categories", label: "Explore Categories", action: () => { closeNavAndSwitch('categories') } },
+        { 
+            title: "Categories", 
+            label: "Explore Categories", 
+            action: () => { 
+                sessionStorage.removeItem('explorerInternalView')
+                sessionStorage.removeItem('explorerSelectedCategory')
+                closeNavAndSwitch('categories') 
+            } 
+        },
         {
             title: "My Moments",
             label: "Your Archive",

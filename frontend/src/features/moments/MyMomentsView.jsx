@@ -15,7 +15,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getMoments } from '../../services/api';
 
 export default function MyMomentsView() {
-  const [currentView, navigateTo, , setSelectedTemplate, , setTemplateCustomization, transitionRef, , , editingMomentId, setEditingMomentId, , setSelectedIntroId] = useContext(ViewContext);
+  const [currentView, navigateTo, , setSelectedTemplate, , setTemplateCustomization, transitionRef, sharedMomentId, setSharedMomentId, editingMomentId, setEditingMomentId, , setSelectedIntroId] = useContext(ViewContext);
   const { currentUser, logout, openAuthModal, loading, favorites } = useAuth();
   const [moments, setMoments] = useState([]);
   const [filter, setFilter] = useState('all');
@@ -69,6 +69,11 @@ export default function MyMomentsView() {
   }, [moments, filter, favorites]);
 
   const handleAction = (type, id) => {
+    if (type === 'share') {
+      setSharedMomentId(id);
+      navigateTo('share');
+      return;
+    }
     if (type === 'delete') {
       setDeleteTarget(id); // Show confirmation modal instead of deleting immediately
       return;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { ArrowUpRight, Trash2, Sparkles, Heart } from 'lucide-react';
+import { ArrowUpRight, Trash2, Sparkles, Heart, Share2, Pencil, RotateCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 
@@ -107,6 +107,54 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
               </button>
             )}
           </div>
+
+          {/* Mobile View: Floating Action Buttons */}
+          {!isTemplate && (
+            <div 
+              className="md:hidden absolute flex items-center gap-2 z-50"
+              style={{ bottom: '16px', right: '20px' }}
+            >
+              {validity?.isExpired ? (
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); if (onAction) onAction('reactivate', moment.id); }}
+                    className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-fuchsia-600 text-white border border-fuchsia-500 flex items-center justify-center shadow-lg active:scale-95 cursor-pointer"
+                  >
+                    <RotateCw size={16} strokeWidth={2.5} />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); if (onAction) onAction('delete', moment.id); }}
+                    className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </>
+              ) : (
+                <>
+                  {!isTemplate && moment.status === 'shared' && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); if (onAction) onAction('share', moment.id); }}
+                      className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer"
+                    >
+                      <Share2 size={16} />
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); if (onAction) onAction('enter', moment.id); }}
+                    className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-white text-black border border-white/10 flex items-center justify-center shadow-lg active:scale-95 cursor-pointer"
+                  >
+                    <Pencil size={16} strokeWidth={2.5} />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); if (onAction) onAction('delete', moment.id); }}
+                    className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <div
@@ -161,7 +209,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
                   className="rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] bg-fuchsia-600 text-white hover:bg-fuchsia-500 shadow-2xl transition-all active:scale-95 cursor-pointer flex items-center gap-2 whitespace-nowrap"
                   style={{ padding: '14px 32px' }}
                 >
-                  Reactivate <Sparkles size={16} strokeWidth={3} />
+                  Reactivate <RotateCw size={16} strokeWidth={3} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); if (onAction) onAction('delete', moment.id); }}
@@ -177,8 +225,16 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
                   className="rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] bg-white text-black hover:bg-fuchsia-600 hover:text-white shadow-2xl transition-all active:scale-95 cursor-pointer flex items-center gap-2 whitespace-nowrap"
                   style={{ padding: '14px 32px' }}
                 >
-                  {isTemplate ? 'Build This' : moment.status === 'draft' ? 'Resume' : 'Edit'} <ArrowUpRight size={16} strokeWidth={3} />
+                  {isTemplate ? 'Build This' : moment.status === 'draft' ? 'Resume' : 'Edit'} <Pencil size={16} strokeWidth={3} />
                 </button>
+                {!isTemplate && moment.status === 'shared' && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); if (onAction) onAction('share', moment.id); }}
+                    className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-white/60 hover:text-fuchsia-400 hover:bg-fuchsia-400/10 transition-all cursor-pointer"
+                  >
+                    <Share2 size={20} />
+                  </button>
+                )}
                 {!isTemplate && (
                   <button
                     onClick={(e) => { e.stopPropagation(); if (onAction) onAction('delete', moment.id); }}

@@ -61,8 +61,8 @@ export default function ShareView() {
                         <span>Back to Editor</span>
                     </button>
 
-                    <button className="share-nav-btn share-nav-btn-secondary" onClick={() => navigateTo('categories')}>
-                        <span>New Moment</span>
+                    <button className="share-nav-btn share-nav-btn-secondary" onClick={() => navigateTo('moments')}>
+                        <span>My Moments</span>
                     </button>
                 </div>
             </nav>
@@ -81,6 +81,23 @@ export default function ShareView() {
                             <span>Easy sharing</span>
                         </div>
                     </header>
+
+                    <div className="share-limits-box">
+                        <div className="share-limit-item">
+                            <svg className="share-limit-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <div className="share-limit-texts">
+                                <span className="share-limit-title">Validity Limit</span>
+                                <span className="share-limit-desc">Expires 5 minutes after creation or update.</span>
+                            </div>
+                        </div>
+                        <div className="share-limit-item">
+                            <svg className="share-limit-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <div className="share-limit-texts">
+                                <span className="share-limit-title">Access Limit</span>
+                                <span className="share-limit-desc">Allows a maximum of 4 unique viewer sessions.</span>
+                            </div>
+                        </div>
+                    </div>
 
                     <div className="share-link-section">
                         <label className="share-link-label">Share Link</label>
@@ -138,19 +155,7 @@ export default function ShareView() {
                         </button>
                     </div>
 
-                    <div className="share-actions">
-                        <button className="share-preview-btn" onClick={() => navigateTo('editor')}>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                                <circle cx="12" cy="12" r="3" />
-                            </svg>
-                            Preview Again
-                        </button>
-
-                        <button className="share-create-btn" onClick={() => navigateTo('moments')}>
-                            My Moments
-                        </button>
-                    </div>
+                    {/* Buttons removed as requested */}
                 </section>
             </main>
         </div>

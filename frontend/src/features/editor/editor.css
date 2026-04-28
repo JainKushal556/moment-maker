@@ -964,7 +964,7 @@
         height: 280px !important;
         width: 100% !important;
         background: #000;
-        border-bottom: 1px solid var(--ep-border);
+        border-bottom: 2px solid var(--ep-accent) !important;
         padding: 0 !important;
     }
 
@@ -976,6 +976,37 @@
         margin: 0 !important;
         border: none !important;
         background: #000;
+    }
+
+    /* Full Screen Mobile Preview Mode overrides */
+    .mobile-preview-fullscreen .editor-main {
+        height: calc(100vh - 48px) !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .mobile-preview-fullscreen .editor-panel {
+        display: none !important;
+    }
+
+    .mobile-preview-fullscreen .editor-preview-area {
+        height: calc(100vh - 48px) !important;
+        flex: 1 !important;
+        top: 48px !important;
+    }
+
+    .mobile-preview-fullscreen .preview-device-frame {
+        height: calc(100vh - 48px) !important;
+        width: auto !important;
+        aspect-ratio: 9 / 16 !important;
+        margin: 0 auto !important;
+        max-width: 100% !important;
+    }
+
+    .mobile-preview-fullscreen .browser-content {
+        height: 100% !important;
+        width: 100% !important;
     }
 
     .browser-header {

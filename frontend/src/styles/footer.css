@@ -134,6 +134,11 @@
     gap: 0.3rem;
     min-width: 170px;
 }
+.fpo-logo-tagline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
 .footer-logo-link { display: inline-block; text-decoration: none; transition: opacity 0.2s; }
 .footer-logo-link:hover { opacity: 0.8; }
 .footer-logo-svg { width: 180px; height: auto; display: block; }
@@ -378,13 +383,18 @@
     .made-with-love { min-width: auto; justify-content: center; }
 }
 @media (max-width: 640px) {
-    .footer-playground { height: 1400px; }
+    .footer-playground { height: 1200px;}
     .footer-blob { width: 140px; height: 140px; }
     .footer-pill { font-size: 0.75rem; padding: 10px 18px; }
     .footer-playground-overlay { padding: 2rem 1.5rem; border-radius: 20px 20px 0 0; }
-    .fpo-nav-cols { grid-template-columns: 1fr; gap: 2.5rem; }
-    .fpo-col { align-items: center; text-align: center; }
-    .fpo-col a { justify-content: center; }
-    .fpo-col-header::after { left: 50%; transform: translateX(-50%); }
+    .fpo-logo-tagline { flex-direction: row; align-items: center; gap: 1rem; justify-content: center; text-align: left; }
+    .fpo-logo-tagline .fpo-tagline { margin: 0; text-align: left; white-space: nowrap; }
+    .fpo-nav-cols { grid-template-columns: repeat(2, 1fr); gap: 2rem 1rem; }
+    .fpo-col { align-items: flex-start; text-align: left; }
+    .fpo-col a { justify-content: space-between; width: 100%; }
+    .fpo-col-header::after { left: 0; transform: none; }
+    .fpo-col-header { white-space: nowrap; font-size: 10.5px; letter-spacing: 0.05em; }
+    .footer-newsletter { text-align: left; }
+    .newsletter-header { justify-content: flex-start; }
     .newsletter-form { width: 100%; }
 }

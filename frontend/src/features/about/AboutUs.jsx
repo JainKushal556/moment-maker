@@ -311,7 +311,7 @@ export default function AboutUs() {
           </h1>
 
           <div className="grid md:grid-cols-2 gap-8 sm:gap-12 md:gap-24 items-start md:items-end hero-text">
-            <p className="text-lg sm:text-2xl md:text-5xl font-playfair leading-[1.1] text-white/90 max-w-[14ch] sm:max-w-none">
+            <p className="text-2xl sm:text-3xl md:text-6xl leading-[1.2] text-white/95 w-full" style={{ fontFamily: "'Dancing Script', cursive" }}>
               We are three friends building digital artifacts that make memories permanent.
             </p>
 

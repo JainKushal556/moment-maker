@@ -182,10 +182,13 @@
     display: flex;
     flex-direction: column;
     gap: 7px;
-    align-items: flex-end;
+    align-items: flex-start;
     color: rgba(255, 255, 255, 0.42);
-    font-size: 12px;
-    font-weight: 800;
+    font-size: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
 }
 
 .share-status-list span {
@@ -435,8 +438,7 @@
     }
 
     .share-panel-header {
-        grid-template-columns: 1fr;
-        gap: 18px;
+        gap: 12px;
     }
 
     .share-status-list {
@@ -457,10 +459,116 @@
 
 @media (max-width: 560px) {
     .share-socials {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
     }
 
-    .share-nav-btn-secondary {
-        display: none;
+}
+
+.share-limits-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    margin-bottom: 8px;
+}
+
+.share-limit-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.share-limit-icon {
+    color: #f472b6;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.share-limit-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.share-limit-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.share-limit-desc {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+    .share-limits-box {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .share-content {
+        padding: 24px 12px 60px;
+    }
+
+    .share-panel {
+        padding: 24px 16px;
+        gap: 20px;
+    }
+
+    .share-heading {
+        font-size: 1.85rem;
+        line-height: 1;
+    }
+
+    .share-status-list {
+        font-size: 8px;
+        gap: 5px;
+    }
+
+    .share-limits-box {
+        padding: 14px 12px;
+        gap: 12px;
+    }
+
+    .share-limit-item {
+        gap: 10px;
+    }
+
+    .share-limit-title {
+        font-size: 10px;
+    }
+
+    .share-limit-desc {
+        font-size: 10px;
+    }
+
+    .share-link-box {
+        min-height: auto;
+    }
+
+    .share-link-url {
+        padding: 16px 14px;
+        font-size: 12px;
+        gap: 10px;
+    }
+
+    .share-copy-btn {
+        min-height: 48px;
+        font-size: 10px;
+    }
+    
+    .share-social-btn {
+        height: 90px;
+        gap: 10px;
     }
 }

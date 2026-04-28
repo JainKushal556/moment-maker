@@ -5,6 +5,39 @@ import '../styles/footer.css'
 
 const { Engine, Runner, Bodies, Body, Composite, Mouse, MouseConstraint, Events } = Matter
 
+const FloatingHearts = () => {
+  const containerRef = useRef(null)
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const createHeart = () => {
+      const heart = document.createElement('div')
+      heart.className = 'floating-heart'
+      heart.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="#f472b6" style="opacity: ${Math.random() * 0.4 + 0.2}">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+      </svg>`
+
+      const size = Math.random() * 20 + 10
+      heart.style.left = Math.random() * 100 + '%'
+      heart.style.top = '100%'
+      heart.style.setProperty('--rotation', (Math.random() * 90 - 45) + 'deg')
+      heart.style.animationDuration = Math.random() * 10 + 15 + 's'
+
+      container.appendChild(heart)
+      heart.addEventListener('animationend', () => heart.remove())
+    }
+
+    const interval = setInterval(createHeart, 2000)
+    for (let i = 0; i < 8; i++) setTimeout(createHeart, Math.random() * 5000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  return <div ref={containerRef} className="absolute inset-0 pointer-events-none overflow-hidden" />
+}
+
 export default function Footer() {
   const playgroundRef = useRef(null)
   const [, navigateTo] = useContext(ViewContext)
@@ -23,6 +56,7 @@ export default function Footer() {
       // Ensure the floor is always at least 300px from top, so balls ALWAYS have space
       return Math.max(300, pH - overlayH - 8); 
     }
+    const isMobile = window.innerWidth <= 640;
     const wallT = 60
 
     function createWalls() {
@@ -31,14 +65,13 @@ export default function Footer() {
         Bodies.rectangle(pW / 2, floor + wallT / 2, pW + 200, wallT, { isStatic: true, label: 'floor' }),
         Bodies.rectangle(-wallT / 2, pH / 2, wallT, pH * 2, { isStatic: true }),
         Bodies.rectangle(pW + wallT / 2, pH / 2, wallT, pH * 2, { isStatic: true }),
-        Bodies.rectangle(pW / 2, -wallT / 2, pW + 200, wallT, { isStatic: true })
+        Bodies.rectangle(pW / 2, (isMobile ? 40 : 0) - wallT / 2, pW + 200, wallT, { isStatic: true })
       ]
     }
 
     let walls = createWalls(); Composite.add(engine.world, walls)
     const items = []; const MAX_SPEED = 28;
 
-    const isMobile = window.innerWidth <= 640;
     const blobSize = isMobile ? 140 : 280;
     const blobStartPositions = [{ x: 0.12, y: 0.10 }, { x: 0.80, y: 0.12 }, { x: 0.38, y: 0.08 }, { x: 0.58, y: 0.18 }, { x: 0.15, y: 0.28 }, { x: 0.70, y: 0.06 }]
     
@@ -46,7 +79,7 @@ export default function Footer() {
     blobEls.forEach((el, i) => {
       const bRadius = blobSize / 2;
       const pos = blobStartPositions[i] || { x: Math.random(), y: 0.15 }; const floor = playFloor()
-      const body = Bodies.circle(pW * pos.x, floor * pos.y, bRadius * 0.65, { restitution: 0.45, friction: 0.25, frictionAir: 0.018, density: 0.002, angle: (Math.random() - 0.5) * 0.6 })
+      const body = Bodies.circle(pW * pos.x, (floor * pos.y) + (isMobile ? 40 : 0), bRadius * 0.65, { restitution: 0.45, friction: 0.25, frictionAir: 0.018, density: 0.002, angle: (Math.random() - 0.5) * 0.6 })
       Composite.add(engine.world, body); items.push({ el, body, w: blobSize, h: blobSize, isBlob: true })
     })
 
@@ -55,7 +88,7 @@ export default function Footer() {
     pillEls.forEach((el, i) => {
       const w = el.offsetWidth || 180; const h = el.offsetHeight || 44
       const pos = pillPositions[i] || { x: 0.5, y: 0.55, angle: -0.3 }; const floor = playFloor()
-      const body = Bodies.rectangle(pW * pos.x, floor * pos.y, w, h, { restitution: 0.5, friction: 0.2, frictionAir: 0.03, density: 0.001, angle: pos.angle, chamfer: { radius: h / 2 } })
+      const body = Bodies.rectangle(pW * pos.x, (floor * pos.y) + (isMobile ? 40 : 0), w, h, { restitution: 0.5, friction: 0.2, frictionAir: 0.03, density: 0.001, angle: pos.angle, chamfer: { radius: h / 2 } })
       Composite.add(engine.world, body); items.push({ el, body, w, h, isBlob: false })
     })
 
@@ -102,7 +135,8 @@ export default function Footer() {
         
         // Only clamp Y if the floor provides enough space
         if (floor > margin * 2) {
-          if (py < margin) { py = margin; clamped = true }; 
+          const minY = (isMobile ? 40: 0) + margin;
+          if (py < minY) { py = minY; clamped = true }; 
           if (py > floor - margin) { py = floor - margin; clamped = true }
         }
         
@@ -156,6 +190,7 @@ export default function Footer() {
   return (
     <section className="footer-section">
       <div className="footer-playground" ref={playgroundRef}>
+        <FloatingHearts />
 
         {/* Shape 1: Yellow Heptagon */}
         <div className="footer-blob">
@@ -224,18 +259,20 @@ export default function Footer() {
           <div className="fpo-top">
             {/* Brand + Newsletter */}
             <div className="fpo-brand">
-              <a href="#" className="footer-logo-link" aria-label="Moment Crafter Home">
-                <svg className="footer-logo-svg" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
-                  <polygon points="16,2 18.5,11 28,11 20.5,16.5 23,26 16,21 9,26 11.5,16.5 4,11 13.5,11" fill="#ff69b4" />
-                  <line x1="16" y1="0" x2="16" y2="3" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="16" y1="27" x2="16" y2="30" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="30" y1="14" x2="33" y2="14" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="0" y1="14" x2="3" y2="14" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
-                  <text x="42" y="20" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="700" fontSize="14" fill="#fff" letterSpacing="0.5">MOMENT</text>
-                  <text x="42" y="36" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="300" fontSize="10.5" fill="rgba(255,255,255,0.5)" letterSpacing="2.5">CRAFTER</text>
-                </svg>
-              </a>
-              <p className="fpo-tagline">Craft memories,<br />not just messages.</p>
+              <div className="fpo-logo-tagline">
+                <a href="#" className="footer-logo-link" aria-label="Moment Crafter Home">
+                  <svg className="footer-logo-svg" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="16,2 18.5,11 28,11 20.5,16.5 23,26 16,21 9,26 11.5,16.5 4,11 13.5,11" fill="#ff69b4" />
+                    <line x1="16" y1="0" x2="16" y2="3" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
+                    <line x1="16" y1="27" x2="16" y2="30" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
+                    <line x1="30" y1="14" x2="33" y2="14" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
+                    <line x1="0" y1="14" x2="3" y2="14" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
+                    <text x="42" y="20" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="700" fontSize="14" fill="#fff" letterSpacing="0.5">MOMENT</text>
+                    <text x="42" y="36" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="300" fontSize="10.5" fill="rgba(255,255,255,0.5)" letterSpacing="2.5">CRAFTER</text>
+                  </svg>
+                </a>
+                <p className="fpo-tagline">Craft memories,<br />not just messages.</p>
+              </div>
 
               {/* Newsletter */}
               <div className="footer-newsletter">
@@ -272,9 +309,9 @@ export default function Footer() {
                 <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('about'); }}>Makers</a>
               </div>
               <div className="fpo-col">
-                <div className="fpo-col-header"><i className="fas fa-headset col-icon"></i> CONTACT & SUPPORT</div>
-                <a href="#">Help & Support</a>
-                <a href="#">FAQs</a>
+                <div className="fpo-col-header"><i className="fas fa-shield-alt col-icon"></i> SUPPORT & LEGAL</div>
+                <a href="#">Contact Us</a>
+                <a href="#">Help Center / FAQs</a>
                 <a href="#">Privacy Policy</a>
                 <a href="#">Terms of Service</a>
               </div>
