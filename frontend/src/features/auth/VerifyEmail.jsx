@@ -9,6 +9,16 @@ export default function VerifyEmail({ oobCode }) {
     const hasAttempted = useRef(false)
 
     useEffect(() => {
+        document.body.style.overflow = 'hidden'
+        if (window.lenis) window.lenis.stop()
+
+        return () => {
+            document.body.style.overflow = ''
+            if (window.lenis) window.lenis.start()
+        }
+    }, [])
+
+    useEffect(() => {
         if (!oobCode) {
             setStatus('error')
             setMessage('Invalid verification link.')

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { confirmPasswordReset } from 'firebase/auth'
 import { auth } from '../../config/firebase'
 import './auth.css'
@@ -22,6 +22,16 @@ export default function ResetPassword({ oobCode }) {
     const [showPassword, setShowPassword] = useState(false)
     const [status, setStatus] = useState('idle') // 'idle', 'submitting', 'success', 'error'
     const [error, setError] = useState('')
+
+    useEffect(() => {
+        document.body.style.overflow = 'hidden'
+        if (window.lenis) window.lenis.stop()
+
+        return () => {
+            document.body.style.overflow = ''
+            if (window.lenis) window.lenis.start()
+        }
+    }, [])
 
     const handleSubmit = async (e) => {
         e.preventDefault()

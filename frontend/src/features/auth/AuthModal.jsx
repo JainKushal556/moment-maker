@@ -95,6 +95,16 @@ export default function AuthModal({ onClose, onSuccess }) {
         return () => clearInterval(timer)
     }, [cooldown])
 
+    useEffect(() => {
+        document.body.style.overflow = 'hidden'
+        if (window.lenis) window.lenis.stop()
+
+        return () => {
+            document.body.style.overflow = ''
+            if (window.lenis) window.lenis.start()
+        }
+    }, [])
+
     const clearMessages = () => { setError(''); setMessage('') }
 
     const handleGoogleSignIn = async () => {
