@@ -176,7 +176,7 @@ export default function SettingsView() {
   if (currentView !== 'settings') return null;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-fuchsia-500/30 overflow-x-hidden w-full relative z-50">
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-fuchsia-500/30 w-full relative z-50">
       {/* Background Effects */}
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.1] z-0"
@@ -188,7 +188,7 @@ export default function SettingsView() {
       </div>
 
       {/* Navigation Bar */}
-      <nav className="sticky top-0 z-50 bg-black/20 backdrop-blur-md border-b border-white/5 h-14 md:h-12 flex items-center px-4 md:px-16">
+      <nav className="sticky top-0 z-50 bg-black/20 backdrop-blur-md border-b border-white/5 w-full h-12 flex items-center px-6 md:px-12">
         <div className="w-full flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button

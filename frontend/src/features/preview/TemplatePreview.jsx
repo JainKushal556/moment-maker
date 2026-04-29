@@ -152,7 +152,7 @@ export default function TemplatePreview() {
     }
 
     const handleBack = () => {
-        navigateTo('categories')
+        navigateTo('gallery')
     }
 
     const onToggleFavorite = async () => {
@@ -168,8 +168,8 @@ export default function TemplatePreview() {
             <div className="tp-bg-glow" />
 
             {/* Top Navigation */}
-            <nav className="w-full h-12 flex items-center px-8 md:px-16 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
-                <div className="max-w-[1600px] mx-auto w-full flex items-center justify-between">
+            <nav className="w-full h-12 flex items-center px-6 md:px-12 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
+                <div className="w-full flex items-center justify-between">
                     <button
                         className="group flex items-center gap-3 text-white/40 hover:text-white transition-colors"
                         onClick={handleBack}

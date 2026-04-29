@@ -59,8 +59,9 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
     y.set((e.clientY - rect.top) / rect.height - 0.5);
   };
 
-  const handleCardClick = () => {
-    if (onAction) onAction('click', moment.id);
+  const handleCardClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (onAction) onAction('click', moment.id, rect);
   };
 
   return (
@@ -75,7 +76,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
       <div className="absolute inset-[-1.5px] rounded-[2.5rem] bg-linear-to-r from-fuchsia-500/20 via-transparent to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-[1px]" />
 
       <div className="relative h-full w-full overflow-hidden rounded-[2.5rem] bg-zinc-950 border border-white/10 shadow-2xl flex flex-col">
-        <div className="relative h-[72%] w-full overflow-hidden">
+        <div className="relative h-full w-full overflow-hidden">
           <img
             src={imageUrl}
             alt={moment.title}
@@ -84,7 +85,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
               e.target.src = "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80"
             }}
           />
-          <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-950/20 to-transparent opacity-80" />
+          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-[#0a0a12] via-[#0a0a12]/80 to-transparent z-10" />
 
           <div
             className="absolute flex justify-between items-start z-50"
@@ -94,6 +95,11 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
               {moment.isPremium && (
                 <span className="text-[8px] font-black tracking-widest px-2 py-1 rounded bg-fuchsia-500 text-white w-fit uppercase">
                   Premium
+                </span>
+              )}
+              {isTemplate && moment.averageRating > 0 && (
+                <span className="text-[10px] font-bold px-2 py-1 rounded bg-black/60 backdrop-blur-md text-white border border-white/10 w-fit flex items-center gap-1 shadow-lg">
+                  ⭐ {moment.averageRating.toFixed(1)}
                 </span>
               )}
             </div>
@@ -112,13 +118,13 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
           {!isTemplate && (
             <div 
               className="md:hidden absolute flex items-center gap-2 z-50"
-              style={{ bottom: '16px', right: '20px' }}
+              style={{ bottom: '80px', right: '20px' }}
             >
               {validity?.isExpired ? (
                 <>
                   <button
                     onClick={(e) => { e.stopPropagation(); if (onAction) onAction('reactivate', moment.id); }}
-                    className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-fuchsia-600 text-white border border-fuchsia-500 flex items-center justify-center shadow-lg active:scale-95 cursor-pointer"
+                  className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer"
                   >
                     <RotateCw size={16} strokeWidth={2.5} />
                   </button>
@@ -141,7 +147,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); if (onAction) onAction('enter', moment.id); }}
-                    className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-white text-black border border-white/10 flex items-center justify-center shadow-lg active:scale-95 cursor-pointer"
+                    className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer"
                   >
                     <Pencil size={16} strokeWidth={2.5} />
                   </button>
@@ -158,11 +164,11 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
         </div>
 
         <div
-          className="relative z-10 flex flex-col flex-1 justify-center bg-zinc-950 border-t border-white/5"
-          style={{ paddingLeft: '24px', paddingRight: '24px', paddingTop: '12px', paddingBottom: '12px' }}
+          className="absolute bottom-0 left-0 right-0 z-20 flex flex-col justify-center bg-transparent border-t-0"
+          style={{ paddingLeft: '24px', paddingRight: '24px', paddingTop: '20px', paddingBottom: '24px' }}
         >
           <div className="flex items-center justify-between gap-8">
-            <div className="space-y-2 overflow-hidden flex-1 min-w-0">
+            <div className="space-y-2 overflow-hidden flex-1 min-w-0 group-hover:opacity-0 transition-opacity duration-300">
               <div className="flex items-center gap-2">
                 <h3 className={`text-xl md:text-2xl font-black tracking-tight text-white group-hover:text-fuchsia-400 transition-colors duration-300 truncate`}>
                   {moment.title}
@@ -201,12 +207,12 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
 
           </div>
 
-          <div className="absolute inset-0 bg-zinc-950/90 backdrop-blur-md flex items-center justify-center gap-6 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 z-40">
+          <div className="absolute inset-0 bg-transparent flex items-center justify-center gap-6 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 z-40">
             {validity?.isExpired ? (
               <>
                 <button
                   onClick={(e) => { e.stopPropagation(); if (onAction) onAction('reactivate', moment.id); }}
-                  className="rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] bg-fuchsia-600 text-white hover:bg-fuchsia-500 shadow-2xl transition-all active:scale-95 cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                  className="rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] bg-white text-black hover:bg-fuchsia-600 hover:text-white shadow-2xl transition-all active:scale-95 cursor-pointer flex items-center gap-2 whitespace-nowrap"
                   style={{ padding: '14px 32px' }}
                 >
                   Reactivate <RotateCw size={16} strokeWidth={3} />
@@ -221,7 +227,11 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
             ) : (
               <>
                 <button
-                  onClick={(e) => { e.stopPropagation(); if (onAction) onAction(isTemplate ? 'build' : 'enter', moment.id); }}
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    const rect = e.currentTarget.closest('.perspective-1000')?.getBoundingClientRect();
+                    if (onAction) onAction(isTemplate ? 'build' : 'enter', moment.id, rect); 
+                  }}
                   className="rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] bg-white text-black hover:bg-fuchsia-600 hover:text-white shadow-2xl transition-all active:scale-95 cursor-pointer flex items-center gap-2 whitespace-nowrap"
                   style={{ padding: '14px 32px' }}
                 >

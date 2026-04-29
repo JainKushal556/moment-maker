@@ -27,6 +27,7 @@ import PublicViewer from './features/public/PublicViewer'
 // Features
 const LandingPage = lazy(() => import('./features/landing/LandingPage'))
 const CategoriesExplorer = lazy(() => import('./features/explorer/CategoriesExplorer'))
+const GalleryExplorer = lazy(() => import('./features/explorer/GalleryExplorer'))
 const TemplatePreview = lazy(() => import('./features/preview/TemplatePreview'))
 const EditorView = lazy(() => import('./features/editor/EditorView'))
 const ShareView = lazy(() => import('./features/share/ShareView'))
@@ -120,7 +121,7 @@ function AppContent() {
       }
 
       window.dispatchEvent(new CustomEvent('momentNavToggle', {
-        detail: { visible: currentView === 'landing' || currentView === 'categories' || currentView === 'about' }
+        detail: { visible: ['landing', 'about', 'categories', 'gallery', 'moments', 'settings'].includes(currentView) }
       }))
 
       prevViewRef.current = currentView
@@ -173,10 +174,18 @@ function AppContent() {
         </div>
       )}
 
-      {(currentView === 'categories' || currentView === 'preview') && (
+      {currentView === 'categories' && (
         <div className="relative z-10">
           <Suspense fallback={<div className="fixed inset-0 z-50 bg-[#050508]"></div>}>
             <CategoriesExplorer />
+          </Suspense>
+        </div>
+      )}
+
+      {(currentView === 'gallery' || currentView === 'preview') && (
+        <div className="relative z-10">
+          <Suspense fallback={<div className="fixed inset-0 z-50 bg-[#050508]"></div>}>
+            <GalleryExplorer />
           </Suspense>
         </div>
       )}

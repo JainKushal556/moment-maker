@@ -24,6 +24,8 @@ class MomentPayload(BaseModel):
     senderName: str | None = None
 
 
+class RatingPayload(BaseModel):
+    rating: int
 @router.get("")
 async def list_moments(user: dict = Depends(get_current_user)):
     """Return all saved moments for the authenticated user."""
@@ -220,3 +222,90 @@ async def toggle_favorite(template_id: str, user: dict = Depends(get_current_use
         
     ref.update({"favorites": favorites})
     return {"favorites": favorites, "status": status}
+
+
+@router.get("/templates/stats")
+async def get_all_template_stats():
+    """Fetch aggregated rating stats for all templates."""
+    docs = db.collection("template_stats").stream()
+    stats = {}
+    for doc in docs:
+        stats[doc.id] = doc.to_dict()
+    return stats
+
+
+@router.get("/templates/{template_id}/rating")
+async def get_template_rating(template_id: str, user: dict = Depends(get_current_user)):
+    """Fetch the authenticated user's existing rating for a template."""
+    uid = user["uid"]
+    doc_id = f"{uid}_{template_id}"
+    doc = db.collection("template_ratings").document(doc_id).get()
+    
+    if not doc.exists:
+        return {"rating": None}
+        
+    return {"rating": doc.to_dict().get("rating")}
+
+
+@router.post("/templates/{template_id}/rate")
+async def rate_template(template_id: str, payload: RatingPayload, user: dict = Depends(get_current_user)):
+    """Submit or update a rating for a template and update the template stats."""
+    if payload.rating < 1 or payload.rating > 5:
+        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5.")
+        
+    uid = user["uid"]
+    doc_id = f"{uid}_{template_id}"
+    rating_ref = db.collection("template_ratings").document(doc_id)
+    stats_ref = db.collection("template_stats").document(template_id)
+    
+    @firestore.transactional
+    def update_rating_transaction(transaction, rating_ref, stats_ref, new_rating, uid, template_id):
+        rating_doc = rating_ref.get(transaction=transaction)
+        stats_doc = stats_ref.get(transaction=transaction)
+        
+        old_rating = 0
+        if rating_doc.exists:
+            old_rating = rating_doc.to_dict().get("rating", 0)
+            
+        # Update or create the stats document
+        if stats_doc.exists:
+            stats_data = stats_doc.to_dict()
+            total_ratings = stats_data.get("totalRatings", 0)
+            rating_sum = stats_data.get("ratingSum", 0)
+            
+            if rating_doc.exists:
+                # Updating existing rating
+                rating_sum = rating_sum - old_rating + new_rating
+            else:
+                # New rating
+                total_ratings += 1
+                rating_sum += new_rating
+                
+            average_rating = rating_sum / total_ratings if total_ratings > 0 else 0
+            
+            transaction.update(stats_ref, {
+                "totalRatings": total_ratings,
+                "ratingSum": rating_sum,
+                "averageRating": average_rating
+            })
+        else:
+            # First rating for this template
+            transaction.set(stats_ref, {
+                "templateId": template_id,
+                "totalRatings": 1,
+                "ratingSum": new_rating,
+                "averageRating": new_rating
+            })
+            
+        # Save the individual rating
+        transaction.set(rating_ref, {
+            "uid": uid,
+            "templateId": template_id,
+            "rating": new_rating,
+            "createdAt": datetime.now(timezone.utc).isoformat()
+        })
+        
+    transaction = db.transaction()
+    update_rating_transaction(transaction, rating_ref, stats_ref, payload.rating, uid, template_id)
+    
+    return {"status": "success", "rating": payload.rating}

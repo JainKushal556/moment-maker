@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef, useEffect, useContext, useCallback } from 'react'
 import gsap from 'gsap'
 import BentoCard from './BentoCard'
-import TemplateGallery from './TemplateGallery'
 import { templates } from '../../data/templates'
 import { ViewContext } from '../../context/NavContext'
 import Footer from '../../layout/Footer'
@@ -23,7 +22,7 @@ const StarIcon = ({ size = 24 }) => (
     </svg>
 )
 
-const FloatingHearts = () => {
+export const FloatingHearts = () => {
     const containerRef = useRef(null)
 
     useEffect(() => {
@@ -159,38 +158,24 @@ const categories = [
     }
 ]
 
-const getInitialInternalView = () => {
-    return sessionStorage.getItem('explorerInternalView') || 'categories'
-}
 
-const getInitialCategory = () => {
-    const saved = sessionStorage.getItem('explorerSelectedCategory')
-    return saved ? JSON.parse(saved) : null
-}
+
+
 
 const CategoriesExplorer = () => {
-    const [internalView, setInternalView] = useState(getInitialInternalView())
-    const [selectedCategory, setSelectedCategory] = useState(getInitialCategory())
-    const [, navigateTo, , , , , transitionRef] = useContext(ViewContext)
+    const [, navigateTo] = useContext(ViewContext)
 
     useEffect(() => {
-        sessionStorage.setItem('explorerInternalView', internalView)
-    }, [internalView])
-
-    useEffect(() => {
-        if (selectedCategory) {
-            sessionStorage.setItem('explorerSelectedCategory', JSON.stringify(selectedCategory))
-        } else {
-            sessionStorage.removeItem('explorerSelectedCategory')
-        }
-    }, [selectedCategory])
+        window.dispatchEvent(new CustomEvent('momentNavToggle', {
+            detail: { visible: true }
+        }))
+    }, [])
 
     const containerRef = useRef(null)
     const gridRef = useRef(null)
     const headerRef = useRef(null)
 
     useEffect(() => {
-        if (internalView !== 'categories') return
 
         const animations = []
         const cards = gridRef.current ? Array.from(gridRef.current.children) : []
@@ -234,41 +219,17 @@ const CategoriesExplorer = () => {
         return () => {
             animations.forEach((animation) => animation.kill())
         }
-    }, [internalView])
+    }, [])
 
     const handleCategoryClick = useCallback((category) => {
-        const transition = transitionRef?.current
-        if (transition) {
-            transition.play('categories').then(() => {
-                setSelectedCategory(category)
-                setInternalView('templates')
-                window.scrollTo({ top: 0, behavior: 'instant' })
-            })
-        } else {
-            setSelectedCategory(category)
-            setInternalView('templates')
-            window.scrollTo({ top: 0, behavior: 'instant' })
-        }
-    }, [transitionRef])
-
-    const handleBackToCategories = useCallback(() => {
-        const transition = transitionRef?.current
-        if (transition) {
-            transition.play('categories').then(() => {
-                setInternalView('categories')
-                window.scrollTo({ top: 0, behavior: 'instant' })
-            })
-        } else {
-            setInternalView('categories')
-            window.scrollTo({ top: 0, behavior: 'auto' })
-        }
-    }, [transitionRef])
+        sessionStorage.setItem('explorerSelectedCategory', JSON.stringify(category))
+        navigateTo('gallery')
+    }, [navigateTo])
 
     const handleReturnHome = useCallback(() => {
         if (window.lenis) window.lenis.scrollTo(0, { immediate: true })
         else window.scrollTo(0, 0)
 
-        sessionStorage.removeItem('explorerInternalView')
         sessionStorage.removeItem('explorerSelectedCategory')
 
         navigateTo('landing')
@@ -277,7 +238,7 @@ const CategoriesExplorer = () => {
     return (
         <section
             ref={containerRef}
-            className={`categories-explorer relative bg-[#0a0a12] w-full ${internalView === 'templates' ? 'z-150' : 'z-40'}`}
+            className={`categories-explorer relative bg-[#0a0a12] w-full z-40`}
             style={{
                 minHeight: '100vh',
                 display: 'flex',
@@ -287,17 +248,16 @@ const CategoriesExplorer = () => {
         >
             <FloatingHearts />
 
-            {/* PRE-HEADER NAVIGATION (Like Editor) */}
-            <div className="w-full h-12 flex items-center px-8 md:px-16 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
+            <div className="w-full h-12 flex items-center px-6 md:px-12 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
                 <button
-                    onClick={internalView === 'categories' ? handleReturnHome : handleBackToCategories}
+                    onClick={handleReturnHome}
                     className="group flex items-center gap-3 text-white/40 hover:text-white transition-colors"
                 >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:-translate-x-1 transition-transform">
                         <polyline points="15 18 9 12 15 6" />
                     </svg>
                     <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">
-                        {internalView === 'categories' ? 'RETURN HOME' : 'BACK TO MOMENTS'}
+                        RETURN HOME
                     </span>
                 </button>
             </div>
@@ -312,63 +272,54 @@ const CategoriesExplorer = () => {
                     paddingTop: 'clamp(60px, 10vw, 96px)',
                 }}
             >
-                {internalView === 'categories' ? (
-                    <div style={{ paddingBottom: '10rem' }}>
-                        {/* SOFT ROMANTIC HEADER */}
-                        <header ref={headerRef} className="mb-12 md:mb-32 lg:mb-40 w-full flex flex-col items-start text-left">
-                            <div className="flex flex-row items-end justify-between w-full text-left items-end">
-                                <div className="min-w-0 flex-1 flex flex-col items-start text-left">
-                                    <h1
-                                        className="text-[36px] sm:text-6xl md:text-8xl lg:text-[11rem] font-black tracking-tighter leading-[0.85] text-white text-left"
-                                        style={{ textAlign: 'left' }}
-                                    >
-                                        The<br />
-                                        <span className="text-transparent bg-clip-text bg-linear-to-br from-fuchsia-500 via-pink-400 to-orange-400">Moments.</span>
-                                    </h1>
-                                </div>
+                <div style={{ paddingBottom: '10rem' }}>
+                    {/* SOFT ROMANTIC HEADER */}
+                    <header ref={headerRef} className="mb-12 md:mb-32 lg:mb-40 w-full flex flex-col items-start text-left">
+                        <div className="flex flex-row items-end justify-between w-full text-left items-end">
+                            <div className="min-w-0 flex-1 flex flex-col items-start text-left">
+                                <h1
+                                    className="text-[36px] sm:text-6xl md:text-8xl lg:text-[11rem] font-black tracking-tighter leading-[0.85] text-white text-left"
+                                    style={{ textAlign: 'left' }}
+                                >
+                                    The<br />
+                                    <span className="text-transparent bg-clip-text bg-linear-to-br from-fuchsia-500 via-pink-400 to-orange-400">Moments.</span>
+                                </h1>
+                            </div>
 
-                                <div className="pb-1 sm:pb-4 lg:pb-6 shrink-0 ml-4 flex flex-col items-start text-left">
-                                    <div className="flex items-stretch gap-3 sm:gap-6 md:gap-10 max-w-[140px] sm:max-w-[360px] text-left">
-                                        <div className="w-px bg-white/10 shrink-0" />
-                                        <div className="text-white/40 text-[9px] sm:text-[11px] md:text-sm lg:text-base font-medium leading-tight sm:leading-relaxed space-y-0.5 sm:space-y-1 md:space-y-2 text-left">
-                                            <p className="text-left">Pick a vibe.</p>
-                                            <p className="text-left">Choose a template.</p>
-                                            <p className="text-left">Share a personal moment.</p>
-                                        </div>
+                            <div className="pb-1 sm:pb-4 lg:pb-6 shrink-0 ml-4 flex flex-col items-start text-left">
+                                <div className="flex items-stretch gap-3 sm:gap-6 md:gap-10 max-w-[140px] sm:max-w-[360px] text-left">
+                                    <div className="w-px bg-white/10 shrink-0" />
+                                    <div className="text-white/40 text-[9px] sm:text-[11px] md:text-sm lg:text-base font-medium leading-tight sm:leading-relaxed space-y-0.5 sm:space-y-1 md:space-y-2 text-left">
+                                        <p className="text-left">Pick a vibe.</p>
+                                        <p className="text-left">Choose a template.</p>
+                                        <p className="text-left">Share a personal moment.</p>
                                     </div>
                                 </div>
                             </div>
-                        </header>
-
-                        <div style={{ height: '60px' }} className="hidden md:block" />
-                        <div style={{ height: '20px' }} className="md:hidden" />
-
-                        {/* Bento Grid */}
-                        <div
-                            ref={gridRef}
-                            className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8 auto-rows-[240px] md:auto-rows-[300px] grid-flow-dense"
-                        >
-                            {categories.map((cat) => {
-                                const count = templates.filter(t => t.category === cat.id).length
-                                return (
-                                    <BentoCard
-                                        key={cat.id}
-                                        category={cat}
-                                        templateCount={count}
-                                        onClick={handleCategoryClick}
-                                    />
-                                )
-                            })}
                         </div>
+                    </header>
+
+                    <div style={{ height: '60px' }} className="hidden md:block" />
+                    <div style={{ height: '20px' }} className="md:hidden" />
+
+                    {/* Bento Grid */}
+                    <div
+                        ref={gridRef}
+                        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8 auto-rows-[240px] md:auto-rows-[300px] grid-flow-dense"
+                    >
+                        {categories.map((cat) => {
+                            const count = templates.filter(t => t.category === cat.id).length
+                            return (
+                                <BentoCard
+                                    key={cat.id}
+                                    category={cat}
+                                    templateCount={count}
+                                    onClick={handleCategoryClick}
+                                />
+                            )
+                        })}
                     </div>
-                ) : (
-                    <div style={{ paddingBottom: '10rem' }}>
-                        <TemplateGallery
-                            category={selectedCategory}
-                            onBack={handleBackToCategories}
-                        />
-                    </div>
-                )}
+                </div>
             </div>
             <div style={{ height: '160px' }} />
             <Footer />

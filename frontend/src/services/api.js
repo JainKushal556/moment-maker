@@ -85,3 +85,20 @@ export const getFavorites = () => apiFetch('/moments/favorites')
 /** Toggle a template in user's favorites */
 export const toggleFavorite = (templateId) => 
     apiFetch(`/moments/favorites/${templateId}`, { method: 'POST' })
+
+// ─── Templates API ─────────────────────────────────────────────
+
+/** Fetch all aggregated template stats */
+export const getAllTemplateStats = () =>
+    apiFetch(`/moments/templates/stats`)
+
+/** Fetch user's rating for a specific template */
+export const getTemplateRating = (templateId) => 
+    apiFetch(`/moments/templates/${templateId}/rating`)
+
+/** Submit or update a rating for a template */
+export const rateTemplate = (templateId, rating) => 
+    apiFetch(`/moments/templates/${templateId}/rate`, {
+        method: 'POST',
+        body: JSON.stringify({ rating }),
+    })

@@ -5,7 +5,7 @@ export default function EditorHeader({ onBack, onRefresh, onFullScreen, isMobile
   const [, navigateTo] = useContext(ViewContext)
 
   return (
-    <header className="editor-header flex items-center justify-between px-4 md:px-6">
+    <header className="w-full h-12 flex items-center justify-between px-6 md:px-12 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
       {/* Back button */}
       <button
         className="flex items-center gap-3 text-white/40 hover:text-white transition-colors group"

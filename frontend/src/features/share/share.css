@@ -572,3 +572,113 @@
         gap: 10px;
     }
 }
+
+/* --- Rating Popup Styles --- */
+.rating-popup-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    pointer-events: all;
+    animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; backdrop-filter: blur(0px); }
+    to { opacity: 1; backdrop-filter: blur(8px); }
+}
+
+.rating-popup-content {
+    position: relative;
+    width: min(400px, 90vw);
+    padding: 40px 32px;
+    background: radial-gradient(circle at top left, rgba(217, 70, 239, 0.1), transparent 50%), rgba(24, 24, 27, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 32px 90px rgba(0, 0, 0, 0.6);
+    text-align: center;
+    transform: scale(0.95) translateY(10px);
+    opacity: 0;
+    animation: popupEnter 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    animation-delay: 0.1s;
+}
+
+@keyframes popupEnter {
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.rating-popup-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rating-popup-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.rating-popup-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #d946ef, #fb923c);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.rating-popup-desc {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 32px;
+    line-height: 1.5;
+}
+
+.rating-stars-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.rating-star-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.2s;
+    outline: none;
+}
+
+.rating-star-btn:hover {
+    transform: scale(1.15);
+}
+
+.rating-star-btn svg {
+    width: 40px;
+    height: 40px;
+    fill: transparent;
+    stroke: rgba(255, 255, 255, 0.2);
+    stroke-width: 1.5;
+    transition: fill 0.2s, stroke 0.2s, filter 0.2s;
+}
+
+.rating-star-btn.active svg {
+    fill: #fbbf24;
+    stroke: #fbbf24;
+    filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.4));
+}

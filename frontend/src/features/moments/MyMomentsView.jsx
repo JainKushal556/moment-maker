@@ -12,7 +12,7 @@ import Footer from '../../layout/Footer';
 
 import MomentMagicCard from './MomentMagicCard';
 import { useAuth } from '../../context/AuthContext';
-import { getMoments } from '../../services/api';
+import { getMoments, getAllTemplateStats } from '../../services/api';
 
 export default function MyMomentsView() {
   const [currentView, navigateTo, , setSelectedTemplate, , setTemplateCustomization, transitionRef, sharedMomentId, setSharedMomentId, editingMomentId, setEditingMomentId, , setSelectedIntroId] = useContext(ViewContext);
@@ -21,6 +21,7 @@ export default function MyMomentsView() {
   const [filter, setFilter] = useState('all');
   const [deleteTarget, setDeleteTarget] = useState(null); // State for confirmation modal
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [templateStats, setTemplateStats] = useState({});
 
   useEffect(() => {
     if (showProfileMenu) {
@@ -48,6 +49,10 @@ export default function MyMomentsView() {
           }
         })
         .catch(err => console.error("Error fetching moments:", err));
+        
+      getAllTemplateStats()
+        .then(stats => setTemplateStats(stats || {}))
+        .catch(err => console.error("Failed to fetch template stats:", err));
     }
   }, [currentUser]);
 
@@ -60,16 +65,23 @@ export default function MyMomentsView() {
           isTemplate: true,
           image: t.img,
           vibe: t.tag || 'CINEMATIC',
-          status: 'favorite'
+          status: 'favorite',
+          averageRating: templateStats[t.id]?.averageRating || 0,
+          totalRatings: templateStats[t.id]?.totalRatings || 0
         }));
     }
     if (filter === 'all') return moments;
     if (filter === 'drafts') return moments.filter(m => m.status === 'draft');
     return moments.filter(m => m.status === filter);
-  }, [moments, filter, favorites]);
+  }, [moments, filter, favorites, templateStats]);
 
   const handleAction = (type, id) => {
     if (type === 'share') {
+      const moment = moments.find(m => m.id === id);
+      if (moment) {
+        const template = templates.find(t => t.id === moment.templateId) || templates[0];
+        setSelectedTemplate(template);
+      }
       setSharedMomentId(id);
       navigateTo('share');
       return;
@@ -104,6 +116,13 @@ export default function MyMomentsView() {
       if (id && templates.find(t => t.id === id)) {
         const template = templates.find(t => t.id === id);
         setSelectedTemplate(template);
+        setEditingMomentId(null);
+        // Clear any existing customization state for this template so it starts fresh
+        setTemplateCustomization(prev => {
+          const newState = { ...prev };
+          delete newState[template.id];
+          return newState;
+        });
         navigateTo('editor');
         return;
       }
@@ -140,7 +159,7 @@ export default function MyMomentsView() {
   if (currentView !== 'moments') return null;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-fuchsia-500/30 overflow-x-hidden w-full relative z-50">
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-fuchsia-500/30 w-full relative z-50">
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.1] z-0"
         style={{ backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)`, backgroundSize: '32px 32px' }}
@@ -151,7 +170,7 @@ export default function MyMomentsView() {
         <div className="absolute bottom-[10%] right-[-10%] w-[50%] h-[50%] bg-orange-600/5 blur-[120px] rounded-full" />
       </div>
 
-      <nav className="sticky top-0 z-50 bg-black/20 backdrop-blur-md border-b border-white/5 h-14 md:h-12 flex items-center px-4 md:px-16">
+      <nav className="sticky top-0 z-50 bg-black/20 backdrop-blur-md border-b border-white/5 w-full h-12 flex items-center px-6 md:px-12">
         <div className="w-full flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button

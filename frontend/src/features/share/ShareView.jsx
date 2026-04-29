@@ -1,26 +1,94 @@
 import { useState, useContext, useEffect } from 'react'
 import { ViewContext } from '../../context/NavContext'
+import { getTemplateRating, rateTemplate, getPublicMoment } from '../../services/api'
 import './share.css'
 
 export default function ShareView() {
-    const [currentView, navigateTo, , , , , , sharedMomentId] = useContext(ViewContext)
+    const [currentView, navigateTo, selectedTemplate, , , , , sharedMomentId] = useContext(ViewContext)
     const [copied, setCopied] = useState(false)
     const [generatedLink, setGeneratedLink] = useState('')
     const [isLoaded, setIsLoaded] = useState(false)
+
+    // Rating state
+    const [userRating, setUserRating] = useState(0)
+    const [hoverRating, setHoverRating] = useState(0)
+    const [showRatingPopup, setShowRatingPopup] = useState(false)
+    const [isFirstTime, setIsFirstTime] = useState(false)
+    const [isSubmittingRating, setIsSubmittingRating] = useState(false)
+    const [resolvedTemplateId, setResolvedTemplateId] = useState(null)
 
     useEffect(() => {
         if (currentView === 'share') {
             const host = window.location.host
             setGeneratedLink(`${host}/w/${sharedMomentId || 'demo'}`)
             setCopied(false)
+            
+            const initializeRating = async () => {
+                let tid = selectedTemplate?.id;
+                
+                // If context was lost (e.g., page refresh), fetch moment to get templateId
+                if (!tid && sharedMomentId) {
+                    try {
+                        const momentData = await getPublicMoment(sharedMomentId);
+                        if (momentData && momentData.templateId) {
+                            tid = momentData.templateId;
+                        }
+                    } catch (e) {
+                        console.error("Failed to recover templateId:", e);
+                    }
+                }
+                
+                if (tid) {
+                    setResolvedTemplateId(tid);
+                    try {
+                        const res = await getTemplateRating(tid);
+                        if (res && res.rating) {
+                            setUserRating(res.rating)
+                            setIsFirstTime(false)
+                        } else {
+                            setUserRating(0)
+                            setIsFirstTime(true)
+                        }
+                        setShowRatingPopup(true)
+                    } catch (err) {
+                        console.error("Failed to fetch rating:", err)
+                        setIsFirstTime(false)
+                        setShowRatingPopup(true)
+                    }
+                } else {
+                    setShowRatingPopup(false)
+                }
+            }
+
+            initializeRating()
+
             const timer = setTimeout(() => setIsLoaded(true), 100)
             return () => clearTimeout(timer)
+        } else {
+            setShowRatingPopup(false)
+            setIsLoaded(false)
         }
-
-        setIsLoaded(false)
-    }, [currentView, sharedMomentId])
+    }, [currentView, sharedMomentId, selectedTemplate])
 
     if (currentView !== 'share') return null
+
+    const handleRate = async (rating) => {
+        if (!resolvedTemplateId) return
+        
+        setIsSubmittingRating(true)
+        try {
+            await rateTemplate(resolvedTemplateId, rating)
+            setUserRating(rating)
+            setIsFirstTime(false)
+            setTimeout(() => {
+                setShowRatingPopup(false)
+                setIsSubmittingRating(false)
+            }, 500)
+        } catch (err) {
+            console.error("Failed to submit rating:", err)
+            setIsSubmittingRating(false)
+        }
+    }
 
     const fallbackCopy = (text) => {
         const textArea = document.createElement('textarea')
@@ -81,8 +149,8 @@ export default function ShareView() {
             <div className="share-bg-glow share-bg-glow-one" />
             <div className="share-bg-glow share-bg-glow-two" />
 
-            <nav className="share-topbar">
-                <div className="share-topbar-inner">
+            <nav className="w-full h-12 flex items-center px-6 md:px-12 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
+                <div className="w-full flex items-center justify-between">
                     <button className="share-nav-btn" onClick={() => navigateTo('editor')}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <polyline points="15 18 9 12 15 6" />
@@ -187,6 +255,42 @@ export default function ShareView() {
                     {/* Buttons removed as requested */}
                 </section>
             </main>
+
+            {showRatingPopup && (
+                <div className="rating-popup-overlay">
+                    <div className="rating-popup-content">
+                        {!isFirstTime && (
+                            <button className="rating-popup-close" onClick={() => setShowRatingPopup(false)} aria-label="Close">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        )}
+                        <h3 className="rating-popup-title">We'd love to know your experience!</h3>
+                        <p className="rating-popup-desc">
+                            {isFirstTime 
+                                ? "Give it a quick rating to share this special moment."
+                                : "Tap a star to update your previous rating."}
+                        </p>
+                        
+                        <div className="rating-stars-container">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                    key={star}
+                                    className={`rating-star-btn ${(hoverRating || userRating) >= star ? 'active' : ''}`}
+                                    onMouseEnter={() => setHoverRating(star)}
+                                    onMouseLeave={() => setHoverRating(0)}
+                                    onClick={() => handleRate(star)}
+                                    disabled={isSubmittingRating}
+                                    aria-label={`Rate ${star} stars`}
+                                >
+                                    <svg viewBox="0 0 24 24" strokeLinejoin="round" strokeLinecap="round">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                    </svg>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

@@ -33,7 +33,6 @@
     border-bottom: 1px solid var(--ep-border);
     display: flex;
     align-items: center;
-    padding: 0 24px;
     z-index: 100;
 }
 
@@ -944,7 +943,7 @@
         position: sticky !important;
         top: 0;
         z-index: 1000;
-        height: 50px;
+        height: 48px !important;
         background: var(--ep-bg);
         border-bottom: 1px solid var(--ep-border);
     }
@@ -959,7 +958,7 @@
     /* Sticky Live Preview Area */
     .editor-preview-area {
         position: sticky !important;
-        top: 50px; /* Below sticky header */
+        top: 48px !important; /* Below sticky header */
         z-index: 900;
         height: 280px !important;
         width: 100% !important;
