@@ -191,31 +191,7 @@ export default function CategoriesCarousel() {
       const dynamicBg = document.getElementById('dynamic-bg')
       const overlay = overlayRef.current
 
-      let transitionTrigger = null
-      let playReverseFunc = null
-      
-      const handleHardLock = (e) => {
-        const isWheel = e.type === 'wheel'
-        const delta = isWheel ? e.deltaY : -1 
-        
-        // CRITICAL: We check progress <= 0.05. If user is at the top and scrolls UP:
-        if (delta < 0 && transitionTrigger && transitionTrigger.progress <= 0.05 && transitionTrigger.animHasPlayed) {
-          // ALWAYS prevent the scroll if we are in the transition zone and moving UP
-          e.preventDefault()
-          e.stopPropagation()
-          
-          // Only trigger if not already running
-          if (!transitionTrigger.animIsRunning) {
-            window.dispatchEvent(new CustomEvent('triggerReverse'))
-          }
-        }
-      }
 
-      // 2. Attach native listeners
-      if (sectionRef.current) {
-        sectionRef.current.addEventListener('wheel', handleHardLock, { passive: false })
-        sectionRef.current.addEventListener('touchmove', handleHardLock, { passive: false })
-      }
 
       const carouselContent = sectionRef.current?.querySelector('.carousel-content-wrapper')
 
@@ -228,7 +204,24 @@ export default function CategoriesCarousel() {
         const blocks = overlay.querySelectorAll('.ct-block')
         const text = overlay.querySelector('.ct-text')
 
-        const master = gsap.timeline({ paused: true })
+        const textEl = overlay.querySelector('.ct-text')
+        if (textEl) textEl.textContent = 'MOMENTS'
+        overlay.classList.remove('ct-hidden')
+
+        const master = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top top',
+            end: '+=300%', // Reduced scroll distance for faster timing per user request
+            scrub: 1.5,    // Slightly more smoothing
+            pin: true,
+            pinSpacing: true,
+            onUpdate: (self) => {
+              if (self.progress === 1) overlay.classList.add('ct-hidden')
+              else overlay.classList.remove('ct-hidden')
+            }
+          }
+        })
 
         // Initial States
         master.set(sectionRef.current, { backgroundColor: 'transparent' }, 0)
@@ -254,91 +247,11 @@ export default function CategoriesCarousel() {
         master.to(blocks, { y: '-100%', duration: 0.8, stagger: 0.08, ease: 'expo.inOut' })
 
         if (carouselContent) {
-          master.set(carouselContent, { opacity: 1, scale: 1 }, "<")
+          // Use .to() with small duration instead of .set() to prevent immediate rendering of end-state
+          master.to(carouselContent, { opacity: 1, scale: 1, duration: 0.01 }, "<")
         }
 
-        let animHasPlayed = false
-        let animIsRunning = false
 
-        function playForward() {
-          if (animIsRunning || animHasPlayed) return
-          animIsRunning = true
-          if (window.lenis) window.lenis.stop()
-          overlay.classList.remove('ct-hidden')
-          const textEl = overlay.querySelector('.ct-text')
-          if (textEl) textEl.textContent = 'MOMENTS'
-          master.play(0)
-          master.eventCallback('onComplete', () => {
-            animIsRunning = false
-            animHasPlayed = true
-            transitionPlayed.current = true
-            overlay.classList.add('ct-hidden')
-            window.lenis?.start()
-            if (transitionTrigger) {
-               transitionTrigger.animHasPlayed = true
-               transitionTrigger.animIsRunning = false
-            }
-          })
-        }
-
-        function playReverse() {
-          if (animIsRunning || !animHasPlayed) return
-          animIsRunning = true
-          if (window.lenis) window.lenis.stop()
-          overlay.classList.remove('ct-hidden')
-          const textEl = overlay.querySelector('.ct-text')
-          if (textEl) textEl.textContent = 'PUNCH LINES'
-          master.reverse()
-          master.eventCallback('onReverseComplete', () => {
-            animIsRunning = false
-            animHasPlayed = false
-            transitionPlayed.current = false
-            overlay.classList.add('ct-hidden')
-            window.lenis?.start()
-            if (transitionTrigger) {
-               transitionTrigger.animHasPlayed = false
-               transitionTrigger.animIsRunning = false
-            }
-          })
-        }
-
-        playReverseFunc = playReverse
-        window.addEventListener('triggerReverse', playReverseFunc)
-
-        transitionTrigger = ScrollTrigger.create({
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: '+=100%',
-          pin: true,
-          pinSpacing: true,
-          onEnter: () => playForward(),
-          onUpdate: (self) => {
-            if (self.direction === -1 && self.progress < 0.05 && animHasPlayed && !animIsRunning) {
-              playReverse()
-            }
-          },
-          onLeaveBack: () => {
-            if (animHasPlayed && !animIsRunning) {
-              if (sectionRef.current) window.scrollTo({ top: sectionRef.current.offsetTop, behavior: 'instant' })
-              playReverse()
-            }
-          },
-          onEnterBack: () => {
-            if (!animHasPlayed && !animIsRunning) playForward()
-          },
-          onLeave: () => {
-            if (!animHasPlayed && !animIsRunning) {
-              master.progress(1, false)
-              animHasPlayed = true
-              transitionPlayed.current = true
-              overlay.classList.add('ct-hidden')
-              if (carouselContent) gsap.set(carouselContent, { opacity: 1, scale: 1 })
-            }
-          }
-        })
-        // Attach flags to trigger for handleHardLock access
-        transitionTrigger.animHasPlayed = false
-        transitionTrigger.animIsRunning = false
       }
 
       const TOTAL = 10; const ANGLE = 360 / TOTAL
@@ -359,7 +272,7 @@ export default function CategoriesCarousel() {
       for (let i = 0; i < TOTAL; i++) {
         const card = document.createElement('div'); card.className = 'slider-card'
         const data = imageData[i]
-        card.innerHTML = `<div class="slider-card-content"><img src="${data.img}" alt="${data.title}" loading="lazy"><div class="slider-card-overlay"><h3>${data.title}</h3><p>${data.sub}</p></div></div>`
+        card.innerHTML = `<div class="slider-card-content"><img src="${data.img}" alt="${data.title}" loading="lazy"><div class="slider-card-overlay"><h3>${data.title}</h3><p>${data.sub}</p></div><div class="card-light-overlay"></div></div>`
         card.addEventListener('click', () => {
           const vp = document.querySelector('.viewport')
           if (!vp || !vp.classList.contains('fullscreen')) return
@@ -413,7 +326,28 @@ export default function CategoriesCarousel() {
         if (!carouselTickerActive) return
         if (!isInteracting && !isFocused) targetRotation += autoRotationSpeed * currentDirection
         rotationValue += (targetRotation - rotationValue) * 0.08
-        cards.forEach((card, i) => { gsap.set(card, { rotationY: (i * ANGLE) + rotationValue }) })
+        cards.forEach((card, i) => { 
+          const currentRotation = (i * ANGLE) + rotationValue
+          gsap.set(card, { rotationY: currentRotation }) 
+          
+          // Dynamic Volumetric Lighting
+          if (!isFocused) {
+            // Calculate 3D position
+            const normalizedAngle = currentRotation % 360
+            const rad = (normalizedAngle * Math.PI) / 180
+            const x = Math.sin(rad)
+            const z = Math.cos(rad)
+            
+            // Light source from Top-Left/Front. Best glow when card is at front-left.
+            // Using dot product approximation: max intensity when x is highly negative (left) and z is positive (front)
+            const lightIntensity = Math.max(0, x * (-0.85) + z * 0.5)
+            const lightOverlay = card.querySelector('.card-light-overlay')
+            if (lightOverlay) {
+              // Apply smooth opacity. When focused, opacity handles itself via CSS class if needed.
+              lightOverlay.style.opacity = (lightIntensity * 1.5).toFixed(2)
+            }
+          }
+        })
       }
       gsap.ticker.add(carouselTick)
 
@@ -480,12 +414,7 @@ export default function CategoriesCarousel() {
         gsap.ticker.remove(carouselTick)
         carouselObs.disconnect()
         floatTween.kill()
-        transitionTrigger?.kill()
-        if (playReverseFunc) window.removeEventListener('triggerReverse', playReverseFunc)
-        if (sectionRef.current) {
-          sectionRef.current.removeEventListener('wheel', handleHardLock)
-          sectionRef.current.removeEventListener('touchmove', handleHardLock)
-        }
+
         window.removeEventListener('resize', resizeHandler)
         window.removeEventListener('mousemove', mouseMoveHandler)
         window.removeEventListener('keydown', handleKeyDown)
@@ -519,6 +448,7 @@ export default function CategoriesCarousel() {
         <div id="dynamic-bg"></div>
         <div id="dimmer"></div>
         <div id="page-dim-blur" aria-hidden="true"></div>
+        <div className="god-ray-overlay"></div>
         <div className="viewport">
           <div className="stage" id="stage" ref={stageRef}></div>
           <button id="interact-btn" className="interact-btn">

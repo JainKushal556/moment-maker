@@ -281,16 +281,16 @@
 }
 
 /* =========================================
-   Categories Carousel Section
+   Categories Carousel Section — Golden Magical Canvas
    ========================================= */
 .carousel-section {
     min-height: 100vh;
     width: 100%;
     padding: 0;
     position: relative;
-    /* Remove flat opaque background to let the global DotGrid/Noise show through.
-       Add a subtle, extremely soft radial glow in the exact center to spotlight the 3D carousel. */
-    background: radial-gradient(circle at center, rgba(102, 126, 234, 0.05) 0%, transparent 60%);
+    /* Section itself must be transparent — it overlaps the hero by 200vh via negative margin.
+       The actual background lives in ::before starting at top: 200vh */
+    background: transparent;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -299,12 +299,67 @@
     contain: layout style paint;
 }
 
+/* ── Golden Magical Canvas Background (starts at 200vh to avoid hero overlap) ── */
+.carousel-section::before {
+    content: '';
+    position: absolute;
+    top: 200vh;   /* Skip the hero-overlap zone */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        /* Vignette */
+        radial-gradient(ellipse at center, transparent 30%, rgba(5, 8, 22, 0.75) 100%),
+        /* God-ray: top-left golden light source */
+        radial-gradient(ellipse at 0% 0%, rgba(200, 150, 40, 0.18) 0%, transparent 55%),
+        /* Soft center spotlight */
+        radial-gradient(ellipse at 50% 45%, rgba(30, 45, 100, 0.6) 0%, transparent 60%),
+        /* Solid midnight blue base */
+        linear-gradient(160deg, #0a0e2a 0%, #080c20 50%, #06091a 100%);
+    /* Film grain on top */
+    background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E"),
+        radial-gradient(ellipse at center, transparent 30%, rgba(5, 8, 22, 0.75) 100%),
+        radial-gradient(ellipse at 0% 0%, rgba(200, 150, 40, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 45%, rgba(30, 45, 100, 0.6) 0%, transparent 60%),
+        linear-gradient(160deg, #0a0e2a 0%, #080c20 50%, #06091a 100%);
+}
+
+/* ── Golden Light Wave Streaks at bottom ── */
+.carousel-section::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 55%;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        /* Central golden wave */
+        radial-gradient(ellipse at 50% 110%, rgba(200, 155, 40, 0.22) 0%, transparent 55%),
+        /* Left golden sweep */
+        radial-gradient(ellipse at 15% 120%, rgba(180, 130, 30, 0.15) 0%, transparent 50%),
+        /* Right golden sweep */
+        radial-gradient(ellipse at 85% 120%, rgba(190, 140, 35, 0.15) 0%, transparent 50%);
+    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, transparent 100%);
+    animation: waveShimmer 8s ease-in-out infinite alternate;
+}
+
+@keyframes waveShimmer {
+    0%   { opacity: 0.8; transform: scaleX(1)    translateY(0); }
+    100% { opacity: 1.0; transform: scaleX(1.04) translateY(-8px); }
+}
+
 .carousel-section .viewport {
     width: 100%;
 }
 
 /* =========================================
-   Categories Static Vertical Monolith 
+   Categories Static Vertical Monolith — Golden Glow
    ========================================= */
 .bg-monolith {
     position: absolute;
@@ -315,49 +370,64 @@
     font-size: clamp(3rem, 11vh, 15rem); 
     font-weight: 900;
     color: transparent;
-    -webkit-text-stroke: 2px rgba(255, 255, 255, 0.15);
+    /* Golden outline instead of plain white */
+    -webkit-text-stroke: 1.5px rgba(200, 160, 60, 0.35);
     z-index: 0;
     pointer-events: none;
     white-space: nowrap;
     user-select: none;
     letter-spacing: 0.15em; 
-    filter: drop-shadow(0px 0px 30px rgba(255, 255, 255, 0.05));
+    /* Pulsing golden glow */
+    filter: drop-shadow(0px 0px 18px rgba(200, 155, 40, 0.25))
+            drop-shadow(0px 0px 40px rgba(180, 130, 20, 0.12));
+    animation: monolithPulse 5s ease-in-out infinite alternate;
+}
+
+@keyframes monolithPulse {
+    0%   { filter: drop-shadow(0px 0px 15px rgba(200, 155, 40, 0.2))  drop-shadow(0px 0px 35px rgba(180, 130, 20, 0.08)); }
+    100% { filter: drop-shadow(0px 0px 28px rgba(220, 175, 60, 0.38)) drop-shadow(0px 0px 60px rgba(200, 150, 30, 0.18)); }
 }
 
 /* =========================================
-   Categories Ambient Atmospheric Glows
+   Ambient Golden Bokeh Orbs
    ========================================= */
 .ambient-glow {
     position: absolute;
     border-radius: 50%;
-    filter: blur(140px);
+    filter: blur(90px);
     z-index: 0;
     pointer-events: none;
-    opacity: 0.35;
-    animation: slowOrbit 25s ease-in-out infinite alternate;
+    animation: goldenOrbit 28s ease-in-out infinite alternate;
 }
 
+/* Large deep-blue mood glow — top right */
 .ambient-glow-1 {
-    width: 45vw;
-    height: 45vw;
-    background: #667eea; /* planet-purple */
-    top: -5%;
-    right: -5%;
+    width: 50vw;
+    height: 38vw;
+    background: radial-gradient(circle, rgba(40, 60, 160, 0.55) 0%, transparent 70%);
+    top: -10%;
+    right: -8%;
+    opacity: 0.7;
+    animation-duration: 22s;
 }
 
+/* Deep-gold warm glow — bottom left (the main 'magic floor' light) */
 .ambient-glow-2 {
-    width: 60vw;
-    height: 40vw;
-    background: #00f2fe; /* planet-teal */
-    bottom: -15%;
-    left: 10%;
-    animation-duration: 30s;
-    animation-delay: -10s;
+    width: 65vw;
+    height: 35vw;
+    background: radial-gradient(ellipse, rgba(180, 130, 30, 0.30) 0%, rgba(140, 90, 10, 0.12) 50%, transparent 75%);
+    bottom: -18%;
+    left: -5%;
+    opacity: 0.85;
+    filter: blur(110px);
+    animation-duration: 32s;
+    animation-delay: -12s;
 }
 
-@keyframes slowOrbit {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(-6vw, 8vh) scale(1.15); }
+@keyframes goldenOrbit {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(3vw, -4vh) scale(1.08); }
+    100% { transform: translate(-5vw, 6vh) scale(1.15); }
 }
 
 #category-particles-canvas {
@@ -623,6 +693,39 @@
     font-size: 0.8rem;
     opacity: 0.9;
     font-weight: 400;
+}
+
+/* --- Dynamic 3D Volumetric Lighting Overlay (Card level) --- */
+.card-light-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* Golden beam coming from the top-left corner of the card itself */
+    background: linear-gradient(135deg, rgba(255, 230, 160, 0.45) 0%, rgba(200, 150, 40, 0.1) 40%, transparent 70%);
+    mix-blend-mode: color-dodge;
+    z-index: 5;
+    opacity: 0; /* Controlled dynamically by JS based on 3D rotation */
+    transition: opacity 0.1s ease;
+}
+
+/* --- Global God-Ray Beam --- */
+.god-ray-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 15; /* Above cards, below UI */
+    /* Cinematic golden light beam coming diagonally from top-left */
+    background: linear-gradient(145deg, rgba(255, 240, 180, 0.08) 0%, rgba(220, 170, 50, 0.03) 25%, transparent 55%);
+    mix-blend-mode: screen;
+    animation: godRayPulse 6s ease-in-out infinite alternate;
+}
+
+@keyframes godRayPulse {
+    0%   { opacity: 0.7; transform: scale(1); }
+    100% { opacity: 1; transform: scale(1.02); }
 }
 
 /* --- Thank You Animation --- */
