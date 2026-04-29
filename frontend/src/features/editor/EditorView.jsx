@@ -34,13 +34,7 @@ export default function EditorView() {
         // Load saved customizations
         setCustomization(templateCustomization[selectedTemplate.id])
         setSaveStatus('saved') // Mark as saved if loading existing data
-      } else if (selectedTemplate.id === 'romantic-proposal') {
-        // Load proposal-specific defaults
-        setCustomization({
-          images: selectedTemplate.defaults?.images || [null, null, null, null],
-          letterContent: selectedTemplate.defaults?.letterContent || ''
-        })
-        setSaveStatus('idle')
+
       } else if (selectedTemplate.id === 'birthday-mosaic') {
         // Load birthday-specific defaults
         setCustomization({

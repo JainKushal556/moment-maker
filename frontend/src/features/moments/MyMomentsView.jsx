@@ -22,6 +22,7 @@ export default function MyMomentsView() {
   const [deleteTarget, setDeleteTarget] = useState(null); // State for confirmation modal
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [templateStats, setTemplateStats] = useState({});
+  const [unavailableTemplateName, setUnavailableTemplateName] = useState(null);
 
   useEffect(() => {
     if (showProfileMenu) {
@@ -39,11 +40,52 @@ export default function MyMomentsView() {
             // Enrich with template category and fixed image
             const enriched = data.map(m => {
               const template = templates.find(t => t.id === m.templateId);
-              return {
-                ...m,
-                category: template ? template.category : 'Moment Crafter Original',
-                image: template ? template.img : null // Use the fixed template image
-              };
+              if (template) {
+                return {
+                  ...m,
+                  category: template.category,
+                  image: template.img
+                };
+              } else {
+                // Fallback for deleted templates
+                let category = 'Moment Crafter Original';
+                let image = '/cards/special.png';
+                
+                if (m.templateId.includes('proposal')) {
+                  category = 'proposal';
+                  image = '/cards/proposal.png';
+                } else if (m.templateId.includes('birthday')) {
+                  category = 'birthday';
+                  image = '/cards/birthday.png';
+                } else if (m.templateId.includes('thank-you')) {
+                  category = 'thank-you';
+                  image = '/cards/thank-you.png';
+                } else if (m.templateId.includes('friendship')) {
+                  category = 'friendship';
+                  image = '/cards/friendship.png';
+                } else if (m.templateId.includes('miss-you')) {
+                  category = 'miss-you';
+                  image = '/cards/miss-you.png';
+                } else if (m.templateId.includes('confession')) {
+                  category = 'confession';
+                  image = '/cards/confession.png';
+                } else if (m.templateId.includes('celebration')) {
+                  category = 'celebration';
+                  image = '/cards/celebration.png';
+                } else if (m.templateId.includes('sorry')) {
+                  category = 'sorry';
+                  image = '/cards/sorry.png';
+                } else if (m.templateId.includes('romantic')) {
+                  category = 'romantic';
+                  image = '/cards/romantic.png';
+                }
+                
+                return {
+                  ...m,
+                  category: category,
+                  image: image
+                };
+              }
             });
             setMoments(enriched);
           }
@@ -79,7 +121,11 @@ export default function MyMomentsView() {
     if (type === 'share') {
       const moment = moments.find(m => m.id === id);
       if (moment) {
-        const template = templates.find(t => t.id === moment.templateId) || templates[0];
+        const template = templates.find(t => t.id === moment.templateId);
+        if (!template) {
+          setUnavailableTemplateName(moment.title || "This template");
+          return;
+        }
         setSelectedTemplate(template);
       }
       setSharedMomentId(id);
@@ -106,6 +152,14 @@ export default function MyMomentsView() {
     }
 
     if (type === 'reactivate') {
+      const moment = moments.find(m => m.id === id);
+      if (moment) {
+        const template = templates.find(t => t.id === moment.templateId);
+        if (!template) {
+          setUnavailableTemplateName(moment.title || "This template");
+          return;
+        }
+      }
       import('../../services/api').then(api => api.reactivateMoment(id)).then((updatedMoment) => {
         setMoments(m => m.map(x => x.id === id ? { ...x, ...updatedMoment } : x));
       }).catch(console.error);
@@ -129,6 +183,12 @@ export default function MyMomentsView() {
 
       const moment = moments.find(m => m.id === id);
       if (moment) {
+        const template = templates.find(t => t.id === moment.templateId);
+        if (!template) {
+          setUnavailableTemplateName(moment.title || "This template");
+          return;
+        }
+
         // 1. Sync customization data from database to context
         if (moment.customization) {
           setTemplateCustomization(prev => ({
@@ -138,7 +198,6 @@ export default function MyMomentsView() {
         }
 
         // 2. Prepare editor state
-        const template = templates.find(t => t.id === moment.templateId) || templates[0];
         setEditingMomentId(id);
         setSelectedTemplate(template);
         if (moment.introId) setSelectedIntroId(moment.introId);
@@ -420,6 +479,53 @@ export default function MyMomentsView() {
                 >
                   <span className="relative z-10">Delete</span>
                   <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {unavailableTemplateName && (
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setUnavailableTemplateName(null)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-[400px] bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-[3rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] p-8 md:p-12 space-y-10"
+            >
+              <div className="flex justify-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-red-500/20 blur-2xl rounded-full animate-pulse" />
+                  <div className="relative w-16 h-16 rounded-2xl bg-linear-to-br from-red-500/20 to-red-600/5 border border-red-500/30 flex items-center justify-center text-red-500 shadow-inner">
+                    <AlertTriangle size={28} strokeWidth={2.5} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center space-y-5">
+                <h3 className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase italic leading-none">
+                  Moment <span className="text-red-500">Unavailable</span>
+                </h3>
+                <div className="space-y-2">
+                  <p className="text-white/40 text-[10px] font-medium leading-relaxed max-w-[280px] mx-auto text-center">
+                    It is no longer available for editing, sharing, or reactivation. You can delete this.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setUnavailableTemplateName(null)}
+                  className="px-12 py-4 bg-white text-black hover:bg-fuchsia-600 hover:text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] transition-all active:scale-[0.98] shadow-lg cursor-pointer"
+                >
+                  Got it
                 </button>
               </div>
             </motion.div>
