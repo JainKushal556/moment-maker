@@ -5,6 +5,34 @@ import { Observer } from 'gsap/Observer'
 import confetti from 'canvas-confetti'
 import '../../styles/categoriesTransition.css'
 
+const GoldenParticles = () => {
+  const particles = Array.from({ length: 40 }).map((_, i) => {
+    const size = Math.random() * 3 + 1; // 1px to 4px
+    const left = Math.random() * 100;
+    const top = Math.random() * 100;
+    const duration = Math.random() * 6 + 4; // 4s to 10s (Much faster)
+    const delay = Math.random() * 5;
+    const isBokeh = Math.random() > 0.8; // 20% are larger, blurred bokeh
+    
+    return (
+      <div
+        key={i}
+        className={`golden-particle ${isBokeh ? 'bokeh' : ''}`}
+        style={{
+          width: isBokeh ? `${size * 3}px` : `${size}px`,
+          height: isBokeh ? `${size * 3}px` : `${size}px`,
+          left: `${left}%`,
+          top: `${top}%`,
+          animationDuration: `${duration}s`,
+          animationDelay: `-${delay}s`
+        }}
+      />
+    );
+  });
+
+  return <div className="particles-container">{particles}</div>;
+};
+
 gsap.registerPlugin(ScrollTrigger, Observer)
 
 const BLOCK_COUNT = 3
@@ -231,7 +259,7 @@ export default function CategoriesCarousel() {
         master.fromTo(blocks, { y: '-100%' }, { y: '0%', duration: 0.8, stagger: 0.1, ease: 'power4.inOut' }, 0)
 
         // Phase 2: Toggle
-        master.to(sectionRef.current, { backgroundColor: '#050505', duration: 0.01 }, 0.8)
+        master.to(sectionRef.current, { backgroundColor: '#050a1f', duration: 0.01 }, 0.8)
         master.set('.hero, .hero-clone', { opacity: 0 }, 0.8)
 
         // Phase 3: Text Reveal
@@ -247,8 +275,7 @@ export default function CategoriesCarousel() {
         master.to(blocks, { y: '-100%', duration: 0.8, stagger: 0.08, ease: 'expo.inOut' })
 
         if (carouselContent) {
-          // Use .to() with small duration instead of .set() to prevent immediate rendering of end-state
-          master.to(carouselContent, { opacity: 1, scale: 1, duration: 0.01 }, "<")
+          master.set(carouselContent, { opacity: 1, scale: 1 }, "<")
         }
 
 
@@ -272,7 +299,7 @@ export default function CategoriesCarousel() {
       for (let i = 0; i < TOTAL; i++) {
         const card = document.createElement('div'); card.className = 'slider-card'
         const data = imageData[i]
-        card.innerHTML = `<div class="slider-card-content"><img src="${data.img}" alt="${data.title}" loading="lazy"><div class="slider-card-overlay"><h3>${data.title}</h3><p>${data.sub}</p></div><div class="card-light-overlay"></div></div>`
+        card.innerHTML = `<div class="slider-card-content"><img src="${data.img}" alt="${data.title}" loading="lazy"><div class="slider-card-overlay"><h3>${data.title}</h3><p>${data.sub}</p></div></div>`
         card.addEventListener('click', () => {
           const vp = document.querySelector('.viewport')
           if (!vp || !vp.classList.contains('fullscreen')) return
@@ -326,28 +353,7 @@ export default function CategoriesCarousel() {
         if (!carouselTickerActive) return
         if (!isInteracting && !isFocused) targetRotation += autoRotationSpeed * currentDirection
         rotationValue += (targetRotation - rotationValue) * 0.08
-        cards.forEach((card, i) => { 
-          const currentRotation = (i * ANGLE) + rotationValue
-          gsap.set(card, { rotationY: currentRotation }) 
-          
-          // Dynamic Volumetric Lighting
-          if (!isFocused) {
-            // Calculate 3D position
-            const normalizedAngle = currentRotation % 360
-            const rad = (normalizedAngle * Math.PI) / 180
-            const x = Math.sin(rad)
-            const z = Math.cos(rad)
-            
-            // Light source from Top-Left/Front. Best glow when card is at front-left.
-            // Using dot product approximation: max intensity when x is highly negative (left) and z is positive (front)
-            const lightIntensity = Math.max(0, x * (-0.85) + z * 0.5)
-            const lightOverlay = card.querySelector('.card-light-overlay')
-            if (lightOverlay) {
-              // Apply smooth opacity. When focused, opacity handles itself via CSS class if needed.
-              lightOverlay.style.opacity = (lightIntensity * 1.5).toFixed(2)
-            }
-          }
-        })
+        cards.forEach((card, i) => { gsap.set(card, { rotationY: (i * ANGLE) + rotationValue }) })
       }
       gsap.ticker.add(carouselTick)
 
@@ -442,13 +448,13 @@ export default function CategoriesCarousel() {
         <div className="ct-text-wrapper"><div className="ct-text">MOMENTS</div></div>
       </div>
       <div className="carousel-content-wrapper" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
-        <div className="ambient-glow ambient-glow-1"></div>
-        <div className="ambient-glow ambient-glow-2"></div>
+        {/* Floating Golden Dust/Bokeh */}
+        <GoldenParticles />
+
         <div className="bg-monolith">MOMENTS</div>
         <div id="dynamic-bg"></div>
         <div id="dimmer"></div>
         <div id="page-dim-blur" aria-hidden="true"></div>
-        <div className="god-ray-overlay"></div>
         <div className="viewport">
           <div className="stage" id="stage" ref={stageRef}></div>
           <button id="interact-btn" className="interact-btn">

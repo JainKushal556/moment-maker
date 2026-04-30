@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/all'
 import { useGSAP } from '@gsap/react'
 import '../../styles/customization.css'
+
+gsap.registerPlugin(ScrollTrigger)
 
 const DEFAULT_CUSTOMIZATION = {
   recipientName: 'Rashmii',
@@ -18,7 +21,7 @@ const DEFAULT_CUSTOMIZATION = {
 const ACCENT_COLORS = ['#00f2fe', '#7000ff', '#ff00de', '#ffd700', '#ff5e62', '#28c840']
 const GLOW_COLORS = ['#ff00de', '#00f2fe', '#7000ff', '#ffd700', '#ff5e62', '#00ffaa']
 
-export default function Customization() {
+export default function Customization({ onTransitionBack }) {
   const containerRef = useRef(null)
   const iframeRef = useRef(null)
   const [customization, setCustomization] = useState({ ...DEFAULT_CUSTOMIZATION })
@@ -40,6 +43,24 @@ export default function Customization() {
       .from('.cust-subtitle', { opacity: 0, y: 20, duration: 0.8 }, '-=0.6')
       .from('.studio-panel', { opacity: 0, x: -50, duration: 1, ease: 'power4.out' }, '-=0.4')
       .from('.studio-viewport', { opacity: 0, x: 50, duration: 1, ease: 'power4.out' }, '-=1')
+
+    // Prevent manual scrolling back to "How It Works"
+    // This locks the user in the Customization section for backward movement
+    ScrollTrigger.create({
+      trigger: containerRef.current,
+      start: 'top top',
+      onUpdate: (self) => {
+        // If the user tries to scroll up past the top of this section
+        if (self.progress === 0 && self.direction === -1) {
+          if (window.lenis) {
+            window.lenis.scrollTo(containerRef.current, { immediate: true });
+          }
+        }
+      }
+    });
+
+
+
   }, { scope: containerRef })
 
   // Send customization to iframe
@@ -52,9 +73,9 @@ export default function Customization() {
   // Message listener
   useEffect(() => {
     const handler = (event) => {
-      if (event.data?.type === 'templateReady') { 
+      if (event.data?.type === 'templateReady') {
         setTemplateReady(true)
-        sendCustomization() 
+        sendCustomization()
       }
       if (event.data?.type === 'playing') setIsPlaying(true)
     }
@@ -71,12 +92,12 @@ export default function Customization() {
   const handlePlayPause = () => {
     const iframe = iframeRef.current
     if (!iframe?.contentWindow) return
-    if (!isPlaying) { 
+    if (!isPlaying) {
       iframe.contentWindow.postMessage({ type: 'play' }, '*')
-      setIsPlaying(true) 
-    } else { 
+      setIsPlaying(true)
+    } else {
       iframe.contentWindow.postMessage({ type: 'pause' }, '*')
-      setIsPlaying(false) 
+      setIsPlaying(false)
     }
   }
 
@@ -89,31 +110,39 @@ export default function Customization() {
     <section className="customization" ref={containerRef}>
       <div className="container">
         <header className="cust-header">
-          <span className="cust-label">The Studio</span>
-          <h2 className="cust-title">Personalize The Magic</h2>
-          <p className="cust-subtitle">
-            Experience our 3D Photo Mosaic engine. 
-            Real-time customization for moments that last a lifetime.
-          </p>
+          <div className="cust-header-left">
+            <span id="the-studio" className="cust-label">The Studio</span>
+            <h2 className="cust-title">Personalize The Magic</h2>
+          </div>
+          <button 
+            className="back-to-steps"
+            onClick={onTransitionBack}
+            aria-label="Back to How It Works"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M12 19V5M5 12l7-7 7 7"/>
+            </svg>
+            <span>Back to Steps</span>
+          </button>
         </header>
 
         <div className="cust-grid">
           {/* Studio Panel */}
           <aside className="studio-panel">
             <nav className="studio-tabs">
-              <button 
+              <button
                 className={`studio-tab-btn ${activeTab === 'personalize' ? 'active' : ''}`}
                 onClick={() => setActiveTab('personalize')}
               >
                 Personalize
               </button>
-              <button 
+              <button
                 className={`studio-tab-btn ${activeTab === 'design' ? 'active' : ''}`}
                 onClick={() => setActiveTab('design')}
               >
                 Gallery
               </button>
-              <button 
+              <button
                 className={`studio-tab-btn ${activeTab === 'effects' ? 'active' : ''}`}
                 onClick={() => setActiveTab('effects')}
               >
@@ -126,8 +155,8 @@ export default function Customization() {
                 <div className="tab-fade-in">
                   <div className="studio-group">
                     <label className="studio-label">Recipient Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="studio-input"
                       placeholder="e.g. Sarah"
                       value={customization.recipientName}
@@ -136,7 +165,7 @@ export default function Customization() {
                   </div>
                   <div className="studio-group">
                     <label className="studio-label">Birthday Wish</label>
-                    <textarea 
+                    <textarea
                       className="studio-input"
                       style={{ height: '120px', resize: 'none' }}
                       value={customization.personalMessage}
@@ -148,20 +177,20 @@ export default function Customization() {
 
               {activeTab === 'design' && (
                 <div className="tab-fade-in">
-                   <div className="studio-group">
+                  <div className="studio-group">
                     <label className="studio-label">Mosaic Engine</label>
                     <p className="studio-subtitle" style={{ fontSize: '0.8rem', marginTop: '0' }}>
-                        This template uses an automated 3D carousel. Upload your own photos in the full editor to see them come alive.
+                      This template uses an automated 3D carousel. Upload your own photos in the full editor to see them come alive.
                     </p>
                   </div>
                   <div className="studio-group">
                     <label className="studio-label">Current Gallery</label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-                        {customization.images.map((img, i) => (
-                            <div key={i} style={{ aspectRatio: '1/1', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
-                                <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5 }} />
-                            </div>
-                        ))}
+                      {customization.images.map((img, i) => (
+                        <div key={i} style={{ aspectRatio: '1/1', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                          <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5 }} />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -172,10 +201,10 @@ export default function Customization() {
                   <div className="studio-group">
                     <label className="studio-label">Interactive Status</label>
                     <div style={{ padding: '20px', background: 'rgba(0, 242, 254, 0.05)', border: '1px solid rgba(0, 242, 254, 0.1)', borderRadius: '4px' }}>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--studio-accent)' }}>● Studio Link Active</p>
-                        <p style={{ fontSize: '0.75rem', marginTop: '10px', color: 'var(--studio-text-dim)' }}>
-                            The 3D preview is currently synchronized with your inputs. Any changes to the name or message will reflect instantly.
-                        </p>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--studio-accent)' }}>● Studio Link Active</p>
+                      <p style={{ fontSize: '0.75rem', marginTop: '10px', color: 'var(--studio-text-dim)' }}>
+                        The 3D preview is currently synchronized with your inputs. Any changes to the name or message will reflect instantly.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -213,10 +242,10 @@ export default function Customization() {
                   <span className="studio-label">Syncing 3D Mosaic...</span>
                 </div>
               )}
-              <iframe 
-                ref={iframeRef} 
-                src="/templates/birthday/birthday-mosaic/index.html" 
-                title="Preview" 
+              <iframe
+                ref={iframeRef}
+                src="/templates/birthday/birthday-mosaic/index.html"
+                title="Preview"
                 onLoad={() => setTemplateReady(true)}
               />
             </div>

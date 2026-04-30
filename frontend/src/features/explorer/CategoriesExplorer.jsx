@@ -282,7 +282,7 @@ const CategoriesExplorer = () => {
                                     style={{ textAlign: 'left' }}
                                 >
                                     The<br />
-                                    <span className="text-transparent bg-clip-text bg-linear-to-br from-fuchsia-500 via-pink-400 to-orange-400">Moments.</span>
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-br from-fuchsia-500 via-pink-400 to-orange-400">Moments.</span>
                                 </h1>
                             </div>
 

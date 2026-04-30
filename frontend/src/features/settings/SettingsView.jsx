@@ -270,7 +270,7 @@ export default function SettingsView() {
           <div className="flex items-end justify-between gap-4 md:gap-12">
             <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85] text-white">
               Quick<br />
-              <span className="text-transparent bg-clip-text bg-linear-to-br from-fuchsia-500 via-pink-400 to-orange-400">Settings.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-br from-fuchsia-500 via-pink-400 to-orange-400">Settings.</span>
             </h1>
 
             <div className="border-l border-white/10 pl-4 md:pl-6 py-1 max-w-[150px] sm:max-w-xl mb-1 md:mb-6">
@@ -533,7 +533,7 @@ export default function SettingsView() {
                         <div className="max-w-xl space-y-6">
                           <h3 className="text-3xl md:text-5xl font-black tracking-tighter text-white leading-tight">
                             Secured via <br/>
-                            <span className="text-transparent bg-clip-text bg-linear-to-r from-fuchsia-400 via-pink-400 to-orange-400">Google Authentication.</span>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-pink-400 to-orange-400">Google Authentication.</span>
                           </h3>
                           <p className="text-white/40 text-sm md:text-lg font-medium leading-relaxed max-w-md mx-auto">
                             Your account is protected by industry-leading security. Password and recovery settings are managed through your Google account.

@@ -262,7 +262,7 @@ export default function AboutUs() {
   }, []);
 
   return (
-    <div ref={containerRef} className="bg-[#020204] bg-linear-to-br from-[#0a0c14] via-[#020204] to-[#050508] text-white selection:bg-transparent selection:text-cyan-500 relative">
+    <div ref={containerRef} className="bg-[#020204] bg-gradient-to-br from-[#0a0c14] via-[#020204] to-[#050508] text-white selection:bg-transparent selection:text-cyan-500 relative">
 
       {/* --- PRE-HEADER NAVIGATION --- */}
       <div className="w-full h-12 flex items-center px-4 sm:px-6 md:px-16 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-150">
@@ -304,7 +304,7 @@ export default function AboutUs() {
 
           <h1 className="font-montserrat font-black uppercase tracking-tighter fluid-h1 mb-8 sm:mb-12 hero-text break-words">
             WE MAKE<br />
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-pink-500 to-violet-500 italic font-playfair lowercase inline-block">moments&nbsp;&nbsp;</span><br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500 italic font-playfair lowercase inline-block">moments&nbsp;&nbsp;</span><br />
             <span className="text-transparent block leading-[0.8]" style={{ WebkitTextStroke: '1px var(--sun-gold)' }}>
               LIVE FOREVER
             </span>
@@ -325,12 +325,12 @@ export default function AboutUs() {
                   className="magnetic-btn relative w-full sm:w-auto px-6 sm:px-12 md:px-16 py-4 sm:py-6 md:py-8 bg-white/5 backdrop-blur-xl border border-sun-gold/40 text-sun-gold font-montserrat font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[10px] sm:text-xs hover:text-white transition-colors duration-500 group overflow-hidden rounded-sm"
                 >
                   <span className="relative z-10">Start Creating</span>
-                  <div className="absolute inset-0 bg-linear-to-r from-pink-500 to-violet-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-violet-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
                 </button>
 
                 {/* Mobile Scroll Indicator - only visible on small screens */}
                 <div className="flex md:hidden flex-col items-center gap-2 opacity-40 self-center">
-                  <div className="w-px h-10 bg-linear-to-b from-white/90 to-transparent"></div>
+                  <div className="w-px h-10 bg-gradient-to-b from-white/90 to-transparent"></div>
                   <span className="text-[9px] uppercase tracking-[0.2em] text-white/70 [writing-mode:vertical-rl] [text-orientation:mixed]">
                     Scroll
                   </span>
@@ -342,7 +342,7 @@ export default function AboutUs() {
 
         {/* Desktop Scroll Indicator - only visible on md and up */}
         <div className="hidden md:flex absolute bottom-12 left-1/2 -translate-x-1/2 flex-col items-center gap-4 opacity-30 z-20 pointer-events-none">
-          <div className="w-px h-12 bg-linear-to-b from-white/90 to-transparent"></div>
+          <div className="w-px h-12 bg-gradient-to-b from-white/90 to-transparent"></div>
           <span className="text-[10px] uppercase tracking-[0.25em] text-white/70 [writing-mode:vertical-rl] [text-orientation:mixed]">
             Scroll
           </span>
@@ -382,7 +382,7 @@ export default function AboutUs() {
 
         {/* Central Story Line */}
         <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 hidden md:block">
-          <div className="process-glow-line absolute top-0 left-0 w-full bg-linear-to-b from-sun-gold via-pink-500 to-transparent h-0 shadow-[0_0_20px_rgba(255,215,0,0.3)]"></div>
+          <div className="process-glow-line absolute top-0 left-0 w-full bg-gradient-to-b from-sun-gold via-pink-500 to-transparent h-0 shadow-[0_0_20px_rgba(255,215,0,0.3)]"></div>
         </div>
 
         {/* THE PROCESS Heading Overlay - Left corner, above images */}
@@ -404,7 +404,7 @@ export default function AboutUs() {
                     alt={stage.title}
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 scale-110 transition-all duration-700 ease-out"
                   />
-                  <div className="absolute inset-0 bg-linear-to-t from-[#0a0a12] via-transparent to-transparent opacity-60"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a12] via-transparent to-transparent opacity-60"></div>
                 </div>
 
                 {/* Content Side */}

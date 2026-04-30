@@ -110,7 +110,7 @@ const BentoCard = ({ category, templateCount, onClick }) => {
 
             {/* Overlay Layers */}
             <div className={`absolute inset-0 ${isComingSoon ? 'bg-black/60' : 'bg-black/30'}`} />
-            <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-[#0a0a12] via-[#0a0a12]/80 to-transparent z-10" />
+            <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#0a0a12] via-[#0a0a12]/80 to-transparent z-10" />
 
             {/* Content Container */}
             <div 

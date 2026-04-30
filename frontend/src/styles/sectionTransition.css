@@ -1,0 +1,18 @@
+/* ====== SECTION TRANSITION (CURVED WIPE) ====== */
+.transition-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #050505; /* Blackish matching studio bg */
+    z-index: 10000;
+    transform: translateX(-100%);
+    pointer-events: none;
+    will-change: transform, border-radius;
+    
+    border-top-right-radius: 50vh;
+    border-bottom-right-radius: 50vh;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}

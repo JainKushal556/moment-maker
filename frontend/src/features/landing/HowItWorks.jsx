@@ -1,8 +1,40 @@
 import { useEffect, useRef } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import '../../styles/howItWorks.css'
+
+gsap.registerPlugin(ScrollTrigger)
 import image1Url from '../../assets/hiw/image1.png'
 import image2Url from '../../assets/hiw/image2.png'
 import image3Url from '../../assets/hiw/image3.png'
+
+const HIWGoldenParticles = () => {
+  const particles = Array.from({ length: 40 }).map((_, i) => {
+    const size = Math.random() * 3 + 1; // 1px to 4px
+    const left = Math.random() * 100;
+    const top = Math.random() * 100;
+    const duration = Math.random() * 6 + 4; // 4s to 10s
+    const delay = Math.random() * 5;
+    const isBokeh = Math.random() > 0.8; // 20% are larger, blurred bokeh
+
+    return (
+      <div
+        key={i}
+        className={`golden-particle ${isBokeh ? 'bokeh' : ''}`}
+        style={{
+          width: isBokeh ? `${size * 3}px` : `${size}px`,
+          height: isBokeh ? `${size * 3}px` : `${size}px`,
+          left: `${left}%`,
+          top: `${top}%`,
+          animationDuration: `${duration}s`,
+          animationDelay: `-${delay}s`
+        }}
+      />
+    );
+  });
+
+  return <div className="particles-container" style={{ height: '100vh', position: 'absolute', top: 0, left: 0, right: 0 }}>{particles}</div>;
+};
 
 class Particle {
   constructor(x, y, canvasWidth, canvasHeight, color = 'white') {
@@ -26,10 +58,12 @@ class Particle {
   }
 }
 
-export default function HowItWorks() {
+export default function HowItWorks({ onTransition }) {
   const sectionRef = useRef(null)
   const canvasRef = useRef(null)
   const cardsTrackRef = useRef(null)
+  const revealMaskRef = useRef(null)
+  const revealLabelRef = useRef(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -100,11 +134,8 @@ export default function HowItWorks() {
     const zones = [{ start: 0, end: 0.25, recedeEnd: 0.40 }, { start: 0.25, end: 0.55, recedeEnd: 0.70 }, { start: 0.55, end: 1.5, recedeEnd: 1.5 }]
 
     let cachedScrollProgress = 0
-    const scrollHandler = () => {
-      const sectionTop = section.offsetTop; const sectionHeight = section.scrollHeight - window.innerHeight
-      const scrollY = window.scrollY - sectionTop
-      cachedScrollProgress = Math.min(1, Math.max(0, scrollY / sectionHeight))
 
+    const manualScrollUpdate = () => {
       if (cardsTrack) {
         let activeIdx = cachedScrollProgress >= 0.55 ? 2 : cachedScrollProgress >= 0.25 ? 1 : 0
         if (activeIdx !== lastActiveIdx) {
@@ -130,7 +161,67 @@ export default function HowItWorks() {
         })
       }
     }
-    window.addEventListener('scroll', scrollHandler, { passive: true })
+
+    const revealMask = revealMaskRef.current
+    const revealLabel = revealLabelRef.current
+    const hiwContent = section.querySelector('.hiw-sticky-container')
+
+    // GSAP ScrollTrigger for Circle Reveal and Section Scroll
+    const gsapCtx = gsap.context(() => {
+      const masterTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 1,
+          onUpdate: (self) => {
+            // First 30% is the circle reveal
+            // Remaining 70% is the content scroll
+            let contentProg = 0;
+            if (self.progress > 0.3) {
+              contentProg = (self.progress - 0.3) / 0.7;
+            }
+            cachedScrollProgress = Math.min(1, Math.max(0, contentProg));
+            manualScrollUpdate();
+          }
+        }
+      })
+
+      masterTl.to(revealMask,
+        {
+          '--inset-val': '0%',
+          '--radius-val': '0px',
+          backgroundColor: 'transparent',
+          borderColor: 'transparent',
+          duration: 0.3,
+          ease: 'power2.inOut'
+        }, 0
+      )
+
+      masterTl.to(revealLabel, {
+        opacity: 0,
+        scale: 1.2,
+        duration: 0.2,
+        ease: 'power2.in'
+      }, 0)
+
+      masterTl.fromTo(hiwContent,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3, ease: 'power2.out' },
+        0.1
+      )
+
+      const hiwTrigger = ScrollTrigger.create({
+        trigger: section,
+        start: 'bottom-=60vh bottom',
+        once: true,
+        onEnter: () => {
+          if (onTransition) onTransition();
+        }
+      });
+
+      masterTl.to({}, { duration: 0.7 }) // Padding for the rest of the scroll
+    }, section)
 
     function animate() {
       if (!isAnimating) return
@@ -171,15 +262,15 @@ export default function HowItWorks() {
       })
     }
 
-    const sectionObserver = new IntersectionObserver((entries) => { 
-      entries.forEach(entry => { 
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
         if (entry.isIntersecting) {
           if (!imagesLoaded) loadImagesAndStart()
           else startAnim()
         } else {
-          stopAnim() 
+          stopAnim()
         }
-      }) 
+      })
     }, { rootMargin: '400px', threshold: 0 })
     sectionObserver.observe(canvas)
 
@@ -190,7 +281,7 @@ export default function HowItWorks() {
       stopAnim(); sectionObserver.disconnect()
       window.removeEventListener('resize', resizeHandler)
       window.removeEventListener('mousemove', mouseMoveHandler)
-      window.removeEventListener('scroll', scrollHandler)
+      gsapCtx.revert()
     }
   }, [])
 
@@ -202,45 +293,92 @@ export default function HowItWorks() {
 
   return (
     <section className="how-it-works-section" ref={sectionRef}>
+      <HIWGoldenParticles />
+      <svg className="svg-container" style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
+        <defs>
+          <filter id="turbulent-displace" colorInterpolationFilters="sRGB" x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="10" result="noise1" seed="1" />
+            <feOffset in="noise1" dx="0" dy="0" result="offsetNoise1">
+              <animate attributeName="dy" values="700; 0" dur="6s" repeatCount="indefinite" calcMode="linear" />
+            </feOffset>
+            <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="10" result="noise2" seed="1" />
+            <feOffset in="noise2" dx="0" dy="0" result="offsetNoise2">
+              <animate attributeName="dy" values="0; -700" dur="6s" repeatCount="indefinite" calcMode="linear" />
+            </feOffset>
+            <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="10" result="noise1" seed="2" />
+            <feOffset in="noise1" dx="0" dy="0" result="offsetNoise3">
+              <animate attributeName="dx" values="490; 0" dur="6s" repeatCount="indefinite" calcMode="linear" />
+            </feOffset>
+            <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="10" result="noise2" seed="2" />
+            <feOffset in="noise2" dx="0" dy="0" result="offsetNoise4">
+              <animate attributeName="dx" values="0; -490" dur="6s" repeatCount="indefinite" calcMode="linear" />
+            </feOffset>
+            <feComposite in="offsetNoise1" in2="offsetNoise2" result="part1" />
+            <feComposite in="offsetNoise3" in2="offsetNoise4" result="part2" />
+            <feBlend in="part1" in2="part2" mode="color-dodge" result="combinedNoise" />
+            <feDisplacementMap in="SourceGraphic" in2="combinedNoise" scale="50" xChannelSelector="R" yChannelSelector="B" />
+          </filter>
+        </defs>
+      </svg>
       <img id="hiw-image1" data-src={image1Url} style={{ display: 'none' }} />
       <img id="hiw-image2" data-src={image2Url} style={{ display: 'none' }} />
       <img id="hiw-image3" data-src={image3Url} style={{ display: 'none' }} />
 
-      <div className="hiw-sticky-container">
-        <canvas id="hiw-canvas" ref={canvasRef}></canvas>
-        <div className="hiw-heading-block">
-          <h2 className="hiw-heading-title">How It Works</h2>
-          <div className="hiw-heading-line"></div>
-        </div>
-        <div className="hiw-left-panel"></div>
-        <div className="hiw-right-panel">
-          <div className="hiw-cards-track" id="hiwCardsTrack" ref={cardsTrackRef}>
-            {CardData.map((card, i) => (
-              <div key={i} className="hiw-card-outer" data-accent={card.accent}>
-                <div className="hiw-card">
-                  <div className="hiw-card-spotlight"></div>
-                  <div className="hiw-card-header">
-                    <span className="hiw-card-number">{card.number}</span>
-                    <svg className="hiw-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                      <line x1="7" y1="17" x2="17" y2="7" />
-                      <polyline points="7 7 17 7 17 17" />
-                    </svg>
-                  </div>
-                  <div className="hiw-card-content">
-                    <h2 className="hiw-card-title">{card.title}</h2>
-                    <p className="hiw-card-description">{card.description}</p>
-                    <span className="hiw-services-label">Services</span>
-                    <ul className="hiw-services-list">
-                      {card.services.map((s, j) => <li key={j}>{s}</li>)}
-                    </ul>
-                  </div>
-                  <div className="hiw-tags">
-                    <span className="hiw-tags-label">Tools</span>
-                    {card.tools.map((t, j) => <span key={j} className="hiw-tag">{t}</span>)}
+      <div className="hiw-reveal-mask" ref={revealMaskRef}>
+        <div className="hiw-reveal-label" ref={revealLabelRef}>PROCESS</div>
+        <div className="hiw-sticky-container">
+          <canvas id="hiw-canvas" ref={canvasRef}></canvas>
+          <div className="hiw-heading-block">
+            <h2 className="hiw-heading-title">How It Works</h2>
+            <div className="hiw-heading-line"></div>
+          </div>
+          <div className="hiw-left-panel"></div>
+          <div className="hiw-right-panel">
+            <div className="hiw-cards-track" id="hiwCardsTrack" ref={cardsTrackRef}>
+              {CardData.map((card, i) => (
+                <div key={i} className="hiw-card-outer" data-accent={card.accent}>
+                  <div className="hiw-card">
+                    {/* Electric Border Layers */}
+                    <div className="hiw-electric-layers">
+                      <div className="inner-container">
+                        <div className="border-outer">
+                          <div className="main-card"></div>
+                        </div>
+                        <div className="glow-layer-1"></div>
+                        <div className="glow-layer-2"></div>
+                      </div>
+                      <div className="overlay-1"></div>
+                      <div className="overlay-2"></div>
+                      <div className="background-glow"></div>
+                    </div>
+
+                    <div className="hiw-card-spotlight"></div>
+
+                    <div className="hiw-card-content-wrapper">
+                      <div className="hiw-card-header">
+                        <span className="hiw-card-number">{card.number}</span>
+                        <svg className="hiw-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="7" y1="17" x2="17" y2="7" />
+                          <polyline points="7 7 17 7 17 17" />
+                        </svg>
+                      </div>
+                      <div className="hiw-card-content">
+                        <h2 className="hiw-card-title">{card.title}</h2>
+                        <p className="hiw-card-description">{card.description}</p>
+                        <span className="hiw-services-label">Services</span>
+                        <ul className="hiw-services-list">
+                          {card.services.map((s, j) => <li key={j}>{s}</li>)}
+                        </ul>
+                      </div>
+                      <div className="hiw-tags">
+                        <span className="hiw-tags-label">Tools</span>
+                        {card.tools.map((t, j) => <span key={j} className="hiw-tag">{t}</span>)}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>

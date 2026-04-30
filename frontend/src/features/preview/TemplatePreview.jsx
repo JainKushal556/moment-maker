@@ -311,7 +311,7 @@ export default function TemplatePreview() {
                         {/* Inner Glow */}
                         <div className="absolute inset-0 bg-radial-at-tl from-fuchsia-500/10 via-transparent to-transparent pointer-events-none" />
                         
-                        <div className="w-11 h-11 rounded-xl bg-linear-to-br from-fuchsia-600/20 to-pink-600/20 flex items-center justify-center shrink-0 border border-fuchsia-500/20 relative group">
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-fuchsia-600/20 to-pink-600/20 flex items-center justify-center shrink-0 border border-fuchsia-500/20 relative group">
                             <div className="absolute inset-0 bg-fuchsia-500/20 blur-lg rounded-full animate-pulse" />
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f472b6" strokeWidth="2.5" className="relative z-10">
                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -326,7 +326,7 @@ export default function TemplatePreview() {
                         </div>
 
                         {/* Subtle Progress Bar */}
-                        <div className="absolute bottom-0 left-0 h-[2px] bg-linear-to-r from-fuchsia-500 to-pink-500 w-full animate-toast-progress" />
+                        <div className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-fuchsia-500 to-pink-500 w-full animate-toast-progress" />
                     </div>
                 </div>
             )}

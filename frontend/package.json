@@ -23,6 +23,7 @@
     "lenis": "^1.3.18",
     "lucide-react": "^1.8.0",
     "matter-js": "^0.20.0",
+    "ogl": "^1.0.11",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-easy-crop": "^5.5.7",
