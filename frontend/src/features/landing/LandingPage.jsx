@@ -1,5 +1,8 @@
 import { lazy, Suspense, useRef, useEffect } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
+gsap.registerPlugin(ScrollTrigger)
 const HeroSection = lazy(() => import('./HeroSection'))
 const CategoriesCarousel = lazy(() => import('./CategoriesCarousel'))
 const HowItWorks = lazy(() => import('./HowItWorks'))
@@ -115,6 +118,190 @@ const LandingPage = () => {
             );
         }
     };
+
+    useEffect(() => {
+        // Wait for DOM and components to mount
+        const timer = setTimeout(() => {
+            const socialProof = document.querySelector('.social-proof-wrapper');
+            const bigCta = document.querySelector('.big-cta');
+            const faqSection = document.querySelector('.faq-section');
+
+            if (socialProof && bigCta) {
+                // Trigger 1: Forward from Social Proof to Big CTA
+                ScrollTrigger.create({
+                    id: "forward-sp-cta",
+                    trigger: ".social-proof-wrapper",
+                    start: "top top",
+                    end: "bottom bottom",
+                    onLeave: () => {
+                        if (window._curtainTriggered) return;
+                        window._curtainTriggered = true;
+
+                        const snapPos = socialProof.offsetTop + socialProof.offsetHeight - window.innerHeight;
+                        if (window.lenis) {
+                            window.lenis.stop();
+                            window.lenis.scrollTo(snapPos, { immediate: true });
+                        } else {
+                            document.body.style.overflow = 'hidden';
+                            window.scrollTo({ top: snapPos, behavior: 'instant' });
+                        }
+
+                        if (transitionRef.current) {
+                            transitionRef.current.playCurtainTransition(
+                                () => {
+                                    if (window.lenis) {
+                                        window.lenis.start();
+                                        window.lenis.scrollTo(bigCta, { immediate: true });
+                                        window.lenis.stop();
+                                    } else {
+                                        const rect = bigCta.getBoundingClientRect();
+                                        window.scrollTo({ top: rect.top + window.scrollY, behavior: 'instant' });
+                                    }
+                                },
+                                () => {
+                                    if (window.lenis) window.lenis.start();
+                                    else document.body.style.overflow = '';
+                                    window._curtainTriggered = false;
+                                }
+                            );
+                        }
+                    }
+                });
+
+                // Trigger 2: Backward from Big CTA to Social Proof
+                ScrollTrigger.create({
+                    id: "backward-cta-sp",
+                    trigger: ".big-cta",
+                    start: "top 5%",
+                    onLeaveBack: () => {
+                        if (window._curtainTriggered) return;
+                        window._curtainTriggered = true;
+
+                        const snapPos = bigCta.offsetTop;
+                        if (window.lenis) {
+                            window.lenis.stop();
+                            window.lenis.scrollTo(snapPos, { immediate: true });
+                        } else {
+                            document.body.style.overflow = 'hidden';
+                            window.scrollTo({ top: snapPos, behavior: 'instant' });
+                        }
+
+                        if (transitionRef.current) {
+                            transitionRef.current.playCurtainTransition(
+                                () => {
+                                    if (window.lenis) {
+                                        window.lenis.start();
+                                        window.lenis.scrollTo(socialProof, { immediate: true });
+                                        window.lenis.stop();
+                                    } else {
+                                        const rect = socialProof.getBoundingClientRect();
+                                        window.scrollTo({ top: rect.top + window.scrollY, behavior: 'instant' });
+                                    }
+                                },
+                                () => {
+                                    if (window.lenis) window.lenis.start();
+                                    else document.body.style.overflow = '';
+                                    window._curtainTriggered = false;
+                                }
+                            );
+                        }
+                    }
+                });
+            }
+
+            if (bigCta && faqSection) {
+                // Trigger 3: Forward from Big CTA to FAQ
+                ScrollTrigger.create({
+                    id: "forward-cta-faq",
+                    trigger: ".big-cta",
+                    start: "top top",
+                    end: "bottom bottom",
+                    onLeave: () => {
+                        if (window._archiveTriggered) return;
+                        window._archiveTriggered = true;
+
+                        const snapPos = bigCta.offsetTop + bigCta.offsetHeight - window.innerHeight;
+                        if (window.lenis) {
+                            window.lenis.stop();
+                            window.lenis.scrollTo(snapPos, { immediate: true });
+                        } else {
+                            document.body.style.overflow = 'hidden';
+                            window.scrollTo({ top: snapPos, behavior: 'instant' });
+                        }
+
+                        if (transitionRef.current) {
+                            transitionRef.current.playArchiveTransition(
+                                () => {
+                                    if (window.lenis) {
+                                        window.lenis.start();
+                                        window.lenis.scrollTo(faqSection, { immediate: true });
+                                        window.lenis.stop();
+                                    } else {
+                                        const targetPos = faqSection.offsetTop;
+                                        window.scrollTo({ top: targetPos, behavior: 'instant' });
+                                    }
+                                },
+                                () => {
+                                    if (window.lenis) window.lenis.start();
+                                    else document.body.style.overflow = '';
+                                    window._archiveTriggered = false;
+                                }
+                            );
+                        }
+                    }
+                });
+
+                // Trigger 4: Backward from FAQ to Big CTA
+                ScrollTrigger.create({
+                    id: "backward-faq-cta",
+                    trigger: ".faq-section",
+                    start: "top 5%",
+                    onLeaveBack: () => {
+                        if (window._archiveTriggered) return;
+                        window._archiveTriggered = true;
+
+                        const snapPos = faqSection.offsetTop;
+                        if (window.lenis) {
+                            window.lenis.stop();
+                            window.lenis.scrollTo(snapPos, { immediate: true });
+                        } else {
+                            document.body.style.overflow = 'hidden';
+                            window.scrollTo({ top: snapPos, behavior: 'instant' });
+                        }
+
+                        if (transitionRef.current) {
+                            transitionRef.current.playArchiveTransition(
+                                () => {
+                                    if (window.lenis) {
+                                        window.lenis.start();
+                                        const targetPos = bigCta.offsetTop + bigCta.offsetHeight - window.innerHeight;
+                                        window.lenis.scrollTo(targetPos, { immediate: true });
+                                        window.lenis.stop();
+                                    } else {
+                                        const targetPos = bigCta.offsetTop + bigCta.offsetHeight - window.innerHeight;
+                                        window.scrollTo({ top: targetPos, behavior: 'instant' });
+                                    }
+                                },
+                                () => {
+                                    if (window.lenis) window.lenis.start();
+                                    else document.body.style.overflow = '';
+                                    window._archiveTriggered = false;
+                                }
+                            );
+                        }
+                    }
+                });
+            }
+        }, 500);
+
+        return () => {
+            clearTimeout(timer);
+            ScrollTrigger.getById("forward-sp-cta")?.kill();
+            ScrollTrigger.getById("backward-cta-sp")?.kill();
+            ScrollTrigger.getById("forward-cta-faq")?.kill();
+            ScrollTrigger.getById("backward-faq-cta")?.kill();
+        };
+    }, []);
 
     return (
         <>

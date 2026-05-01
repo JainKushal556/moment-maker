@@ -6,7 +6,7 @@
     position: relative;
     width: 100%;
     padding: 120px 24px 100px;
-    background: transparent;
+    background: #0B1121;
     overflow: hidden;
     z-index: 2;
     flex-direction: column;

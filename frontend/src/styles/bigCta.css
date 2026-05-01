@@ -305,6 +305,9 @@
   width: 700px;
   height: 700px;
   z-index: 0;
+  -webkit-mask-image: radial-gradient(circle, black 40%, transparent 68%);
+  mask-image: radial-gradient(circle, black 40%, transparent 68%);
+  filter: drop-shadow(0 0 20px rgba(160, 100, 255, 0.4)) drop-shadow(0 0 60px rgba(100, 50, 255, 0.3));
 }
 
 /* ── Headline Group ── */

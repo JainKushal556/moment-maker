@@ -5,7 +5,7 @@
 .footer-section {
     position: relative;
     width: 100%;
-    background: #050508;
+    background: #0B1121;
     padding: 0; margin: 0;
     overflow: hidden;
     z-index: 1;
@@ -19,7 +19,7 @@
     overflow: hidden;
     cursor: grab;
     user-select: none;
-    background: radial-gradient(ellipse at 50% 40%, #0d0d18 0%, #050508 100%);
+    background: radial-gradient(ellipse at 50% 40%, #111A33 0%, #0B1121 100%);
 }
 .footer-playground:active { cursor: grabbing; }
 

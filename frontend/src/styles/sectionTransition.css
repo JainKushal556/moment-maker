@@ -5,14 +5,72 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: #050505; /* Blackish matching studio bg */
+    background-color: #050505;
+    /* Blackish matching studio bg */
     z-index: 10000;
     transform: translateX(-100%);
     pointer-events: none;
     will-change: transform, border-radius;
-    
+
     border-top-right-radius: 50vh;
     border-bottom-right-radius: 50vh;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
+}
+
+/* ====== CURTAIN TRANSITION (VERTICAL WIPE) ====== */
+.curtain-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #050505;
+    z-index: 10000;
+    pointer-events: none;
+    /* Initial state: a solid stripe with 0 width at the center left */
+    clip-path: polygon(0% 47%, 0% 47%, 0% 53%, 0% 53%);
+    will-change: clip-path;
+
+    /* Center the text */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.curtain-text {
+    color: #ffffff;
+    font-size: 3.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-family: 'Outfit', sans-serif;
+    opacity: 0;
+    pointer-events: none;
+    text-align: center;
+}
+
+/* ====== ARCHIVE TRANSITION (SVG WIPE) ====== */
+.archive-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10000;
+    pointer-events: none;
+    overflow: hidden;
+    visibility: hidden;
+    display: grid;
+    place-items: center;
+}
+
+.archive-overlay svg {
+    display: block;
+    width: 125%;
+    height: 100%;
+    aspect-ratio: 1;
+}
+
+.archive-overlay svg path {
+    stroke: url(#momentsGradient);
 }

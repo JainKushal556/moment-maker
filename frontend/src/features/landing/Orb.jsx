@@ -241,7 +241,8 @@ export default function Orb({
       const uvX = ((x - centerX) / size) * 2.0;
       const uvY = ((y - centerY) / size) * 2.0;
 
-      if (Math.sqrt(uvX * uvX + uvY * uvY) < 0.8) {
+      // Increased threshold from 0.8 to 1.5 to trigger hover across the whole orb
+      if (Math.sqrt(uvX * uvX + uvY * uvY) < 1.5) {
         targetHover = 1;
       } else {
         targetHover = 0;
