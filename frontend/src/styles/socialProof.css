@@ -12,7 +12,7 @@
   align-items: center;
   justify-content: center;
   /* Set to dark so it fits with the theme */
-  background: transparent;
+  background: #050a1f;
   border-radius: 0;
   min-height: auto;
 }
@@ -30,8 +30,9 @@
 
 /* Full-width light wrapper so the section spans the page */
 .social-proof-wrapper {
-  background: transparent;
+  background: #050a1f;
   width: 100%;
+  margin-top: -2px; /* Eliminate sub-pixel gap line from previous section */
 }
 
 /* WALL */

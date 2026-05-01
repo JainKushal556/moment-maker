@@ -3,7 +3,7 @@
    ========================================= */
 
 :root {
-    --studio-bg: #050505;
+    --studio-bg: #050a1f;
     --studio-panel: rgba(10, 10, 15, 0.8);
     --studio-border: rgba(255, 255, 255, 0.06);
     --studio-accent: #00f2fe;
@@ -19,12 +19,13 @@
     padding: clamp(40px, 5vh, 80px) 0;
     background-color: var(--studio-bg);
     color: var(--studio-text);
-    overflow: hidden;
+    overflow-x: clip; /* Allow bottom glow to bleed into next section (no hard line) */
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     box-sizing: border-box;
+    margin-top: -2px; /* Eliminate sub-pixel gap line from previous section */
 }
 
 /* Atmospheric Glows */
@@ -103,6 +104,17 @@
 
 .back-to-steps:hover svg {
     transform: translateY(-3px);
+}
+
+/* Blink hint when user tries to scroll up while locked */
+@keyframes backBtnBlink {
+    0%   { border-color: rgba(255,255,255,0.08); box-shadow: none; color: var(--studio-text-dim); }
+    40%  { border-color: var(--studio-accent); box-shadow: 0 0 18px var(--studio-accent-glow); color: #fff; }
+    100% { border-color: rgba(255,255,255,0.08); box-shadow: none; color: var(--studio-text-dim); }
+}
+
+.back-to-steps.btn-blink {
+    animation: backBtnBlink 0.5s ease-in-out 2;
 }
 
 .back-to-steps span {

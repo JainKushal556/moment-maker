@@ -44,21 +44,6 @@ export default function Customization({ onTransitionBack }) {
       .from('.studio-panel', { opacity: 0, x: -50, duration: 1, ease: 'power4.out' }, '-=0.4')
       .from('.studio-viewport', { opacity: 0, x: 50, duration: 1, ease: 'power4.out' }, '-=1')
 
-    // Prevent manual scrolling back to "How It Works"
-    // This locks the user in the Customization section for backward movement
-    ScrollTrigger.create({
-      trigger: containerRef.current,
-      start: 'top top',
-      onUpdate: (self) => {
-        // If the user tries to scroll up past the top of this section
-        if (self.progress === 0 && self.direction === -1) {
-          if (window.lenis) {
-            window.lenis.scrollTo(containerRef.current, { immediate: true });
-          }
-        }
-      }
-    });
-
 
 
   }, { scope: containerRef })

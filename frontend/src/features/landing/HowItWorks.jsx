@@ -214,8 +214,8 @@ export default function HowItWorks({ onTransition }) {
       const hiwTrigger = ScrollTrigger.create({
         trigger: section,
         start: 'bottom-=60vh bottom',
-        once: true,
         onEnter: () => {
+          if (window._hiwTransitionBlocked) return;
           if (onTransition) onTransition();
         }
       });

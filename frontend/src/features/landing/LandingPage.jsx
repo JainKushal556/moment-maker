@@ -16,6 +16,23 @@ const LandingPage = () => {
 
     // Single persistent Lenis scroll listener installed once
     useEffect(() => {
+        // Proactive block: intercept upward wheel events before Lenis processes them
+        // This eliminates the tug-of-war jitter caused by the reactive scroll correction
+        const wheelHandler = (e) => {
+            if (!isScrollLocked.current) return;
+            if (e.deltaY < 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Hint user to use the Back button
+                const backBtn = document.querySelector('.back-to-steps');
+                if (backBtn && !backBtn.classList.contains('btn-blink')) {
+                    backBtn.classList.add('btn-blink');
+                    setTimeout(() => backBtn.classList.remove('btn-blink'), 1000);
+                }
+            }
+        };
+        window.addEventListener('wheel', wheelHandler, { passive: false });
+
         const waitForLenis = setInterval(() => {
             if (!window.lenis) return;
             clearInterval(waitForLenis);
@@ -31,7 +48,10 @@ const LandingPage = () => {
             });
         }, 100);
 
-        return () => clearInterval(waitForLenis);
+        return () => {
+            clearInterval(waitForLenis);
+            window.removeEventListener('wheel', wheelHandler);
+        };
     }, []);
 
     const handleHiwTransition = () => {
@@ -67,6 +87,8 @@ const LandingPage = () => {
 
         // Deactivate lock BEFORE doing anything else
         isScrollLocked.current = false;
+        // Block the HIW ScrollTrigger so it doesn't re-fire during the back scroll jump
+        window._hiwTransitionBlocked = true;
 
         if (window.lenis) window.lenis.stop();
         else document.body.style.overflow = 'hidden';
@@ -77,7 +99,7 @@ const LandingPage = () => {
                     if (prevSection) {
                         const rect = prevSection.getBoundingClientRect();
                         const absoluteTop = rect.top + window.scrollY;
-                        const jumpPos = absoluteTop + rect.height - window.innerHeight;
+                        const jumpPos = absoluteTop + rect.height - window.innerHeight * 1.8;
                         if (window.lenis) {
                             window.lenis.start();
                             window.lenis.scrollTo(jumpPos, { immediate: true });
@@ -86,6 +108,8 @@ const LandingPage = () => {
                             window.scrollTo({ top: jumpPos, behavior: 'instant' });
                         }
                     }
+                    // Unblock after reveal animation completes (~0.8s) + buffer
+                    setTimeout(() => { window._hiwTransitionBlocked = false; }, 1000);
                 },
                 'backward'
             );
