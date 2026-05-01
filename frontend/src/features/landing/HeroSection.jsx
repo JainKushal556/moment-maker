@@ -420,7 +420,10 @@ export default function HeroSection() {
   return (
     <section className="hero" ref={heroRef}>
       <div className="header-block" ref={headerRef}>
-        <h2>Moment Crafter</h2>
+        <h2 className="hero-logo">
+          <span className="moment-text">Moment</span>{' '}
+          <span className="crafter-text">Crafter</span>
+        </h2>
         <p className="subtitle" ref={subtitleRef}>Craft memories, not just messages.</p>
       </div>
 

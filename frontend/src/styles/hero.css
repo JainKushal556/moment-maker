@@ -4,7 +4,7 @@
    lazy-loaded CSS cannot leak into other views.
    ========================================= */
 .hero {
-    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -25,7 +25,7 @@
    ========================================= */
 .header-block {
     position: absolute;
-    top: 50%;
+    top: 50dvh;
     left: 50%;
     transform: translate(-50%, -140%);
     width: 95%;
@@ -40,17 +40,24 @@
 
 .header-block h2 {
     font-weight: 900;
-    font-size: clamp(3rem, 8vw, 7.5rem);
+    font-size: clamp(3.5rem, 10vw, 7.5rem);
     line-height: 1;
     letter-spacing: -0.03em;
     margin-bottom: 24px;
-    /* Animated gradient text */
-    background-image: linear-gradient(to right, #5227FF, #FF9FFC, #B19EEF, #5227FF);
-    background-size: 300% 100%;
-    background-clip: text;
-    -webkit-background-clip: text;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.2em;
+}
+
+.moment-text {
+    color: #ffffff;
+}
+
+.crafter-text {
     color: transparent;
-    animation: gradientSweep 8s ease-in-out infinite alternate;
+    -webkit-text-stroke: 2px #FFD700;
 }
 
 @keyframes gradientSweep {
@@ -183,8 +190,15 @@
     }
 
     .hero .header-block h2 {
-        font-size: 8vw;
+        font-size: clamp(4rem, 16vw, 12rem);
         text-align: center;
+        flex-direction: column;
+        gap: 0;
+        line-height: 0.85;
+    }
+
+    .crafter-text {
+        -webkit-text-stroke: 1.5px #FFD700;
     }
 
     .placeholder {
@@ -193,7 +207,7 @@
     }
 
     .header-block {
-        transform: translate(-50%, -65%);
+        transform: translate(-50%, -85%);
     }
 }
 
@@ -203,11 +217,11 @@
     }
 
     .icon {
-        width: clamp(60px, 18vw, 100px);
+        width: clamp(65px, 18vw, 110px);
     }
 
     .header-block h2 {
-        font-size: 8vw;
+        font-size: clamp(5rem, 20vw, 15rem);
     }
 }
 
