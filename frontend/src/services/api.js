@@ -50,6 +50,9 @@ async function apiFetch(path, options = {}) {
 /** Fetch all moments for the authenticated user */
 export const getMoments = () => apiFetch('/moments')
 
+/** Fetch a single moment for the authenticated user */
+export const getMoment = (id) => apiFetch(`/moments/${id}`)
+
 /** Save a new moment */
 export const saveMoment = (data) =>
     apiFetch('/moments', {

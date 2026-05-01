@@ -1,0 +1,74 @@
+# Font Combinations Mapping for Friendship App (Consistent Mapping)
+
+All sets follow the exact same mapping structure as the current 'Outfit' setup. Only the primary font family changes.
+
+---
+
+## Set 1: Modern & Geometric (Current)
+- **Primary Font:** 'Outfit'
+- **Category:** Modern, clean, and balanced.
+- **Google Font Link:** `https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap`
+
+### Mapping:
+- **Main Headings (Hero/Titles):** Outfit (Black/900)
+- **Subheadings:** Outfit (Medium/Bold)
+- **Body Text:** Outfit (Light/Regular)
+- **Buttons/UI:** Outfit (Black/Bold)
+- **Metadata:** Monospace (System)
+
+---
+
+## Set 2: Elegant & Classic
+- **Primary Font:** 'Montserrat'
+- **Category:** Timeless, professional, and readable.
+- **Google Font Link:** `https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap`
+
+### Mapping:
+- **Main Headings (Hero/Titles):** Montserrat (Black/900)
+- **Subheadings:** Montserrat (Medium/Bold)
+- **Body Text:** Montserrat (Light/Regular)
+- **Buttons/UI:** Montserrat (Black/Bold)
+- **Metadata:** Monospace (System)
+
+---
+
+## Set 3: Playful & Friendly
+- **Primary Font:** 'Quicksand'
+- **Category:** Soft, rounded, and welcoming.
+- **Google Font Link:** `https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap`
+
+### Mapping:
+- **Main Headings (Hero/Titles):** Quicksand (Bold/700)
+- **Subheadings:** Quicksand (SemiBold/600)
+- **Body Text:** Quicksand (Medium/500)
+- **Buttons/UI:** Quicksand (Bold/700)
+- **Metadata:** Monospace (System)
+
+---
+
+## Set 4: Futuristic & Tech-Forward
+- **Primary Font:** 'Space Grotesk'
+- **Category:** Sharp, geometric, and digital.
+- **Google Font Link:** `https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap`
+
+### Mapping:
+- **Main Headings (Hero/Titles):** Space Grotesk (Bold/700)
+- **Subheadings:** Space Grotesk (Medium/500)
+- **Body Text:** Space Grotesk (Light/300)
+- **Buttons/UI:** Space Grotesk (Bold/700)
+- **Metadata:** Monospace (System)
+
+---
+
+## Implementation Summary (Common for all sets)
+
+1. **index.html**: Replace the existing Google Font `<link>` with the link from the chosen set.
+2. **index.css**: Update the `:root` font-family:
+   ```css
+   :root {
+     font-family: '[Font Name]', sans-serif;
+   }
+   ```
+3. **Tailwind Classes**: 
+   - Search and replace all instances of `font-['Outfit']` with `font-['[Font Name]']`.
+   - The weight classes (`font-black`, `font-bold`, `font-medium`, `font-light`) will automatically work with the new font.

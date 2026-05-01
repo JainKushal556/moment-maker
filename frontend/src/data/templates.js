@@ -216,4 +216,92 @@ export const templates = [
             ]
         }
     },
+    { 
+        id: 'imperial-friendship', 
+        title: "Imperial Friendship", 
+        category: "friendship", 
+        rating: 5.0, 
+        isPremium: false, 
+        img: "/assets/templates-thumbnails/imperial-friendship.png", 
+        desc: "A premium friendship template with a personalized letter and memory gallery.", 
+        url: "/templates/friendship/imperial-friendship/index.html",
+        schema: [
+            {
+                id: 'font_set',
+                type: 'select',
+                label: 'Font Theme',
+                options: [
+                    { label: 'Modern & Clean', value: 'set1' },
+                    { label: 'Elegant & Classic (Serif)', value: 'set2' },
+                    { label: 'Playful & Personal (Script)', value: 'set3' },
+                    { label: 'Compact & Tech (Space Mono)', value: 'set4' }
+                ],
+                stateKey: 'selectedFontSet'
+            },
+            {
+                id: 'letter_header',
+                type: 'text',
+                label: 'Letter Header',
+                placeholder: 'e.g. Dear Friend,',
+                stateKey: 'letterHeader'
+            },
+            {
+                id: 'letter_body',
+                type: 'textarea',
+                label: 'Letter Body',
+                placeholder: 'Type your message...',
+                stateKey: 'letterBody',
+                maxLength: 400
+            },
+            {
+                id: 'nickname',
+                type: 'text',
+                label: 'Your Nickname',
+                placeholder: 'e.g. Sid',
+                stateKey: 'nickname'
+            },
+            {
+                id: 'friendship_photos',
+                type: 'image-gallery',
+                label: 'Memory Photos',
+                description: 'Upload 4 photos for the memory gallery.',
+                maxCount: 4,
+                stateKey: 'images'
+            },
+            {
+                id: 'photo_captions',
+                type: 'text-list',
+                label: 'Photo Captions',
+                description: 'Add a caption for each of the 4 photos.',
+                count: 4,
+                stateKey: 'captions'
+            },
+            {
+                id: 'memory_words',
+                type: 'text',
+                label: 'Memory Words',
+                placeholder: 'e.g. Still one of my favorite moments with you.',
+                stateKey: 'memoryWords'
+            }
+        ],
+        defaults: {
+            selectedFontSet: 'set1',
+            letterHeader: 'Dear Friend,',
+            letterBody: "I still have no idea how I've survived your terrible jokes and endless drama.\n\nFrom our stupid fights to roasting each other relentlessly, it's been pure chaos.\n\nBut honestly? You're the most annoying person I know, yet somehow, my absolute favorite.\n\nSo here's a little trip down memory lane to remind you of the beautiful mess we've made together.",
+            nickname: 'Sid',
+            captions: [
+                "Summer Nights & Laughter ♡",
+                "Best Friends Forever ♡",
+                "Memories We Made ♡",
+                "Always By My Side ♡"
+            ],
+            memoryWords: '“Still one of my favorite moments with you.”',
+            images: [
+                '/templates/friendship/imperial-friendship/images/1.jpg',
+                '/templates/friendship/imperial-friendship/images/2.jpg',
+                '/templates/friendship/imperial-friendship/images/3.jpg',
+                '/templates/friendship/imperial-friendship/images/4.jpg'
+            ]
+        }
+    },
 ];

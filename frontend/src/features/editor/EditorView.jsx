@@ -5,7 +5,7 @@ import LivePreviewer from './LivePreviewer'
 import IntroSelector from './IntroSelector'
 import { ViewContext } from '../../context/NavContext'
 import { useAuth } from '../../context/AuthContext'
-import { saveMoment, updateMoment } from '../../services/api'
+import { saveMoment, updateMoment, getMoment } from '../../services/api'
 import { uploadImage, getFirebaseToken, base64ToFile } from '../../services/cloudinary'
 import './editor.css'
 
@@ -26,6 +26,22 @@ export default function EditorView() {
     letterBody: ''
   })
   const [saveStatus, setSaveStatus] = useState('idle')
+  const [currentMomentStatus, setCurrentMomentStatus] = useState('draft')
+
+  // Fetch existing moment data if editing
+  useEffect(() => {
+    if (editingMomentId) {
+      getMoment(editingMomentId)
+        .then(data => {
+          if (data && data.status) {
+            setCurrentMomentStatus(data.status)
+          }
+        })
+        .catch(err => console.error("Error fetching moment for editor:", err))
+    } else {
+      setCurrentMomentStatus('draft')
+    }
+  }, [editingMomentId])
 
   // Synchronize with selected template defaults or global saved data
   useEffect(() => {
@@ -65,7 +81,7 @@ export default function EditorView() {
   const handleShare = async () => {
     if (!editingMomentId) return
 
-    setSaveStatus('saving')
+    setSaveStatus('sharing')
     try {
       await updateMoment(editingMomentId, {
         templateId: selectedTemplate.id,
@@ -76,6 +92,7 @@ export default function EditorView() {
         senderName: currentUser?.displayName || currentUser?.email?.split('@')[0] || "Someone Special"
       })
       setSharedMomentId(editingMomentId)
+      setCurrentMomentStatus('shared')
       setSaveStatus('saved')
       navigateTo('share')
     } catch (error) {
@@ -136,7 +153,7 @@ export default function EditorView() {
       const momentData = {
         templateId: selectedTemplate.id,
         customization: filteredCustomization,
-        status: 'draft',
+        status: currentMomentStatus || 'draft',
         title: selectedTemplate.title,
         introId: selectedIntroId,
         senderName: currentUser?.displayName || currentUser?.email?.split('@')[0] || "Someone Special"
@@ -188,6 +205,7 @@ export default function EditorView() {
           onShare={handleShare}
           saveStatus={saveStatus}
           setSaveStatus={setSaveStatus}
+          currentMomentStatus={currentMomentStatus}
           selectedIntroId={selectedIntroId}
           setSelectedIntroId={setSelectedIntroId}
         />

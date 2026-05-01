@@ -43,6 +43,58 @@ async def list_moments(user: dict = Depends(get_current_user)):
     return moments
 
 
+
+@router.get("/favorites")
+async def get_favorites(user: dict = Depends(get_current_user)):
+    """Fetch the authenticated user's favorite templates."""
+    uid = user["uid"]
+    doc = db.collection("users").document(uid).get()
+    
+    if not doc.exists:
+        return {"favorites": []}
+        
+    return {"favorites": doc.to_dict().get("favorites", [])}
+
+
+@router.post("/favorites/{template_id}")
+async def toggle_favorite(template_id: str, user: dict = Depends(get_current_user)):
+    """Toggle a template in the user's favorites array."""
+    uid = user["uid"]
+    ref = db.collection("users").document(uid)
+    doc = ref.get()
+    
+    if not doc.exists:
+        ref.set({"favorites": [template_id]}, merge=True)
+        return {"favorites": [template_id], "status": "added"}
+        
+    favorites = doc.to_dict().get("favorites", [])
+    if template_id in favorites:
+        favorites.remove(template_id)
+        status = "removed"
+    else:
+        favorites.append(template_id)
+        status = "added"
+        
+    ref.update({"favorites": favorites})
+    return {"favorites": favorites, "status": status}
+
+
+@router.get("/{moment_id}")
+async def get_moment(moment_id: str, user: dict = Depends(get_current_user)):
+    """Fetch a single moment by ID — only if it belongs to the authenticated user."""
+    uid = user["uid"]
+    doc = db.collection("moments").document(moment_id).get()
+
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Moment not found.")
+
+    moment_data = doc.to_dict()
+    if moment_data.get("uid") != uid:
+        raise HTTPException(status_code=403, detail="Not authorised to view this moment.")
+
+    return {"id": doc.id, **moment_data}
+
+
 @router.post("", status_code=201)
 async def save_moment(payload: MomentPayload, user: dict = Depends(get_current_user)):
     """Save a new moment for the authenticated user."""
@@ -111,18 +163,20 @@ async def get_public_moment(moment_id: str, visitorId: str | None = None):
         except ValueError:
             pass # Handle legacy or malformed dates gracefully
             
-    if data.get("status") == "shared":
-        viewer_sessions = data.get("viewerSessions", [])
-        if visitorId:
-            if visitorId not in viewer_sessions:
-                if len(viewer_sessions) >= 4:
-                    raise HTTPException(status_code=403, detail="This moment link has reached its maximum viewer limit.")
-                else:
-                    # Add new visitor ID
-                    viewer_sessions.append(visitorId)
-                    doc_ref.update({"viewerSessions": viewer_sessions})
-        elif len(viewer_sessions) >= 4:
-            raise HTTPException(status_code=403, detail="This moment link has reached its maximum viewer limit.")
+    if data.get("status") != "shared":
+        raise HTTPException(status_code=403, detail="This moment is not shared yet.")
+
+    viewer_sessions = data.get("viewerSessions", [])
+    if visitorId:
+        if visitorId not in viewer_sessions:
+            if len(viewer_sessions) >= 4:
+                raise HTTPException(status_code=403, detail="This moment link has reached its maximum viewer limit.")
+            else:
+                # Add new visitor ID
+                viewer_sessions.append(visitorId)
+                doc_ref.update({"viewerSessions": viewer_sessions})
+    elif len(viewer_sessions) >= 4:
+        raise HTTPException(status_code=403, detail="This moment link has reached its maximum viewer limit.")
 
     # Only return necessary public data
     return {
@@ -189,39 +243,6 @@ async def delete_moment(moment_id: str, user: dict = Depends(get_current_user)):
     return None
 
 
-@router.get("/favorites")
-async def get_favorites(user: dict = Depends(get_current_user)):
-    """Fetch the authenticated user's favorite templates."""
-    uid = user["uid"]
-    doc = db.collection("users").document(uid).get()
-    
-    if not doc.exists:
-        return {"favorites": []}
-        
-    return {"favorites": doc.to_dict().get("favorites", [])}
-
-
-@router.post("/favorites/{template_id}")
-async def toggle_favorite(template_id: str, user: dict = Depends(get_current_user)):
-    """Toggle a template in the user's favorites array."""
-    uid = user["uid"]
-    ref = db.collection("users").document(uid)
-    doc = ref.get()
-    
-    if not doc.exists:
-        ref.set({"favorites": [template_id]}, merge=True)
-        return {"favorites": [template_id], "status": "added"}
-        
-    favorites = doc.to_dict().get("favorites", [])
-    if template_id in favorites:
-        favorites.remove(template_id)
-        status = "removed"
-    else:
-        favorites.append(template_id)
-        status = "added"
-        
-    ref.update({"favorites": favorites})
-    return {"favorites": favorites, "status": status}
 
 
 @router.get("/templates/stats")

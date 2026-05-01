@@ -73,10 +73,10 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
       onClick={handleCardClick}
       className="relative group w-full aspect-16/11 perspective-1000 mx-auto cursor-pointer"
     >
-      <div className="absolute inset-[-1.5px] rounded-[2.5rem] bg-linear-to-r from-fuchsia-500/20 via-transparent to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-[1px]" />
+      <div className="absolute inset-0 rounded-[2.5rem] bg-linear-to-r from-fuchsia-500/20 via-transparent to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-      <div className="relative h-full w-full overflow-hidden rounded-[2.5rem] bg-zinc-950 border border-white/10 shadow-2xl flex flex-col">
-        <div className="relative h-full w-full overflow-hidden">
+      <div className="relative h-full w-full overflow-hidden rounded-[2.5rem] bg-black border border-white/10 shadow-2xl flex flex-col">
+        <div className="relative h-full w-full overflow-hidden rounded-[2.5rem] bg-black">
           <img
             src={imageUrl}
             alt={moment.title}
@@ -85,7 +85,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
               e.target.src = moment.category ? `/cards/${moment.category}.png` : "/cards/special.png"
             }}
           />
-          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-[#0a0a12] via-[#0a0a12]/80 to-transparent z-10" />
+          <div className="absolute inset-x-[-4px] bottom-[-4px] top-1/3 bg-linear-to-t from-black via-black/80 to-transparent z-10" />
 
           <div
             className="absolute flex justify-between items-start z-50"
@@ -116,50 +116,48 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
 
           {/* Mobile View: Floating Action Buttons */}
           {!isTemplate && (
-            <div 
-              className="md:hidden absolute flex items-center gap-2 z-50"
-              style={{ bottom: '80px', right: '20px' }}
-            >
-              {validity?.isExpired ? (
-                <>
+            <>
+              {/* TOP LEFT: Reactivate or Edit */}
+              <div className="md:hidden absolute z-50" style={{ top: '24px', left: '24px' }}>
+                {validity?.isExpired ? (
                   <button
                     onClick={(e) => { e.stopPropagation(); if (onAction) onAction('reactivate', moment.id); }}
-                  className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer"
+                    className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer shadow-lg"
                   >
                     <RotateCw size={16} strokeWidth={2.5} />
                   </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); if (onAction) onAction('delete', moment.id); }}
-                    className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </>
-              ) : (
-                <>
-                  {!isTemplate && moment.status === 'shared' && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); if (onAction) onAction('share', moment.id); }}
-                      className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer"
-                    >
-                      <Share2 size={16} />
-                    </button>
-                  )}
+                ) : (
                   <button
                     onClick={(e) => { e.stopPropagation(); if (onAction) onAction('enter', moment.id); }}
-                    className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer"
+                    className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer shadow-lg"
                   >
                     <Pencil size={16} strokeWidth={2.5} />
                   </button>
+                )}
+              </div>
+
+              {/* TOP RIGHT: Share */}
+              {!validity?.isExpired && moment.status === 'shared' && (
+                <div className="md:hidden absolute z-50" style={{ top: '24px', right: '24px' }}>
                   <button
-                    onClick={(e) => { e.stopPropagation(); if (onAction) onAction('delete', moment.id); }}
-                    className="w-10 h-10 min-w-[40px] min-h-[40px] flex-shrink-0 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer"
+                    onClick={(e) => { e.stopPropagation(); if (onAction) onAction('share', moment.id); }}
+                    className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer shadow-lg"
                   >
-                    <Trash2 size={16} />
+                    <Share2 size={16} />
                   </button>
-                </>
+                </div>
               )}
-            </div>
+
+              {/* BOTTOM RIGHT: Delete */}
+              <div className="md:hidden absolute z-50" style={{ bottom: '24px', right: '24px' }}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); if (onAction) onAction('delete', moment.id); }}
+                  className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-sm text-white/30 border border-white/5 flex items-center justify-center active:scale-95 cursor-pointer shadow-lg"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </>
           )}
         </div>
 

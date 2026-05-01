@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+:root {
+  font-family: 'Outfit', sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: black;
+  color: white;
+  overflow-x: hidden;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
