@@ -229,7 +229,7 @@ export default function Customization({ onTransitionBack }) {
               )}
               <iframe
                 ref={iframeRef}
-                src="/templates/birthday/birthday-mosaic/index.html"
+                src="/templates/birthday/birthday-mosaic/main.html"
                 title="Preview"
                 onLoad={() => setTemplateReady(true)}
               />

@@ -1,206 +1,533 @@
 /* =========================================
-   Big CTA — Full-viewport call to action
+   Big CTA — Cosmic Neon Design
    ========================================= */
+
 .big-cta {
   position: relative;
   width: 100%;
-  height: 100dvh;
-  overflow: hidden;
-  background: #6BBA6C;
-  font-family: inherit;
-}
-
-.big-cta ::selection {
-  background: #481b7a;
-  color: #fff;
-}
-
-/* ---------- Animated wave layer ---------- */
-.big-cta__wave-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-}
-
-.big-cta__wave-layer--yellow {
-  height: 72vh;
-  transform: skewY(4deg);
-  transform-origin: top left;
-  z-index: 1;
-}
-
-.big-cta__wave-layer--purple {
-  height: 28vh;
-  transform: skewY(-4deg);
-  transform-origin: top left;
-  z-index: 2;
-}
-
-/* Solid fill above the wave edge */
-.big-cta__wave-fill {
-  position: absolute;
-  top: -50vh;
-  left: 0;
-  width: 100%;
-  height: calc(100% + 50vh);
-}
-
-/* SVG wave container */
-.big-cta__wave-svg-wrap {
-  position: absolute;
-  top: 100%;
-  left: -10vw;
-  width: 120vw;
-  margin-top: -1px;
-}
-
-.big-cta__wave-svg-wrap svg {
-  width: 100%;
-  display: block;
-  fill: currentColor;
-}
-
-/* ---------- Content ---------- */
-.big-cta__content {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 35vh;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  justify-content: center;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 35%, #1e0d5c 0%, #110830 50%, #080520 100%);
+  font-family: 'Inter', sans-serif;
+  padding-bottom: 0;
+}
+
+/* ── Ambient Background Orbs (Soap Bubbles) ── */
+.big-cta__orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  backdrop-filter: blur(3px); /* creates the glassy distortion */
+  border: 1px solid rgba(255, 255, 255, 0.15); /* thin bubble wall */
+}
+
+/* Large purple bubble — top left */
+.big-cta__orb--purple-left {
+  width: 300px;
+  height: 300px;
+  top: -80px;
+  left: -90px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.01) 60%);
+  box-shadow: 
+    inset -15px -25px 50px rgba(107, 45, 184, 0.4), /* purple rim */
+    inset 15px 15px 30px rgba(255, 255, 255, 0.2),  /* reflection highlight */
+    0 0 50px rgba(107, 45, 184, 0.2);               /* outer glow */
+  animation: floatBubble1 12s ease-in-out infinite;
+}
+
+/* Large teal-blue bubble — bottom right */
+.big-cta__orb--teal-right {
+  width: 220px;
+  height: 220px;
+  bottom: 60px;
+  right: -50px;
+  background: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.01) 65%);
+  box-shadow: 
+    inset -10px -20px 40px rgba(14, 140, 200, 0.4), /* teal rim */
+    inset 10px 10px 20px rgba(255, 255, 255, 0.25), /* reflection highlight */
+    0 0 40px rgba(14, 140, 200, 0.2);               /* outer glow */
+  animation: floatBubble2 14s ease-in-out infinite reverse;
+}
+
+/* Small violet bubble — mid left */
+.big-cta__orb--violet-mid {
+  width: 90px;
+  height: 90px;
+  top: 48%;
+  left: 7%;
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.01) 70%);
+  box-shadow: 
+    inset -5px -10px 20px rgba(122, 53, 184, 0.5), /* violet rim */
+    inset 5px 5px 15px rgba(255, 255, 255, 0.2),   /* reflection highlight */
+    0 0 30px rgba(122, 53, 184, 0.2);              /* outer glow */
+  animation: floatBubble3 9s ease-in-out infinite;
+}
+
+/* Bubble Animations */
+@keyframes floatBubble1 {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+  33%      { transform: translateY(-30px) translateX(20px) scale(1.05); }
+  66%      { transform: translateY(15px) translateX(-20px) scale(0.95); }
+}
+
+@keyframes floatBubble2 {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+  33%      { transform: translateY(-40px) translateX(-15px) scale(0.95); }
+  66%      { transform: translateY(20px) translateX(25px) scale(1.05); }
+}
+
+@keyframes floatBubble3 {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+  50%      { transform: translateY(-25px) translateX(10px) scale(1.03); }
+}
+
+/* ── Starfield ── */
+.big-cta__starfield {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cta-star {
+  position: absolute;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  animation: ctaStarPulse 3s ease-in-out infinite;
+}
+
+.cta-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  animation: ctaStarPulse 4s ease-in-out infinite;
+}
+
+@keyframes ctaStarPulse {
+
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+/* Star positions */
+.cta-star.s1 {
+  top: 12%;
+  left: 18%;
+  font-size: 12px;
+  animation-delay: 0s;
+}
+
+.cta-star.s2 {
+  top: 8%;
+  left: 55%;
+  font-size: 8px;
+  animation-delay: 0.4s;
+}
+
+.cta-star.s3 {
+  top: 20%;
+  left: 78%;
+  font-size: 11px;
+  animation-delay: 0.8s;
+}
+
+.cta-star.s4 {
+  top: 35%;
+  left: 8%;
+  font-size: 9px;
+  animation-delay: 1.2s;
+}
+
+.cta-star.s5 {
+  top: 38%;
+  left: 88%;
+  font-size: 13px;
+  animation-delay: 0.2s;
+}
+
+.cta-star.s6 {
+  top: 55%;
+  left: 15%;
+  font-size: 8px;
+  animation-delay: 1.5s;
+}
+
+.cta-star.s7 {
+  top: 60%;
+  left: 82%;
+  font-size: 10px;
+  animation-delay: 0.7s;
+}
+
+.cta-star.s8 {
+  top: 72%;
+  left: 25%;
+  font-size: 9px;
+  animation-delay: 1s;
+}
+
+.cta-star.s9 {
+  top: 75%;
+  left: 70%;
+  font-size: 12px;
+  animation-delay: 0.3s;
+}
+
+.cta-star.s10 {
+  top: 85%;
+  left: 48%;
+  font-size: 8px;
+  animation-delay: 1.8s;
+}
+
+.cta-star.s11 {
+  top: 15%;
+  left: 38%;
+  font-size: 7px;
+  animation-delay: 0.6s;
+}
+
+.cta-star.s12 {
+  top: 45%;
+  left: 62%;
+  font-size: 9px;
+  animation-delay: 1.3s;
+}
+
+/* Dot positions */
+.cta-dot {
+  width: 3px;
+  height: 3px;
+}
+
+.cta-dot.d1 {
+  top: 22%;
+  left: 30%;
+  animation-delay: 0.5s;
+}
+
+.cta-dot.d2 {
+  top: 30%;
+  left: 65%;
+  animation-delay: 1s;
+}
+
+.cta-dot.d3 {
+  top: 42%;
+  left: 20%;
+  animation-delay: 0.2s;
+}
+
+.cta-dot.d4 {
+  top: 50%;
+  left: 75%;
+  animation-delay: 1.4s;
+}
+
+.cta-dot.d5 {
+  top: 65%;
+  left: 40%;
+  animation-delay: 0.8s;
+}
+
+.cta-dot.d6 {
+  top: 10%;
+  left: 72%;
+  animation-delay: 0.1s;
+}
+
+.cta-dot.d7 {
+  top: 78%;
+  left: 55%;
+  animation-delay: 1.6s;
+}
+
+.cta-dot.d8 {
+  top: 88%;
+  left: 32%;
+  animation-delay: 0.9s;
+}
+
+/* ── Central Content ── */
+.big-cta__center {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
+  width: 100%;
+}
+
+/* ── Badge ── */
+.big-cta__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 100px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  backdrop-filter: blur(10px);
+  margin-bottom: 36px;
+}
+
+.cta-sparkle-icon {
+  width: 12px;
+  height: 12px;
+  color: #f0c040;
+  flex-shrink: 0;
+}
+
+/* ── Glowing Circle Placeholder ── */
+.big-cta__ring-slot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px;
+  height: 700px;
+  z-index: 0;
+}
+
+/* ── Headline Group ── */
+.big-cta__headline-group {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 24px;
 }
 
 .big-cta__title {
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: #1a1a1a;
-  margin-bottom: 0.75rem;
-  letter-spacing: -0.025em;
-  max-width: 48rem;
-  line-height: 1.15;
-}
-
-.big-cta__subtitle {
-  font-size: 1.125rem;
-  color: #3d3d3d;
-  margin-bottom: 1.75rem;
-  font-weight: 600;
-  max-width: 36rem;
-}
-
-/* CTA buttons */
-.big-cta__actions {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  font-weight: 900;
+  line-height: 1.1;
+  color: #ffffff;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.02em;
 }
 
-.big-cta__btn {
-  background: #fff;
-  color: #481b7a;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  padding: 0.875rem 2.5rem;
-  border-radius: 9999px;
+.big-cta__title-gradient {
+  background: linear-gradient(90deg, #f5c518 0%, #f08030 30%, #e03c78 65%, #9b45e0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: block;
+}
+
+.big-cta__subtitle {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.65;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ── Cat Mascot Zone ── */
+.big-cta__cat-zone {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  margin-top: 16px;
+  padding-bottom: 0;
+}
+
+/* Dark glassy card behind the cat */
+.big-cta__cat-card {
+  position: absolute;
+  bottom: 0;
+  left: 140px;
+  right: 140px;
+  height: 55%;
+  background: rgba(20, 10, 58, 0.92);
+  border-radius: 28px 28px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 -8px 40px rgba(10, 0, 40, 0.5);
+  z-index: 1;
+}
+
+.big-cta__cat-player {
+  width: 360px;
+  height: 360px;
+  display: block;
+  position: relative;
+  z-index: 4;
+}
+
+/* Invisible clickable area over the Lottie button */
+.big-cta__hitbox {
+  position: absolute;
+  bottom: 50px; /* Shifted up slightly to cover the top of the button */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;  /* Made wider */
+  height: 80px;  /* Made taller to cover the whole button */
+  background: transparent;
   border: none;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
-  font-size: 1.065rem;
   cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
+  z-index: 10;
+  outline: none;
+}
+
+/* Sparkles around the cat */
+.big-cta__cat-sparkle {
+  position: absolute;
+  font-size: 14px;
+  color: #f5c518;
+  animation: ctaStarPulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.big-cta__cat-sparkle.csp1 {
+  bottom: 90px;
+  left: calc(50% - 120px);
+  font-size: 12px;
+  animation-delay: 0s;
+}
+
+.big-cta__cat-sparkle.csp2 {
+  bottom: 50px;
+  left: calc(50% - 145px);
+  font-size: 10px;
+  animation-delay: 0.5s;
+}
+
+.big-cta__cat-sparkle.csp3 {
+  bottom: 90px;
+  right: calc(50% - 120px);
+  font-size: 14px;
+  animation-delay: 0.3s;
+}
+
+.big-cta__cat-sparkle.csp4 {
+  bottom: 50px;
+  right: calc(50% - 145px);
+  font-size: 10px;
+  animation-delay: 0.8s;
+}
+
+/* ── Bottom Glass Panel ── */
+.big-cta__panel {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 100px 24px 52px;
+  /* top padding to account for peeking cat */
+  background: rgba(22, 10, 60, 0.9);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  /* Subtle glassy highlight on top edge */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 28px 28px 0 0;
+}
+
+/* ── Get Started Button ── */
+.big-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 52px;
+  background: #ffffff;
+  color: #1a0848;
+  border: none;
+  border-radius: 100px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.15),
+    0 0 40px rgba(255, 255, 255, 0.35),
+    0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.big-cta__btn .cta-sparkle-icon {
+  color: #6b35d8;
+  width: 16px;
+  height: 16px;
 }
 
 .big-cta__btn:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  transform: translateY(-3px);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow:
+    0 0 0 6px rgba(255, 255, 255, 0.2),
+    0 0 60px rgba(255, 255, 255, 0.5),
+    0 16px 40px rgba(0, 0, 0, 0.5);
 }
 
 .big-cta__btn:active {
-  transform: scale(0.95);
+  transform: translateY(-1px) scale(1.01);
 }
 
+/* ── See Examples Link ── */
 .big-cta__link {
-  color: #481b7a;
-  font-weight: 700;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  transition: color 0.2s;
+  background: none;
+  border: none;
+  color: rgba(160, 120, 255, 0.85);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: color 0.25s ease, transform 0.25s ease;
+  padding: 4px 0;
 }
 
 .big-cta__link:hover {
-  text-decoration: underline;
+  color: #c49eff;
+  transform: translateX(3px);
 }
 
-.big-cta__link-arrow {
-  font-size: 0.875rem;
-  transition: transform 0.2s;
-}
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .big-cta__ring-slot {
+    width: 320px;
+    height: 320px;
+  }
 
-.big-cta__link:hover .big-cta__link-arrow {
-  transform: translateX(4px);
-}
-
-/* ---------- Sparkles ---------- */
-.big-cta__sparkle {
-  position: absolute;
-  color: rgba(255, 255, 255, 0.4);
-  display: none;
-}
-
-.big-cta__sparkle--1 {
-  top: 38%;
-  left: 18%;
-  width: 2rem;
-  height: 2rem;
-}
-
-.big-cta__sparkle--2 {
-  top: 32%;
-  left: 24%;
-  width: 1rem;
-  height: 1rem;
-  opacity: 0.3;
-}
-
-.big-cta__sparkle--3 {
-  top: 42%;
-  right: 22%;
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-.big-cta__sparkle--4 {
-  top: 35%;
-  right: 28%;
-  width: 0.75rem;
-  height: 0.75rem;
-  opacity: 0.2;
-}
-
-/* ---------- Responsive ---------- */
-@media (min-width: 768px) {
   .big-cta__title {
-    font-size: 3.125rem;
+    font-size: clamp(2rem, 8vw, 3rem);
   }
 
-  .big-cta__subtitle {
-    font-size: 1.25rem;
+  .big-cta__badge {
+    font-size: 0.72rem;
+    padding: 6px 16px;
   }
 
-  .big-cta__sparkle {
-    display: block;
+  .big-cta__cat-player {
+    width: 200px;
+    height: 200px;
   }
-}
 
-@media (min-width: 1024px) {
-  .big-cta__title {
-    font-size: 3.375rem;
+  .big-cta__btn {
+    padding: 15px 36px;
+    font-size: 1rem;
   }
 }

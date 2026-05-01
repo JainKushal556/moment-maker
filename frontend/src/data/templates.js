@@ -8,7 +8,7 @@ export const templates = [
         isPremium: false, 
         img: "/assets/templates-thumbnails/birthday-mosaic.png", 
         desc: "A stunning 3D photo mosaic carousel for the perfect birthday surprise.", 
-        url: "/templates/birthday/birthday-mosaic/index.html",
+        url: "/templates/birthday/birthday-mosaic/main.html",
         schema: [
             {
                 id: 'recipient_name',
@@ -53,7 +53,7 @@ export const templates = [
         isPremium: false, 
         img: "/assets/templates-thumbnails/chic-complement.png", 
         desc: "A beautiful, premium template for someone special.", 
-        url: "/templates/special/chic-complement/index.html",
+        url: "/templates/special/chic-complement/main.html",
         schema: [
             {
                 id: 'font_set',
@@ -109,7 +109,7 @@ export const templates = [
         isPremium: false, 
         img: "/assets/templates-thumbnails/pearl-glow-birthday.png", 
         desc: "A premium birthday template with interactive tree and holograhic photo stack.", 
-        url: "/templates/birthday/pearl-glow-birthday/index.html",
+        url: "/templates/birthday/pearl-glow-birthday/main.html",
         schema: [
             {
                 id: 'font_set',
@@ -166,7 +166,7 @@ export const templates = [
         isPremium: false, 
         img: "/assets/templates-thumbnails/charming-proposal.png", 
         desc: "A stunning, multi-stage proposal experience with a personalized letter and memory gallery.", 
-        url: "/templates/proposal/charming-proposal/index.html",
+        url: "/templates/proposal/charming-proposal/main.html",
         schema: [
             {
                 id: 'font_set',
