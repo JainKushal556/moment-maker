@@ -1,0 +1,31 @@
+# Font Combinations for Birthday Site
+
+## Set 1: Current Style (Playful & Sweet)
+- Heading: Shantell Sans (Bold)
+- Body/Subheading: Shantell Sans / Comfortaa
+- Accent/Cursive: Dancing Script
+- Google Fonts Link: https://fonts.googleapis.com/css2?family=Shantell+Sans:wght@300;400;500;600&family=Comfortaa:wght@300;400;500&family=Dancing+Script:wght@700&display=swap
+
+---
+
+## Set 2: Modern Premium (Clean & Elegant)
+- Heading: Outfit (Bold/ExtraBold)
+- Body/Subheading: Inter (Regular/Medium)
+- Accent/Cursive: Satisfy
+- Google Fonts Link: https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Inter:wght@400;500&family=Satisfy&display=swap
+
+---
+
+## Set 3: Romantic Classic (Luxury Feel)
+- Heading: Playfair Display (Bold Italic)
+- Body/Subheading: Lora (Regular)
+- Accent/Cursive: Great Vibes
+- Google Fonts Link: https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,700&family=Lora:wght@400;500&family=Great+Vibes&display=swap
+
+---
+
+## Set 4: Fun & Energetic (Vibrant Vibe)
+- Heading: Quicksand (Bold)
+- Body/Subheading: Patrick Hand
+- Accent/Cursive: Pacifico
+- Google Fonts Link: https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&family=Patrick+Hand&family=Pacifico&display=swap

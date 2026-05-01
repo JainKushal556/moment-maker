@@ -1,0 +1,51 @@
+ROMANTIC PROPOSAL APP - CUSTOM FONT MAPPING
+==========================================
+
+This document describes the 4 distinct font combination sets designed for the app.
+Each set consists of a "Primary Font" for emotional impact and a "Secondary Font" for clarity and interaction.
+
+SET 1: CLASSIC ELEGANCE (Current)
+----------------------------------
+* Primary Font: Georgia / Times New Roman (Serif)
+* Secondary Font: Georgia / Times New Roman (Serif)
+* Vibe: Traditional, timeless, and sophisticated.
+
+SET 2: MODERN ROMANCE
+----------------------
+* Primary Font: Playfair Display (Bold Serif)
+* Secondary Font: Montserrat (Clean Sans-serif)
+* Vibe: High-end luxury, editorial, and contemporary.
+
+SET 3: SWEET & WHIMSICAL
+-------------------------
+* Primary Font: Dancing Script (Playful Handwriting)
+* Secondary Font: Quicksand (Soft Rounded Sans)
+* Vibe: Personal, cute, and friendly.
+
+SET 4: VINTAGE ROYALTY
+-----------------------
+* Primary Font: Cinzel Decorative (Artistic Display Serif)
+* Secondary Font: Cormorant Garamond (Elegant Serif)
+* Vibe: Formal, epic, and classically beautiful.
+
+---
+
+APPLICATION STRATEGY (Where each font is used)
+----------------------------------------------
+
+1. PRIMARY FONT (Headings & Emotional Text):
+   - Loader.jsx: Opening romantic quotes.
+   - Greeting.jsx: Main transition messages.
+   - PhotosLetter.jsx: Descriptions of shared memories.
+   - Letter.jsx: The entire body of the love letter.
+   - Question.jsx: The proposal questions.
+   - Final.jsx: Major headings ("Will you be mine?", "It's a Date!", "Taj Hotel").
+
+2. SECONDARY FONT (Interactive & Functional Text):
+   - All Buttons: "YES", "Confirm Date", "Close Letter", etc.
+   - Instruction Labels: "Tap to continue", "Scroll to explore", etc.
+   - Date Picker: Day names, dates, and months.
+   - Venue Details: Small metadata like "Exclusive Venue".
+
+---
+Note: To switch between these sets, apply the corresponding theme class (.theme-classic, .theme-modern, .theme-whimsical, .theme-royal) to the <body> tag in the CSS/HTML.

@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-150%) skewX(-12deg); }
+    100% { transform: translateX(250%) skewX(-12deg); }
+  }
+  .animate-shimmer {
+    animation: shimmer 3s infinite;
+  }
+}
+
+:root {
+  --primary-font: 'Georgia', 'Times New Roman', serif;
+  --secondary-font: 'Georgia', 'Times New Roman', serif;
+}
+
+.theme-classic {
+  --primary-font: 'Georgia', 'Times New Roman', serif;
+  --secondary-font: 'Georgia', 'Times New Roman', serif;
+}
+
+.theme-modern {
+  --primary-font: 'Playfair Display', serif;
+  --secondary-font: 'Montserrat', sans-serif;
+}
+
+.theme-whimsical {
+  --primary-font: 'Dancing Script', cursive;
+  --secondary-font: 'Quicksand', sans-serif;
+}
+
+.theme-royal {
+  --primary-font: 'Cinzel Decorative', serif;
+  --secondary-font: 'Cormorant Garamond', serif;
+}
+
+body {
+  font-family: var(--secondary-font);
+  margin: 0;
+  padding: 0;
+  background-color: #1a040d;
+  color: #fff;
+  overflow: hidden;
+}
+
+.font-primary {
+  font-family: var(--primary-font) !important;
+}
+
+.font-secondary {
+  font-family: var(--secondary-font) !important;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes slowPan {
+  0% { transform: scale(1.05) translate(0, 0); }
+  50% { transform: scale(1.1) translate(-1%, 1%); }
+  100% { transform: scale(1.05) translate(0, 0); }
+}
+
+/* Perspective utility for 3D flip card */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+@layer utilities {
+  .animate-gradient {
+    background-size: 400% 400%;
+    animation: gradientMove 15s ease infinite;
+  }
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

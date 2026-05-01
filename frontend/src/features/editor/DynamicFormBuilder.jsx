@@ -188,7 +188,7 @@ function ImageGalleryField({ field, customization, onUpdate, sectionIndex }) {
 
 // ── SUB-COMPONENT: TEXT AREA FIELD ───────────────────────────────────────────
 function TextAreaField({ field, customization, onUpdate, sectionIndex }) {
-  const { label, placeholder, stateKey } = field
+  const { label, placeholder, stateKey, maxLength } = field
   const value = customization[stateKey] || ''
 
   return (
@@ -201,13 +201,14 @@ function TextAreaField({ field, customization, onUpdate, sectionIndex }) {
       <div className="ep-field">
         <div className="ep-label-row">
           <label className="ep-label">{label}</label>
-          <span className="ep-char-count">{value.length} chars</span>
+          <span className="ep-char-count">{value.length}{maxLength ? ` / ${maxLength}` : ''} chars</span>
         </div>
         <textarea
           className="ep-textarea"
           placeholder={placeholder || 'Type here...'}
           value={value}
           onChange={(e) => onUpdate(stateKey, e.target.value)}
+          maxLength={maxLength}
           style={{ minHeight: '200px' }}
           data-lenis-prevent="true"
         />
@@ -218,7 +219,7 @@ function TextAreaField({ field, customization, onUpdate, sectionIndex }) {
 
 // ── SUB-COMPONENT: TEXT FIELD ───────────────────────────────────────────────
 function TextField({ field, customization, onUpdate, sectionIndex }) {
-  const { label, placeholder, stateKey } = field
+  const { label, placeholder, stateKey, maxLength } = field
   const value = customization[stateKey] || ''
 
   return (
@@ -236,7 +237,108 @@ function TextField({ field, customization, onUpdate, sectionIndex }) {
           placeholder={placeholder || 'Enter text...'}
           value={value}
           onChange={(e) => onUpdate(stateKey, e.target.value)}
+          maxLength={maxLength}
         />
+      </div>
+    </div>
+  )
+}
+
+// ── SUB-COMPONENT: SELECT FIELD ───────────────────────────────────────────────
+function SelectField({ field, customization, onUpdate, sectionIndex }) {
+  const { label, options, stateKey } = field
+  const value = customization[stateKey] || (options && options.length > 0 ? options[0].value : '')
+  const [isOpen, setIsOpen] = useState(false)
+  
+  const selectedOption = options?.find(o => o.value === value) || options?.[0]
+
+  return (
+    <div className="ep-section editor-section">
+      <div className="ep-section-header">
+        <span className="ep-section-num">0{sectionIndex}</span>
+        <span className="ep-section-title">{label}</span>
+        <div className="ep-section-line" />
+      </div>
+      <div className="ep-field">
+        <label className="ep-label">{label}</label>
+        <div className="ep-input-wrap" style={{ position: 'relative' }}>
+          <button
+            type="button"
+            className={`ep-input ${isOpen ? 'focus' : ''}`}
+            onClick={() => setIsOpen(!isOpen)}
+            onBlur={() => setTimeout(() => setIsOpen(false), 200)}
+            style={{ 
+              width: '100%', 
+              textAlign: 'left', 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              cursor: 'pointer',
+              borderColor: isOpen ? 'var(--ep-accent)' : 'rgba(255, 255, 255, 0.12)',
+              background: isOpen ? 'rgba(255, 45, 85, 0.04)' : 'rgba(255, 255, 255, 0.04)',
+              boxShadow: isOpen ? '0 0 0 3px var(--ep-accent-glow), 0 4px 16px rgba(0,0,0,0.3)' : 'none'
+            }}
+          >
+            <span style={{ color: value ? '#f5f5f7' : 'rgba(255, 255, 255, 0.25)' }}>
+              {selectedOption?.label || 'Select...'}
+            </span>
+            <div style={{ color: 'rgba(255,255,255,0.4)', transition: 'transform 0.2s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </button>
+          
+          {isOpen && (
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 8px)',
+              left: 0,
+              right: 0,
+              background: '#1a1a1f',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              zIndex: 100,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '6px'
+            }}>
+              {options?.map((opt, i) => (
+                <div
+                  key={i}
+                  onClick={() => {
+                    onUpdate(stateKey, opt.value);
+                    setIsOpen(false);
+                  }}
+                  style={{
+                    padding: '12px 16px',
+                    cursor: 'pointer',
+                    borderRadius: '8px',
+                    background: value === opt.value ? 'rgba(255, 61, 106, 0.1)' : 'transparent',
+                    color: value === opt.value ? '#ff3d6a' : 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '14px',
+                    fontFamily: "'Outfit', sans-serif",
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (value !== opt.value) {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                      e.currentTarget.style.color = '#fff';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (value !== opt.value) {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
+                    }
+                  }}
+                >
+                  {opt.label}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -335,6 +437,17 @@ export default function DynamicFormBuilder({ template, customization = {}, onUpd
             case 'text':
               fieldComponent = (
                 <TextField 
+                  key={field.id}
+                  field={field} 
+                  customization={customization} 
+                  onUpdate={onUpdate} 
+                  sectionIndex={sectionIndex} 
+                />
+              )
+              break
+            case 'select':
+              fieldComponent = (
+                <SelectField 
                   key={field.id}
                   field={field} 
                   customization={customization} 

@@ -8,7 +8,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
   const { favorites, handleToggleFavorite } = useAuth()
   const isFavorite = isTemplate && favorites?.includes(moment.id)
 
-  const imageUrl = moment.image || moment.img || '/cards/special.png';
+  const imageUrl = moment.image || moment.img || (moment.category ? `/cards/${moment.category}.png` : '/cards/special.png');
 
 
   const x = useMotionValue(0);
@@ -82,7 +82,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
             alt={moment.title}
             className="w-full h-full object-cover transition-transform duration-2000 group-hover:scale-105"
             onError={(e) => {
-              e.target.src = "/cards/special.png"
+              e.target.src = moment.category ? `/cards/${moment.category}.png` : "/cards/special.png"
             }}
           />
           <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-[#0a0a12] via-[#0a0a12]/80 to-transparent z-10" />
