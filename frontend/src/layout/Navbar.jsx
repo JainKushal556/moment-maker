@@ -1,5 +1,6 @@
 import { useContext, useRef } from 'react'
 import { NavbarContext } from '../context/NavContext'
+import { useAuth } from '../context/AuthContext'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -9,6 +10,7 @@ gsap.registerPlugin(ScrollTrigger)
 const Navbar = () => {
     const navWrapperRef = useRef(null)
     const [navOpen, setNavOpen] = useContext(NavbarContext)
+    const { currentUser, openAuthModal } = useAuth()
 
     useGSAP(() => {
         gsap.set(navWrapperRef.current, { autoAlpha: 1, y: 0 })
@@ -27,6 +29,21 @@ const Navbar = () => {
 
     return (
         <div ref={navWrapperRef} className='z-100 fixed inset-x-0 top-0 pointer-events-none mix-blend-difference'>
+
+            {/* Let's go Button */}
+            {!currentUser && (
+                <div className='absolute left-6 lg:left-12 top-0 h-12 flex items-center pointer-events-auto'>
+                    <button
+                        type="button"
+                        onClick={() => openAuthModal()}
+                        className='group h-full relative cursor-pointer flex items-center justify-center transition-all duration-300 ease-out'
+                    >
+                        <span className="text-white font-inter leading-none tracking-[0.25em] uppercase text-sm lg:text-base font-bold opacity-90 group-hover:opacity-100 transition-opacity">
+                            Let's go
+                        </span>
+                    </button>
+                </div>
+            )}
 
             {/* Raw Text Menu Button */}
             <div className='absolute right-6 lg:right-12 top-0 h-12 flex items-center pointer-events-auto'>

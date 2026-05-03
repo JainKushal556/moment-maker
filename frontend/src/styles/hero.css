@@ -4,7 +4,7 @@
    lazy-loaded CSS cannot leak into other views.
    ========================================= */
 .hero {
-    min-height: 100dvh;
+    min-height: 100lvh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -25,13 +25,15 @@
    ========================================= */
 .header-block {
     position: absolute;
-    top: 50dvh;
-    left: 50%;
-    transform: translate(-50%, -140%);
-    width: 95%;
-    max-width: 1400px;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 12vh;
+    width: 100%;
+    max-width: 100%;
     text-align: center;
-    white-space: nowrap;
     will-change: transform, opacity;
     z-index: 10;
     opacity: 0;
@@ -71,12 +73,65 @@
 }
 
 .subtitle {
-    font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+    font-size: clamp(1.2rem, 2.2vw, 1.7rem);
     color: rgba(255, 255, 255, 0.7);
     font-weight: 400;
     margin-bottom: 28px;
     opacity: 0;
     /* Animated in via JS */
+}
+
+.memories-text {
+    background: linear-gradient(135deg, #d946ef, #f472b6, #fb923c);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+
+.hero-cta-btn {
+    position: relative;
+    padding: 1.2rem 3.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    color: var(--sun-gold);
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.4em;
+    font-size: 11px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.5s ease;
+    z-index: 10;
+    margin-top: 30px;
+    display: inline-block;
+    border-radius: 2px;
+}
+
+.hero-cta-btn:hover {
+    color: white;
+    border-color: white;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+}
+
+.hero-cta-btn .btn-fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, #d946ef, #a855f7); /* matching pink-to-purple */
+    transform: translateY(101%);
+    transition: transform 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+    z-index: -1;
+}
+
+.hero-cta-btn:hover .btn-fill {
+    transform: translateY(0);
+}
+
+.magnetic-btn {
+    display: inline-block;
+    will-change: transform;
 }
 
 
@@ -132,10 +187,12 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    /* space between the 4 lines */
     width: 100%;
     padding: 0 5%;
 }
+
+.headline-mobile { display: none; }
+.headline-desktop { display: flex; }
 
 .headline-line {
     display: flex;
@@ -207,13 +264,34 @@
     }
 
     .header-block {
-        transform: translate(-50%, -85%);
+        /* No override needed - inset:0 centering works on all sizes */
+    }
+
+    .hero-cta-btn {
+        margin-top: 60px; /* Mobile এ বাটনটি একটু নিচে নামানো হলো */
+    }
+
+    .icon-container {
+        bottom: 90px;
+    }
+
+    .headline-mobile { display: flex; }
+    .headline-desktop { display: none; }
+}
+
+@media (max-width: 768px) {
+    .headline-line {
+        flex-wrap: nowrap; /* লাইন যেন ভেঙে নিচে না যায় */
+        font-size: clamp(16px, 5.2vw, 2rem); /* ফন্ট সাইজ বাড়ানো হয়েছে */
+        white-space: nowrap; /* টেক্সট যেন মাঝপথে ব্রেক না নেয় */
+        gap: 6px; /* এক্সট্রা স্পেস কমানো হলো */
     }
 }
 
 @media (max-width: 500px) {
     .icon-container {
         gap: 0.5rem;
+        bottom: 180px;
     }
 
     .icon {
@@ -222,6 +300,11 @@
 
     .header-block h2 {
         font-size: clamp(5rem, 20vw, 15rem);
+    }
+
+    .placeholder {
+        width: 35px; /* আইকনের সাইজের সাথে মেলানো হলো */
+        height: 35px;
     }
 }
 
