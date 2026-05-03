@@ -1,5 +1,5 @@
 import { useContext, useRef } from 'react'
-import { NavbarContext } from '../context/NavContext'
+import { NavbarContext, ViewContext } from '../context/NavContext'
 import { useAuth } from '../context/AuthContext'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
@@ -10,6 +10,7 @@ gsap.registerPlugin(ScrollTrigger)
 const Navbar = () => {
     const navWrapperRef = useRef(null)
     const [navOpen, setNavOpen] = useContext(NavbarContext)
+    const [currentView] = useContext(ViewContext)
     const { currentUser, openAuthModal } = useAuth()
 
     useGSAP(() => {
@@ -31,7 +32,7 @@ const Navbar = () => {
         <div ref={navWrapperRef} className='z-100 fixed inset-x-0 top-0 pointer-events-none mix-blend-difference'>
 
             {/* Let's go Button */}
-            {!currentUser && (
+            {!currentUser && currentView === 'landing' && (
                 <div className='absolute left-6 lg:left-12 top-0 h-12 flex items-center pointer-events-auto'>
                     <button
                         type="button"
