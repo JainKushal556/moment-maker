@@ -1,0 +1,278 @@
+/* ==========================================
+   MAIL WRAPPER
+   ========================================== */
+.mail-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'Outfit', sans-serif;
+  background: #02020a; /* True Deep Space */
+  container-type: inline-size;
+  position: relative;
+}
+
+/* Starry Night Design */
+.starry-night {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.nebula {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 150%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at center, rgba(78, 32, 160, 0.15) 0%, rgba(255, 77, 109, 0.1) 30%, transparent 70%);
+  filter: blur(80px);
+  animation: nebulaFloat 20s infinite alternate ease-in-out;
+}
+
+@keyframes nebulaFloat {
+  from { transform: translate(-50%, -55%) rotate(0deg); }
+  to { transform: translate(-45%, -50%) rotate(5deg); }
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.3;
+  box-shadow: 0 0 10px white;
+  animation: twinkle 3s infinite ease-in-out, starFloat 20s infinite linear;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.4); }
+}
+
+@keyframes starFloat {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(15px, 10px); }
+  50% { transform: translate(0, 20px); }
+  75% { transform: translate(-15px, 10px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ==========================================
+   MAGIC 4-WAY ENVELOPE
+   ========================================== */
+.magic-envelope-scene {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+.magic-envelope {
+  position: relative;
+  width: 280px;
+  height: 200px;
+  cursor: pointer;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.env-base {
+  position: absolute;
+  inset: 0;
+  background: #f8e8d0;
+  border-radius: 4px;
+  box-shadow: 0 20px 80px rgba(0,0,0,0.8);
+  z-index: 1;
+}
+
+.flap {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+}
+
+.flap-top { background: #f0d5b0; clip-path: polygon(0 0, 100% 0, 50% 50%); transform-origin: top; }
+.flap-bottom { background: #f0d5b0; clip-path: polygon(0 100%, 100% 100%, 50% 50%); transform-origin: bottom; }
+.flap-left { background: #f5deb3; clip-path: polygon(0 0, 0 100%, 50% 50%); transform-origin: left; }
+.flap-right { background: #f5deb3; clip-path: polygon(100% 0, 100% 100%, 50% 50%); transform-origin: right; }
+
+.mini-card-preview {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.magic-seal {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 15px rgba(255, 77, 109, 0.8));
+}
+
+/* ==========================================
+   FINAL NOTE PAPER
+   ========================================== */
+.note-paper-final {
+  background: #fff9f5;
+  border-radius: 15px;
+  box-shadow: 0 50px 150px rgba(0, 0, 0, 1);
+  width: 95%;
+  max-width: 600px;
+  min-height: 280px;
+  padding: 45px;
+  display: flex;
+  flex-direction: column;
+  background-image: linear-gradient(transparent 1.95rem, rgba(180, 180, 220, 0.15) 1.95rem);
+  background-size: 100% 2rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative; /* Keep relative for inner tapes */
+}
+
+.note-content-reveal {
+  display: flex;
+  gap: 35px;
+  width: 100%;
+}
+
+.tape {
+  position: absolute;
+  width: 80px;
+  height: 28px;
+  background: rgba(255, 220, 230, 0.65);
+}
+
+.tape-tl { top: -14px; left: 50px; transform: rotate(-6deg); }
+.tape-tr { top: -14px; right: 50px; transform: rotate(6deg); background: rgba(220, 230, 255, 0.65); }
+
+.note-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.note-from {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 8cqw, 2.6rem);
+  color: #222;
+  margin: 0;
+  font-weight: 800;
+}
+
+.note-divider {
+  width: 60px;
+  height: 4px;
+  background: #ff4d6d;
+  margin-bottom: 15px;
+}
+
+.note-line {
+  font-size: clamp(1.1rem, 4cqw, 1.5rem);
+  color: #333;
+  margin: 0;
+  font-weight: 500;
+}
+
+.pink-word {
+  color: #ff4d6d;
+  font-weight: 800;
+  font-style: italic;
+}
+
+.inline-heart {
+  color: #ff4d6d;
+  font-size: 1.6rem;
+}
+
+.note-right {
+  width: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.note-gif {
+  width: 100%;
+  height: auto;
+  max-height: 180px;
+  object-fit: contain;
+}
+
+.see-btn-bottom {
+  background: linear-gradient(135deg, #ff4d6d, #ff758c);
+  border: none;
+  color: white;
+  padding: 18px 60px;
+  border-radius: 50px;
+  font-size: clamp(1rem, 3cqw, 1.1rem);
+  font-weight: 800;
+  cursor: pointer;
+  z-index: 110;
+  box-shadow: 0 10px 40px rgba(255, 77, 109, 0.6);
+  white-space: nowrap;
+}
+
+.tap-hint {
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 5px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-top: 25px;
+}
+
+/* Mobile Optimization */
+@container (max-width: 600px) {
+  .magic-envelope {
+    width: 240px;
+    height: 170px;
+  }
+
+  .magic-seal {
+    font-size: 2.2rem;
+  }
+
+  .note-paper-final {
+    width: 90%;
+    padding: 30px 15px;
+    box-sizing: border-box;
+    min-height: auto;
+    background-size: 100% 1.8rem;
+    gap: 20px;
+  }
+
+  .note-content-reveal {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .note-left { align-items: center; text-align: center; gap: 8px; }
+  .note-right { width: 100px; }
+  .note-gif { max-height: 120px; }
+
+  .see-btn-bottom {
+    width: 80%;
+    padding: 14px 10px;
+    z-index: 200;
+  }
+
+  .tap-hint { font-size: 0.75rem; letter-spacing: 3px; }
+}

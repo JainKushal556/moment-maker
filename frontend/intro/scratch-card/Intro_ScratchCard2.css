@@ -1,0 +1,261 @@
+.scratch-wrapper-full {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #050414;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  touch-action: none;
+  container-type: inline-size;
+}
+
+.reveal-content-full {
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #050414;
+  overflow: hidden;
+}
+
+/* Background Glow Effect - Like the image */
+.reveal-bg-glow {
+  position: absolute;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(255, 77, 109, 0.15) 0%, transparent 70%);
+  filter: blur(100px);
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.main-reveal-area {
+  z-index: 10;
+  text-align: center;
+  padding: 30px;
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ✦ Hello ✦ Styles */
+.reveal-header-top {
+  font-size: 0.9rem;
+  color: #ff8fa3;
+  letter-spacing: 12px;
+  margin-bottom: 5px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+/* Kushal (Name) Styles */
+.reveal-main-name {
+  font-size: clamp(2.2rem, 12cqw, 6rem);
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+  margin: 10px 0;
+  background: linear-gradient(to bottom, #ffffff 30%, #ff8fa3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 15px 40px rgba(0,0,0,0.6));
+  line-height: 1.2;
+  padding-bottom: 10px;
+}
+
+/* Star Divider Styles */
+.reveal-star-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 250px;
+  margin-bottom: 25px; /* Reduced from 40px */
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #ff4d6d, transparent);
+}
+
+.divider-star-icon {
+  color: #ff4d6d;
+  filter: drop-shadow(0 0 10px #ff4d6d);
+}
+
+/* Pill Badge with Heart */
+.reveal-pill-badge-wrapper {
+  position: relative;
+  margin-bottom: 25px; /* Reduced from 40px */
+}
+
+.badge-heart {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1rem;
+  z-index: 2;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+}
+
+.reveal-pill-badge {
+  padding: 12px 35px;
+  border: 1px solid rgba(255, 77, 109, 0.4);
+  border-radius: 50px;
+  background: rgba(255, 77, 109, 0.05);
+  color: #ff4d6d;
+  font-size: 0.75rem;
+  letter-spacing: 5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* Message Styles */
+.reveal-main-msg {
+  font-size: clamp(0.95rem, 3.5cqw, 1.3rem);
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 300;
+  margin-bottom: 30px; /* Reduced from 50px */
+  max-width: 450px;
+}
+
+/* Round Button Styles */
+.reveal-final-btn {
+  background: #ff4d6d;
+  color: white;
+  border: none;
+  padding: 20px 60px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  border-radius: 100px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 30px rgba(255, 77, 109, 0.4);
+}
+
+.reveal-final-btn:hover {
+  transform: scale(1.05) translateY(-5px);
+  background: #ff607b;
+}
+
+.btn-sparkle {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Background elements */
+.mesh-gradient-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  filter: blur(100px);
+  opacity: 0.3;
+}
+
+.bokeh-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  filter: blur(40px);
+}
+
+/* Canvas & Hint Styles */
+.scratch-canvas-full {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 30;
+  cursor: crosshair;
+  transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scratch-canvas-full.fade-out {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.2);
+}
+
+@container (max-width: 600px) {
+  .main-reveal-area {
+    padding: 15px;
+    width: 90%;
+  }
+  .reveal-header-top {
+    font-size: 0.7rem;
+    letter-spacing: 6px;
+    margin-bottom: 2px;
+  }
+  .reveal-main-name {
+    font-size: clamp(2rem, 10cqw, 3.2rem); 
+    line-height: 1.2;
+    margin: 5px 0;
+  }
+  .reveal-star-divider {
+    width: 140px;
+    margin-bottom: 20px;
+    gap: 8px;
+  }
+  .reveal-pill-badge-wrapper {
+    margin-bottom: 20px;
+  }
+  .reveal-pill-badge {
+    padding: 8px 20px;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+  }
+  .badge-heart {
+    font-size: 0.75rem;
+    top: -8px;
+  }
+  .reveal-main-msg {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 25px;
+    padding: 0 5px;
+    max-width: 100%;
+  }
+  .reveal-btn-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .reveal-final-btn {
+    padding: 14px 0;
+    font-size: 1rem;
+    width: 85%;
+    max-width: 240px;
+    justify-content: center;
+  }
+}
+
+/* Very Small Screens */
+@container (max-width: 360px) {
+  .reveal-main-name {
+    font-size: 1.8rem;
+  }
+  .reveal-header-top {
+    letter-spacing: 4px;
+    font-size: 0.6rem;
+  }
+  .reveal-final-btn {
+    width: 100%;
+    font-size: 0.95rem;
+    padding: 12px 0;
+  }
+}

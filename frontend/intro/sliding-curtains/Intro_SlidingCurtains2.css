@@ -1,0 +1,263 @@
+.curtain-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #020205;
+  overflow: hidden;
+  font-family: 'Outfit', sans-serif;
+  touch-action: none;
+  container-type: inline-size;
+}
+
+/* --- Revealed Area --- */
+.reveal-area {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #1a164d 0%, #020205 100%);
+  z-index: 1; /* Back to 1 so panels stay on top */
+}
+
+.content-inner {
+  text-align: center;
+  max-width: 550px;
+  padding: 2rem 1.5rem;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.reveal-badge-top {
+  font-size: 0.75rem;
+  color: #ff4d6d;
+  letter-spacing: 5px;
+  font-weight: 800;
+  padding: 8px 25px;
+  border: 1px solid rgba(255, 77, 109, 0.3);
+  border-radius: 50px;
+  margin-bottom: 20px;
+  background: rgba(255, 77, 109, 0.05);
+}
+
+.reveal-main-name {
+  font-size: clamp(2rem, 10cqw, 4rem); /* Slightly reduced max size */
+  font-family: 'Playfair Display', serif;
+  background: linear-gradient(to bottom, #ffffff 40%, #ff8fa3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  line-height: 1.1;
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5));
+  white-space: nowrap;
+}
+
+.reveal-divider-modern {
+  height: 1px;
+  margin: 20px 0;
+  background: linear-gradient(90deg, transparent, #ff4d6d, transparent);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.div-sparkle {
+  color: #ff4d6d;
+  position: absolute;
+  filter: drop-shadow(0 0 10px #ff4d6d);
+}
+
+.message-card-glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(15px);
+  padding: 20px 25px;
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 25px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  width: 100%;
+}
+
+.reveal-msg {
+  font-size: clamp(0.95rem, 3.5cqw, 1.25rem);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+  font-weight: 300;
+  margin: 0;
+}
+
+.reveal-final-action-btn {
+  background: linear-gradient(135deg, #ff4d6d 0%, #ff758c 100%);
+  color: white;
+  border: none;
+  padding: 18px 45px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  border-radius: 60px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 15px 40px rgba(255, 77, 109, 0.4);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
+}
+
+.reveal-final-action-btn:hover {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 30px 60px rgba(255, 77, 109, 0.6);
+}
+
+/* --- Unique Multi-Panel Shutter --- */
+.shutter-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  z-index: 10;
+}
+
+.shutter-container.open {
+  pointer-events: none; /* Crucial: Allows clicking the button behind */
+}
+
+.shutter-panel {
+  position: relative;
+  height: 100%;
+  width: 25.1%; /* Slight overlap */
+  background: #08080a;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.panel-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 77, 109, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.5;
+}
+
+/* Vertical glowing line at panel edge */
+.shutter-panel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, #ff4d6d, transparent);
+  box-shadow: 0 0 15px #ff4d6d;
+  opacity: 0.3;
+}
+
+.panel-1::after, .panel-2::after { right: 0; }
+.panel-3::after, .panel-4::after { left: 0; }
+
+/* --- Modern Geometric Badge --- */
+.modern-geometric-badge {
+  position: relative;
+  z-index: 20;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.badge-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(255, 77, 109, 0.4);
+  border-radius: 35% 65% 70% 30% / 30% 30% 70% 70%;
+  animation: liquidRotate 8s linear infinite;
+}
+
+@keyframes liquidRotate {
+  0% { transform: rotate(0deg); border-radius: 35% 65% 70% 30% / 30% 30% 70% 70%; }
+  50% { border-radius: 50% 50% 33% 67% / 55% 27% 73% 45%; }
+  100% { transform: rotate(360deg); border-radius: 35% 65% 70% 30% / 30% 30% 70% 70%; }
+}
+
+.badge-core {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(25px);
+  width: 140px;
+  height: 140px;
+  border-radius: 20px;
+  transform: rotate(45deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  transition: all 0.4s;
+}
+
+.core-icon {
+  color: #ff4d6d;
+  transform: rotate(-45deg);
+  margin-bottom: 10px;
+  filter: drop-shadow(0 0 10px #ff4d6d);
+}
+
+.badge-name {
+  transform: rotate(-45deg);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.badge-hint {
+  transform: rotate(-45deg);
+  font-size: 0.6rem;
+  color: #ff4d6d;
+  margin-top: 5px;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+@container (max-width: 600px) {
+  .content-inner {
+    padding: 1.5rem 1rem;
+  }
+  .reveal-badge-top {
+    font-size: 0.65rem;
+    padding: 6px 18px;
+    margin-bottom: 12px;
+  }
+  .message-card-glass {
+    padding: 15px 20px;
+    margin-bottom: 20px;
+  }
+  .reveal-main-name {
+    font-size: clamp(1.8rem, 12cqw, 2.8rem);
+  }
+  .reveal-final-action-btn {
+    padding: 14px 40px;
+    font-size: 0.95rem;
+    width: auto;
+    min-width: 220px;
+    justify-content: center;
+  }
+  .modern-geometric-badge {
+    width: 140px;
+    height: 140px;
+  }
+  .badge-core {
+    width: 105px;
+    height: 105px;
+  }
+}
