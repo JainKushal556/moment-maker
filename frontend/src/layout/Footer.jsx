@@ -309,11 +309,12 @@ export default function Footer() {
                 <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('about'); }}>Makers</a>
               </div>
               <div className="fpo-col">
-                <div className="fpo-col-header"><i className="fas fa-shield-alt col-icon"></i> SUPPORT & LEGAL</div>
+                <div className="fpo-col-header"><i className="fas fa-shield-alt col-icon"></i> SUPPORT & POLICIES</div>
                 <a href="#">Contact Us</a>
                 <a href="#">Help Center / FAQs</a>
                 <a href="#">Privacy Policy</a>
                 <a href="#">Terms of Service</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('copyright'); }}>Copyright Policy</a>
               </div>
             </div>
           </div>

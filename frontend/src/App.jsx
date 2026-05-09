@@ -34,6 +34,7 @@ const ShareView = lazy(() => import('./features/share/ShareView'))
 const MyMomentsView = lazy(() => import('./features/moments/MyMomentsView'))
 const SettingsView = lazy(() => import('./features/settings/SettingsView'))
 const AboutUs = lazy(() => import('./features/about/AboutUs'))
+const CopyrightPage = lazy(() => import('./features/legal/CopyrightPage'))
 
 gsap.registerPlugin(ScrollTrigger, Observer)
 
@@ -234,6 +235,14 @@ function AppContent() {
         <div className="relative z-10">
           <Suspense fallback={<div className="fixed inset-0 z-50 bg-[#050508]"></div>}>
             <AboutUs />
+          </Suspense>
+        </div>
+      )}
+
+      {currentView === 'copyright' && (
+        <div className="relative z-10">
+          <Suspense fallback={<div className="fixed inset-0 z-50 bg-[#050508]"></div>}>
+            <CopyrightPage />
           </Suspense>
         </div>
       )}

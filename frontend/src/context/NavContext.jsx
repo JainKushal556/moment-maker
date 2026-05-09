@@ -6,7 +6,7 @@ export const NavbarContext = createContext(null)
 export const NavbarColorContext = createContext(null)
 export const ViewContext = createContext(null)
 
-const SAFE_VIEWS_TO_RESTORE = ['landing', 'categories', 'gallery', 'moments', 'about', 'share', 'settings']
+const SAFE_VIEWS_TO_RESTORE = ['landing', 'categories', 'gallery', 'moments', 'about', 'share', 'settings', 'copyright']
 const getInitialView = () => {
     const saved = sessionStorage.getItem('currentView')
     if (saved === 'editor') return 'moments'
