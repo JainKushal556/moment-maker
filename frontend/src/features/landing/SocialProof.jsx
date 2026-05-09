@@ -141,19 +141,35 @@ function createNoteData(data) {
   const stars = '★'.repeat(data.rating) + '☆'.repeat(5 - data.rating)
   const emojiSize = 1.8 + Math.random() * 0.6
 
+  const isMobile = window.innerWidth <= 600
   const textLength = data.text.length
   let baseWidth = 190 + Math.floor(Math.random() * 90)
-  if (textLength > 40) baseWidth += 30
-  else if (textLength > 25) baseWidth += 15
-  const width = Math.min(300, baseWidth)
+  
+  if (isMobile) {
+    baseWidth = 110 + Math.floor(Math.random() * 30)
+  }
+
+  if (textLength > 40) baseWidth += 20
+  else if (textLength > 25) baseWidth += 10
+  
+  const width = isMobile ? Math.min(150, baseWidth) : Math.min(300, baseWidth)
 
   const vPadding = 1.0 + Math.random() * 0.6
   const hPadding = 1.2 + Math.random() * 0.8
-  const left = 2 + Math.random() * 88
-  const top = 2 + Math.random() * 86
-  const rotation = -15 + Math.random() * 30
+  
+  // Constrain positioning on mobile — bias strongly to the left
+  const leftRange = isMobile ? 40 : 88
+  const topRange = isMobile ? 70 : 86
+  
+  const left = isMobile 
+    ? (2 + Math.random() * leftRange)   // start from 2% so notes lean left
+    : (2 + Math.random() * leftRange)
+  const top = 2 + Math.random() * topRange
+  const rotation = -12 + Math.random() * 24
   const color = randomItem(colors)
-  const fontSize = Math.random() > 0.7 ? '1.4rem' : '1.2rem'
+  const fontSize = isMobile
+    ? (Math.random() > 0.5 ? '0.85rem' : '0.75rem')
+    : (Math.random() > 0.7 ? '1.4rem' : '1.2rem')
 
   return {
     ...data,
@@ -182,6 +198,10 @@ export default function SocialProof() {
     const wall = wallRef.current
     if (!wall) return
 
+    const isMobile = window.innerWidth <= 600
+    const wallWidth = wall.clientWidth
+    const wallHeight = wall.clientHeight
+
     wall.innerHTML = ''
     for (const n of notesRef.current) {
       const note = document.createElement('div')
@@ -199,11 +219,30 @@ export default function SocialProof() {
       `
 
       note.style.background = n.color
-      note.style.width = n.width + 'px'
       note.style.padding = `${n.vPadding}rem ${n.hPadding}rem`
-      note.style.left = n.left + '%'
-      note.style.top = n.top + '%'
       note.style.transform = `rotate(${n.rotation}deg)`
+
+      if (isMobile) {
+        // Pixel-safe logic for mobile (guaranteed to stay inside)
+        const noteWidth = n.width
+        const noteHeight = 160 // Conservative estimate for note height
+        
+        const rotBuffer = 40 // Extra space for rotated corners
+        const maxLeft = Math.max(10, wallWidth - noteWidth - rotBuffer)
+        const maxTop = Math.max(10, wallHeight - noteHeight - rotBuffer)
+        
+        // Use a more balanced distribution
+        const safeLeft = 10 + Math.floor(Math.random() * maxLeft)
+        const safeTop = 10 + Math.floor(Math.random() * maxTop)
+        
+        note.style.left = safeLeft + 'px'
+        note.style.top = safeTop + 'px'
+        note.style.width = noteWidth + 'px'
+      } else {
+        note.style.left = n.left + '%'
+        note.style.top = n.top + '%'
+        note.style.width = n.width + 'px'
+      }
 
       wall.appendChild(note)
     }
@@ -213,9 +252,11 @@ export default function SocialProof() {
     const wall = wallRef.current
     if (!wall) return
 
-    // Create initial notes
+    // Create initial notes based on screen size
+    const isMobile = window.innerWidth <= 600
+    const count = isMobile ? 6 : 12
     const initialNotes = []
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < count; i++) {
       const data = randomItem(proofs)
       const noteData = createNoteData(data)
       initialNotes.push(noteData)
@@ -262,12 +303,33 @@ export default function SocialProof() {
         `
 
         noteEl.style.background = newNote.color
-        noteEl.style.width = newNote.width + 'px'
         noteEl.style.padding = `${newNote.vPadding}rem ${newNote.hPadding}rem`
-        noteEl.style.left = newNote.left + '%'
-        noteEl.style.top = newNote.top + '%'
         noteEl.style.transform = `rotate(${newNote.rotation}deg)`
         noteEl.style.opacity = '0'
+
+        // Pixel-safe positioning on mobile (all axes)
+        const isMobile = window.innerWidth <= 600
+        if (isMobile) {
+          const wallWidth = wall.clientWidth
+          const wallHeight = wall.clientHeight
+          const noteWidth = newNote.width
+          const noteHeight = 160
+          
+          const rotBuffer = 40
+          const maxLeft = Math.max(10, wallWidth - noteWidth - rotBuffer)
+          const maxTop = Math.max(10, wallHeight - noteHeight - rotBuffer)
+          
+          const safeLeft = 10 + Math.floor(Math.random() * maxLeft)
+          const safeTop = 10 + Math.floor(Math.random() * maxTop)
+          
+          noteEl.style.left = safeLeft + 'px'
+          noteEl.style.top = safeTop + 'px'
+          noteEl.style.width = noteWidth + 'px'
+        } else {
+          noteEl.style.left = newNote.left + '%'
+          noteEl.style.top = newNote.top + '%'
+          noteEl.style.width = newNote.width + 'px'
+        }
 
         wall.appendChild(noteEl)
 

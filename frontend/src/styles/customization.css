@@ -151,6 +151,10 @@
     line-height: 1.6;
 }
 
+.mobile-br {
+    display: none;
+}
+
 /* ====== GRID LAYOUT ====== */
 .cust-grid {
     display: grid;
@@ -359,7 +363,8 @@
 .studio-viewport {
     position: relative;
     width: 100%;
-    height: clamp(450px, 60vh, 540px);
+    height: auto;
+    aspect-ratio: 16 / 9;
     background: #000;
     border-radius: 4px;
     overflow: hidden;
@@ -433,10 +438,20 @@
     transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.viewport-btn:hover {
+@media (hover: hover) {
+    .viewport-btn:hover {
+        background: var(--studio-accent);
+        color: #000;
+        transform: scale(1.1);
+        box-shadow: 0 0 20px var(--studio-accent-glow);
+    }
+}
+
+.viewport-btn:active,
+.viewport-btn.refreshing {
     background: var(--studio-accent);
     color: #000;
-    transform: scale(1.1);
+    transform: scale(0.95);
     box-shadow: 0 0 20px var(--studio-accent-glow);
 }
 
@@ -444,11 +459,17 @@
     width: 100%;
     height: 100%;
     position: relative;
+    overflow: hidden;
 }
 
 .viewport-iframe-container iframe {
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1280px !important;
+    height: 720px !important;
+    transform: scale(var(--iframe-scale, 1));
+    transform-origin: top left;
     border: none;
 }
 
@@ -502,13 +523,38 @@
     }
 
     .studio-viewport {
-        height: 500px;
+        order: -1;
     }
+    /* iframe scaling is now handled globally */
 }
 
 @media (max-width: 600px) {
     .cust-header {
+        margin-bottom: 30px;
+    }
+
+    .cust-label {
+        margin-top: 10px;
+    }
+
+    .cust-title {
+        font-size: clamp(1.8rem, 7vw, 2.5rem);
+    }
+
+    .mobile-br {
+        display: block;
+    }
+
+    .back-to-steps {
+        padding: 8px 16px;
+        font-size: 0.7rem;
+        gap: 8px;
         margin-bottom: 40px;
+    }
+
+    .back-to-steps svg {
+        width: 14px;
+        height: 14px;
     }
 
     .studio-content {
@@ -520,7 +566,26 @@
         font-size: 0.6rem;
     }
 
-    .studio-viewport {
-        height: 400px;
+    .viewport-header {
+        padding: 8px 12px;
     }
+
+    .viewport-status {
+        font-size: 0.5rem;
+        gap: 6px;
+        letter-spacing: 0.15em;
+    }
+
+    .viewport-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+
+    .status-dot {
+        width: 4px;
+        height: 4px;
+    }
+
+    /* Inherits 16:9 aspect ratio from base class */
 }

@@ -101,11 +101,12 @@ export default function HowItWorks({ onTransition }) {
       tempCanvas.width = canvas.width; tempCanvas.height = canvas.height
       const aspectRatio = image.width / image.height
       let displayWidth = (canvas.width * 0.43) * 0.8
-      if (window.innerWidth < 1024) displayWidth = canvas.width * 0.8
+      if (window.innerWidth < 1024) displayWidth = canvas.width * 0.65
       let newWidth = Math.min(600, displayWidth); let newHeight = newWidth / aspectRatio
       let centerX = (canvas.width * 0.215) - (newWidth / 2)
       if (window.innerWidth < 1024) centerX = (canvas.width * 0.5) - (newWidth / 2)
       let centerY = (canvas.height - newHeight) / 2
+      if (window.innerWidth < 1024) centerY = (canvas.height * 0.28) - (newHeight / 2)
       tempCtx.drawImage(image, centerX, centerY, newWidth, newHeight)
       const pixels = tempCtx.getImageData(0, 0, canvas.width, canvas.height)
       let coords = []; const step = 4
@@ -231,7 +232,11 @@ export default function HowItWorks({ onTransition }) {
       for (let i = 0; i < particlesArray.length; i++) {
         const p = particlesArray[i]
         if (targetCoords && i < targetCoords.length) { p.targetX = targetCoords[i].x; p.targetY = targetCoords[i].y; p.color = targetCoords[i].color }
-        else { p.targetX = canvas.width * 0.215; p.targetY = canvas.height * 0.5; p.color = 'rgba(0,0,0,0)' }
+        else { 
+          p.targetX = canvas.width * 0.215; 
+          p.targetY = window.innerWidth < 1024 ? canvas.height * 0.28 : canvas.height * 0.5; 
+          p.color = 'rgba(0,0,0,0)' 
+        }
         p.update(mouse, time); p.draw(ctx)
       }
       animRAF = requestAnimationFrame(animate)

@@ -601,15 +601,20 @@
         flex-direction: column;
     }
 
-    .hiw-left-panel,
+    .hiw-left-panel {
+        width: 100%;
+        height: 42%;
+    }
     .hiw-right-panel {
         width: 100%;
-        height: 50%;
+        height: 58%;
+        padding-top: 1.5rem;
+        align-items: flex-start;
     }
 
     .hiw-card-outer {
-        min-width: 320px;
-        height: 480px;
+        min-width: 290px;
+        height: 410px;
     }
 
     .hiw-cards-track {
@@ -629,7 +634,8 @@
     }
 
     .hiw-heading-title {
-        font-size: clamp(2rem, 6vw, 3rem);
+        font-size: clamp(1.8rem, 8vw, 3rem);
+        white-space: nowrap;
     }
 
     .hiw-heading-line {
@@ -639,5 +645,36 @@
 
     .hiw-heading-sub {
         max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .hiw-card-outer {
+        min-width: 265px;
+        height: 375px;
+    }
+    .hiw-card {
+        padding: 1.5rem;
+    }
+    .hiw-card-title {
+        font-size: 1.5rem;
+    }
+    .hiw-card-number {
+        font-size: 2.8rem;
+    }
+    .hiw-heading-title {
+        font-size: 1.8rem;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .hiw-reveal-label {
+        writing-mode: vertical-lr;
+        text-orientation: upright;
+        letter-spacing: 0.1em;
+        font-size: 0.8rem;
+        /* Ensure it stays centered */
+        transform: translate(-50%, -50%);
     }
 }

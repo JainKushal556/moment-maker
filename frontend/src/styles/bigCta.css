@@ -524,9 +524,27 @@
     padding: 6px 16px;
   }
 
+  .big-cta__cat-zone {
+    height: 220px;
+  }
+
+  .big-cta__cat-card {
+    left: 20px;
+    right: 20px;
+    top: 100px; /* Starts halfway down the cat */
+    height: 2000px; /* Massive height, perfectly clipped by section overflow: hidden */
+    bottom: auto;
+  }
+
   .big-cta__cat-player {
     width: 200px;
     height: 200px;
+  }
+
+  .big-cta__hitbox {
+    bottom: 45px;
+    width: 180px;
+    height: 65px;
   }
 
   .big-cta__btn {

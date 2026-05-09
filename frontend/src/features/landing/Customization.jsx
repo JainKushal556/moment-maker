@@ -24,10 +24,13 @@ const GLOW_COLORS = ['#ff00de', '#00f2fe', '#7000ff', '#ffd700', '#ff5e62', '#00
 export default function Customization({ onTransitionBack }) {
   const containerRef = useRef(null)
   const iframeRef = useRef(null)
+  const viewportContainerRef = useRef(null)
   const [customization, setCustomization] = useState({ ...DEFAULT_CUSTOMIZATION })
   const [activeTab, setActiveTab] = useState('personalize')
   const [templateReady, setTemplateReady] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // GSAP Entry Animations
   useGSAP(() => {
@@ -68,6 +71,41 @@ export default function Customization({ onTransitionBack }) {
     return () => window.removeEventListener('message', handler)
   }, [sendCustomization])
 
+  // Dynamic iframe scaling for universal preview
+  useEffect(() => {
+    const updateScale = () => {
+      if (viewportContainerRef.current) {
+        const width = viewportContainerRef.current.clientWidth
+        viewportContainerRef.current.style.setProperty('--iframe-scale', width / 1280)
+      }
+    }
+    updateScale()
+    window.addEventListener('resize', updateScale)
+    return () => window.removeEventListener('resize', updateScale)
+  }, [])
+
+  // Auto-refresh when section scrolls out of view
+  const hasBeenVisible = useRef(false)
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (entry.isIntersecting) {
+          hasBeenVisible.current = true
+        } else if (hasBeenVisible.current && !entry.isIntersecting) {
+          // Trigger a silent reset when scrolled out of view
+          setCustomization({ ...DEFAULT_CUSTOMIZATION })
+          setIsPlaying(false)
+          setRefreshKey(prev => prev + 1)
+        }
+      },
+      { threshold: 0 }
+    )
+
+    if (containerRef.current) observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [])
+
   const updateField = (key, value) => {
     const next = { ...customization, [key]: value }
     setCustomization(next)
@@ -86,9 +124,19 @@ export default function Customization({ onTransitionBack }) {
     }
   }
 
-  const handleReset = () => {
+  const handleReset = (e) => {
+    // Blur the button to remove focus highlight
+    if (e?.currentTarget) e.currentTarget.blur()
+    
+    // Provide temporary visual feedback (blue color)
+    setIsRefreshing(true)
+    setTimeout(() => setIsRefreshing(false), 300)
+
+    // Reset to defaults
     setCustomization({ ...DEFAULT_CUSTOMIZATION })
-    sendCustomization(DEFAULT_CUSTOMIZATION)
+    // Force iframe reload to restart the template animation
+    setIsPlaying(false)
+    setRefreshKey(prev => prev + 1)
   }
 
   return (
@@ -97,7 +145,7 @@ export default function Customization({ onTransitionBack }) {
         <header className="cust-header">
           <div className="cust-header-left">
             <span id="the-studio" className="cust-label">The Studio</span>
-            <h2 className="cust-title">Personalize The Magic</h2>
+            <h2 className="cust-title">Personalize <br className="mobile-br" /> The Magic</h2>
           </div>
           <button 
             className="back-to-steps"
@@ -211,16 +259,13 @@ export default function Customization({ onTransitionBack }) {
                 Live Preview
               </div>
               <div className="viewport-controls">
-                <button className="viewport-btn" onClick={handlePlayPause}>
-                  <i className={`fas ${isPlaying ? 'fa-pause' : 'fa-play'}`}></i>
-                </button>
-                <button className="viewport-btn" onClick={handleReset}>
+                <button className={`viewport-btn ${isRefreshing ? 'refreshing' : ''}`} onClick={handleReset}>
                   <i className="fas fa-undo"></i>
                 </button>
               </div>
             </div>
 
-            <div className="viewport-iframe-container">
+            <div className="viewport-iframe-container" ref={viewportContainerRef}>
               {!templateReady && (
                 <div className="viewport-loader">
                   <div className="loader-spinner"></div>
@@ -228,6 +273,7 @@ export default function Customization({ onTransitionBack }) {
                 </div>
               )}
               <iframe
+                key={refreshKey}
                 ref={iframeRef}
                 src="/templates/birthday/birthday-mosaic/index.html"
                 title="Preview"

@@ -322,8 +322,11 @@ export default function CategoriesCarousel() {
         card.classList.add('focused')
         const onCompletedEffect = () => unfocusCard()
 
+        const isMobile = window.innerWidth < 768
         gsap.to(card, {
-          scale: 1.5, z: 520, opacity: 1, filter: 'blur(0px)', duration: 1.2, ease: 'expo.out', overwrite: true, onComplete: () => {
+          scale: isMobile ? 1.15 : 1.5,
+          z: isMobile ? 380 : 520,
+          opacity: 1, filter: 'blur(0px)', duration: 1.2, ease: 'expo.out', overwrite: true, onComplete: () => {
             if (imageData[index].title === 'Thank You') triggerThankYouAnimation(card, imageData[index], onCompletedEffect)
           }
         })
