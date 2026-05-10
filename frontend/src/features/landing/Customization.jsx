@@ -21,7 +21,7 @@ const DEFAULT_CUSTOMIZATION = {
 const ACCENT_COLORS = ['#00f2fe', '#7000ff', '#ff00de', '#ffd700', '#ff5e62', '#28c840']
 const GLOW_COLORS = ['#ff00de', '#00f2fe', '#7000ff', '#ffd700', '#ff5e62', '#00ffaa']
 
-export default function Customization({ onTransitionBack }) {
+export default function Customization() {
   const containerRef = useRef(null)
   const iframeRef = useRef(null)
   const viewportContainerRef = useRef(null)
@@ -147,16 +147,6 @@ export default function Customization({ onTransitionBack }) {
             <span id="the-studio" className="cust-label">The Studio</span>
             <h2 className="cust-title">Personalize <br className="mobile-br" /> The Magic</h2>
           </div>
-          <button 
-            className="back-to-steps"
-            onClick={onTransitionBack}
-            aria-label="Back to How It Works"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M12 19V5M5 12l7-7 7 7"/>
-            </svg>
-            <span>Back to Steps</span>
-          </button>
         </header>
 
         <div className="cust-grid">

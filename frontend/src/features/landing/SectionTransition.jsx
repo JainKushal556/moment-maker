@@ -24,13 +24,17 @@ const SectionTransition = forwardRef((props, ref) => {
             
             // Calculate path length for stroke dash animation
             const length = path.getTotalLength();
+            
+            const isMobile = window.innerWidth <= 768;
+            const startWidth = isMobile ? 35 : 100;
+            const targetWidth = isMobile ? 650 : 1000; // 650 is enough to cover mobile screen
 
             // Set initial state
             gsap.set(archive, { visibility: 'visible' });
             gsap.set(path, { 
                 strokeDasharray: length, 
                 strokeDashoffset: length, 
-                strokeWidth: 100, 
+                strokeWidth: startWidth, 
                 opacity: 0 
             });
 
@@ -45,7 +49,7 @@ const SectionTransition = forwardRef((props, ref) => {
                 ease: 'sine.inOut'
             }, '<')
             .to(path, {
-                strokeWidth: 1000, // Adjusted to ensure full screen coverage
+                strokeWidth: targetWidth, 
                 duration: 1.4,
                 ease: 'sine.inOut',
                 onComplete: () => {

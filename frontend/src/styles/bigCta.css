@@ -513,6 +513,7 @@
   .big-cta__ring-slot {
     width: 320px;
     height: 320px;
+    filter: none; /* Fixes WebGL rendering bug on iOS/Mobile Safari that turns the canvas solid white */
   }
 
   .big-cta__title {

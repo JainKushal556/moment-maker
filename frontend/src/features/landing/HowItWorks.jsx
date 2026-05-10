@@ -39,7 +39,8 @@ const HIWGoldenParticles = () => {
 class Particle {
   constructor(x, y, canvasWidth, canvasHeight, color = 'white') {
     this.x = Math.random() * canvasWidth; this.y = Math.random() * canvasHeight
-    this.baseSize = 1.6; this.size = 1.6; this.targetX = x; this.targetY = y
+    const pSize = window.innerWidth < 600 ? 1.0 : 1.6;
+    this.baseSize = pSize; this.size = pSize; this.targetX = x; this.targetY = y
     this.color = color; this.baseColor = color; this.vx = 0; this.vy = 0
     this.friction = 0.80; this.ease = 0.08
     this.seedX = Math.random() * Math.PI * 2; this.seedY = Math.random() * Math.PI * 2
@@ -58,7 +59,7 @@ class Particle {
   }
 }
 
-export default function HowItWorks({ onTransition }) {
+export default function HowItWorks() {
   const sectionRef = useRef(null)
   const canvasRef = useRef(null)
   const cardsTrackRef = useRef(null)
@@ -100,16 +101,32 @@ export default function HowItWorks({ onTransition }) {
       const tempCanvas = document.createElement('canvas'); const tempCtx = tempCanvas.getContext('2d')
       tempCanvas.width = canvas.width; tempCanvas.height = canvas.height
       const aspectRatio = image.width / image.height
+      
       let displayWidth = (canvas.width * 0.43) * 0.8
-      if (window.innerWidth < 1024) displayWidth = canvas.width * 0.65
+      let step = 4
+      
+      if (window.innerWidth < 1024) {
+        displayWidth = canvas.width * 0.65
+      }
+      if (window.innerWidth < 600) {
+        // Keep size at 65% as requested, but make dots much denser (step = 2) 
+        // to maintain shape clarity since the dots themselves are now smaller
+        displayWidth = canvas.width * 0.65
+        step = 2
+      }
+
       let newWidth = Math.min(600, displayWidth); let newHeight = newWidth / aspectRatio
+      
       let centerX = (canvas.width * 0.215) - (newWidth / 2)
       if (window.innerWidth < 1024) centerX = (canvas.width * 0.5) - (newWidth / 2)
+      
       let centerY = (canvas.height - newHeight) / 2
       if (window.innerWidth < 1024) centerY = (canvas.height * 0.28) - (newHeight / 2)
+      if (window.innerWidth < 600) centerY = (canvas.height * 0.29) - (newHeight / 2)
+
       tempCtx.drawImage(image, centerX, centerY, newWidth, newHeight)
       const pixels = tempCtx.getImageData(0, 0, canvas.width, canvas.height)
-      let coords = []; const step = 4
+      let coords = []; 
       for (let y = 0; y < canvas.height; y += step) for (let x = 0; x < canvas.width; x += step) {
         const index = (y * 4 * pixels.width) + (x * 4)
         const alpha = pixels.data[index + 3]; const brightness = (pixels.data[index] + pixels.data[index + 1] + pixels.data[index + 2]) / 3
@@ -132,33 +149,46 @@ export default function HowItWorks({ onTransition }) {
 
     let animRAF; let isAnimating = false
     let lastActiveIdx = -1
-    const zones = [{ start: 0, end: 0.25, recedeEnd: 0.40 }, { start: 0.25, end: 0.55, recedeEnd: 0.70 }, { start: 0.55, end: 1.5, recedeEnd: 1.5 }]
+    const zones = [
+      { start: 0, end: 0.33, recedeEnd: 0.4 },
+      { start: 0.33, end: 0.66, recedeEnd: 0.75 },
+      { start: 0.66, end: 1.0, recedeEnd: 1.0 }
+    ]
 
     let cachedScrollProgress = 0
 
     const manualScrollUpdate = () => {
       if (cardsTrack) {
-        let activeIdx = cachedScrollProgress >= 0.55 ? 2 : cachedScrollProgress >= 0.25 ? 1 : 0
+      let activeIdx = cachedScrollProgress >= 0.66 ? 2 : cachedScrollProgress >= 0.33 ? 1 : 0
         if (activeIdx !== lastActiveIdx) {
           lastActiveIdx = activeIdx
           const cards = cardsTrack.querySelectorAll('.hiw-card-outer')
           const anchorLeft = cards[0]?.offsetLeft || 0; const targetLeft = cards[activeIdx]?.offsetLeft || 0
           cardsTrack.style.transform = `translate3d(${-(targetLeft - anchorLeft)}px, 0, 0)`
         }
-        cardOuters.forEach((outer, idx) => { if (cachedScrollProgress >= idx * 0.15) outer.classList.add('visible') })
+        cardOuters.forEach((outer, idx) => { if (cachedScrollProgress >= idx * 0.12) outer.classList.add('visible') })
         cardOuters.forEach((outer, idx) => {
           const zone = zones[idx]
           if (!zone) { outer.classList.remove('active', 'receding'); return }
-          const isActive = cachedScrollProgress >= zone.start && cachedScrollProgress < zone.end
-          const isPastActive = cachedScrollProgress >= zone.end
-          if (isActive) { outer.classList.add('active'); outer.classList.remove('receding'); outer.style.transform = ''; outer.style.opacity = '' }
-          else if (!isPastActive && cachedScrollProgress < zone.start) { outer.classList.remove('active', 'receding'); outer.style.transform = ''; outer.style.opacity = '' }
+          const isActive = cachedScrollProgress >= zone.start && cachedScrollProgress <= zone.end
+          const isPastActive = cachedScrollProgress > zone.end
+          if (isActive) { 
+            outer.classList.add('active'); outer.classList.remove('receding'); 
+            outer.style.transform = ''; outer.style.opacity = '' 
+          }
+          else if (!isPastActive && cachedScrollProgress < zone.start) { 
+            outer.classList.remove('active', 'receding'); 
+            outer.style.transform = ''; outer.style.opacity = '' 
+          }
           else if (isPastActive && zone.recedeEnd > zone.end) {
             outer.classList.remove('active'); outer.classList.add('receding')
             const recedeProgress = Math.min(1, (cachedScrollProgress - zone.end) / (zone.recedeEnd - zone.end))
             const eased = recedeProgress < 0.5 ? 2 * recedeProgress * recedeProgress : 1 - Math.pow(-2 * recedeProgress + 2, 2) / 2
-            outer.style.transform = `translate3d(${eased * -150}px, 0, 0) scale(${1 - eased * 0.15})`; outer.style.opacity = `${1 - eased}`
-          } else { outer.classList.remove('active', 'receding') }
+            outer.style.transform = `translate3d(${eased * -150}px, 0, 0) scale(${1 - eased * 0.15})`; 
+            outer.style.opacity = `${1 - eased}`
+          } else { 
+            outer.classList.remove('active', 'receding') 
+          }
         })
       }
     }
@@ -176,11 +206,11 @@ export default function HowItWorks({ onTransition }) {
           end: 'bottom bottom',
           scrub: 1,
           onUpdate: (self) => {
-            // First 30% is the circle reveal
-            // Remaining 70% is the content scroll
+            // First 20% is the circle reveal (reduced from 30%)
+            // Remaining 80% is the content scroll
             let contentProg = 0;
-            if (self.progress > 0.3) {
-              contentProg = (self.progress - 0.3) / 0.7;
+            if (self.progress > 0.2) {
+              contentProg = (self.progress - 0.2) / 0.8;
             }
             cachedScrollProgress = Math.min(1, Math.max(0, contentProg));
             manualScrollUpdate();
@@ -194,7 +224,7 @@ export default function HowItWorks({ onTransition }) {
           '--radius-val': '0px',
           backgroundColor: 'transparent',
           borderColor: 'transparent',
-          duration: 0.3,
+          duration: 0.2, // Faster reveal
           ease: 'power2.inOut'
         }, 0
       )
@@ -202,32 +232,25 @@ export default function HowItWorks({ onTransition }) {
       masterTl.to(revealLabel, {
         opacity: 0,
         scale: 1.2,
-        duration: 0.2,
+        duration: 0.15,
         ease: 'power2.in'
       }, 0)
 
       masterTl.fromTo(hiwContent,
         { opacity: 0 },
-        { opacity: 1, duration: 0.3, ease: 'power2.out' },
-        0.1
+        { opacity: 1, duration: 0.2, ease: 'power2.out' },
+        0.05
       )
 
-      const hiwTrigger = ScrollTrigger.create({
-        trigger: section,
-        start: 'bottom-=60vh bottom',
-        onEnter: () => {
-          if (window._hiwTransitionBlocked) return;
-          if (onTransition) onTransition();
-        }
-      });
 
-      masterTl.to({}, { duration: 0.7 }) // Padding for the rest of the scroll
+      masterTl.to({}, { duration: 0.8 }) // Adjusted padding
     }, section)
 
     function animate() {
       if (!isAnimating) return
       ctx.clearRect(0, 0, canvas.width, canvas.height); time += 0.02
       mouse.x += (mouse.tx - mouse.x) * 0.1; mouse.y += (mouse.ty - mouse.y) * 0.1
+      // Updated SVG thresholds to 0.25 and 0.50
       let targetCoords = cachedScrollProgress < 0.33 ? image1Coords : cachedScrollProgress < 0.66 ? image2Coords : image3Coords
       for (let i = 0; i < particlesArray.length; i++) {
         const p = particlesArray[i]

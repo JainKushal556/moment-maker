@@ -2,7 +2,7 @@
 .how-it-works-section {
     position: relative;
     /* Increased height to accommodate the pinned circle reveal transition + scrolling content */
-    height: 450vh; 
+    height: 320vh; 
     background-color: #050a1f; /* Matched to carousel's end background */
     z-index: 10; /* Set higher than carousel to allow overlapping mask */
     /* Override global section defaults to eliminate gap */
@@ -194,6 +194,11 @@
     transform: translateY(30px);
     transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.35s ease, border-color 0.3s ease;
     will-change: transform, opacity;
+}
+
+.hiw-card-outer.receding {
+    /* Remove transform and opacity transitions while JS is actively scrubbing these values */
+    transition: box-shadow 0.35s ease, border-color 0.3s ease !important;
 }
 
 @keyframes hiwPulseGlow {
