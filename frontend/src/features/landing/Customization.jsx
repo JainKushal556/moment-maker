@@ -145,7 +145,7 @@ export default function Customization() {
         <header className="cust-header">
           <div className="cust-header-left">
             <span id="the-studio" className="cust-label">The Studio</span>
-            <h2 className="cust-title">Personalize <br className="mobile-br" /> The Magic</h2>
+            <h2 className="cust-title">Personalize The Magic</h2>
           </div>
         </header>
 

@@ -66,11 +66,49 @@ export default function AboutUs() {
     document.documentElement.style.overflow = '';
     document.body.style.touchAction = '';
 
-    if (window.lenis) {
-      window.lenis.start();
-      window.lenis.scrollTo(0, { immediate: true, force: true });
-    } else {
-      window.scrollTo(0, 0);
+    // Only scroll to top if we're NOT deep linking to a specific section
+    if (!window.pendingScrollTarget) {
+      if (window.lenis) {
+        window.lenis.start();
+        window.lenis.scrollTo(0, { immediate: true, force: true });
+      } else {
+        window.scrollTo(0, 0);
+      }
+    }
+  }, []);
+
+  // Handle deep links from Footer shortcuts
+  useEffect(() => {
+    if (window.pendingScrollTarget) {
+      const targetId = window.pendingScrollTarget;
+      
+      const scrollToSection = (id, attempt = 0) => {
+        const target = document.getElementById(id);
+        if (!target) {
+          if (attempt < 20) {
+            setTimeout(() => scrollToSection(id, attempt + 1), 100);
+          }
+          return;
+        }
+
+        const isDeepLink = !!window.pendingScrollTarget;
+        
+        if (window.lenis) {
+          window.lenis.scrollTo(target, {
+            offset: -100,
+            immediate: isDeepLink,
+            duration: isDeepLink ? 0 : 2,
+            force: true
+          });
+        } else {
+          target.scrollIntoView({ behavior: isDeepLink ? 'auto' : 'smooth' });
+        }
+        
+        window.pendingScrollTarget = null;
+      };
+
+      // Jump early while curtain is still closed
+      setTimeout(() => scrollToSection(targetId), 400);
     }
   }, []);
 

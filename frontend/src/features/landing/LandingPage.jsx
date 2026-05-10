@@ -57,12 +57,15 @@ const LandingPage = () => {
             return document.getElementById(targetId);
         };
 
-        const scrollToLandingSection = (targetId, attempt = 0) => {
+        const scrollToLandingSection = (targetId, attempt = 0, forceInstant = false) => {
+            // If we're coming from another page (forceInstant or pendingScrollTarget exists), jump instantly.
+            // If we're already on the landing page, use smooth scroll for a premium feel.
+            const isDeepLink = forceInstant || !!window.pendingScrollTarget;
             const target = getLandingScrollDestination(targetId);
 
             if (!target) {
                 if (attempt < 20) {
-                    window.setTimeout(() => scrollToLandingSection(targetId, attempt + 1), 150);
+                    window.setTimeout(() => scrollToLandingSection(targetId, attempt + 1, forceInstant), 150);
                 }
                 return;
             }
@@ -88,13 +91,14 @@ const LandingPage = () => {
             if (window.lenis) {
                 window.lenis.scrollTo(target, {
                     offset: offset,
-                    duration: 1.5, // Always smooth scroll so layout shifts mid-scroll are handled gracefully
+                    immediate: isDeepLink,
+                    duration: isDeepLink ? 0 : 1.5,
                     force: true,
                 });
             } else if (typeof target === 'number') {
-                window.scrollTo({ top: target, behavior: 'smooth' });
+                window.scrollTo({ top: target, behavior: isDeepLink ? 'auto' : 'smooth' });
             } else {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                target.scrollIntoView({ behavior: isDeepLink ? 'auto' : 'smooth', block: 'start' });
             }
         };
 
@@ -102,8 +106,8 @@ const LandingPage = () => {
 
         if (window.pendingScrollTarget) {
             const targetId = window.pendingScrollTarget;
-            // Wait 800ms for transition to almost finish and layout to stabilize
-            window.setTimeout(() => scrollToLandingSection(targetId), 800);
+            // Force instant jump (true) while the transition curtain is still covering the screen
+            window.setTimeout(() => scrollToLandingSection(targetId, 0, true), 400);
         }
 
         return () => {
@@ -148,6 +152,23 @@ const LandingPage = () => {
         };
 
         window.releaseLandingScrollLocks = releaseLandingScrollLocks;
+
+        // Smart Rotation for Scroll Indicator
+        const handleScrollDirection = (e) => {
+            const indicator = document.getElementById('globalScrollIndicator');
+            if (!indicator) return;
+
+            // Always point down when within the Hero section (top of the page)
+            if (window.scrollY < window.innerHeight * 0.8) {
+                indicator.classList.remove('scrolling-up');
+                return;
+            }
+
+            const direction = e?.direction || window.lenis?.direction;
+            if (direction === -1) indicator.classList.add('scrolling-up');
+            else indicator.classList.remove('scrolling-up');
+        };
+        if (window.lenis) window.lenis.on('scroll', handleScrollDirection);
 
         const initTriggers = () => {
             if (initialized) return true;
@@ -568,6 +589,8 @@ const LandingPage = () => {
                 ScrollTrigger.getById(id)?.kill();
             });
 
+            window.lenis?.off('scroll', handleScrollDirection);
+
             if (window.releaseLandingScrollLocks === releaseLandingScrollLocks) {
                 delete window.releaseLandingScrollLocks;
             }
@@ -576,6 +599,67 @@ const LandingPage = () => {
 
     return (
         <>
+            {/* Global Scroll Indicator (Triple Chevron) */}
+            <div className="global-scroll-indicator" id="globalScrollIndicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <style>{`
+                .global-scroll-indicator {
+                    position: fixed;
+                    bottom: 40px;
+                    right: 40px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 8px;
+                    z-index: 2147483647;
+                    pointer-events: none;
+                    opacity: 0.7;
+                    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease;
+                }
+
+                .global-scroll-indicator.scrolling-up {
+                    transform: rotate(180deg);
+                }
+
+                .global-scroll-indicator span {
+                    display: block;
+                    width: 20px;
+                    height: 20px;
+                    border-bottom: 3px solid #ec4899;
+                    border-right: 3px solid #ec4899;
+                    transform: rotate(45deg);
+                    animation: scroll-arrow 2s infinite;
+                    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+                    filter: drop-shadow(0 0 5px rgba(236, 72, 153, 0.5));
+                }
+
+                .global-scroll-indicator span:nth-child(2) {
+                    animation-delay: -0.2s;
+                }
+
+                .global-scroll-indicator span:nth-child(3) {
+                    animation-delay: -0.4s;
+                }
+
+                @keyframes scroll-arrow {
+                    0% {
+                        opacity: 0;
+                        transform: rotate(45deg) translate(-10px, -10px);
+                    }
+                    50% {
+                        opacity: 1;
+                    }
+                    100% {
+                        opacity: 0;
+                        transform: rotate(45deg) translate(10px, 10px);
+                    }
+                }
+            `}</style>
+
             <HeroSection />
 
             <Suspense fallback={null}>

@@ -58,7 +58,44 @@ export default function Footer() {
     navigateTo('landing')
   }
 
+  const handleAboutShortcut = (event, targetId) => {
+    event.preventDefault()
+    window.pendingScrollTarget = targetId
+
+    if (currentView === 'about') {
+      const target = document.getElementById(targetId)
+      if (target) {
+        if (window.lenis) {
+          window.lenis.scrollTo(target, { 
+            offset: -100, 
+            immediate: true, 
+            force: true 
+          })
+        } else {
+          const top = target.getBoundingClientRect().top + window.scrollY - 100
+          window.scrollTo({ top, behavior: 'auto' })
+        }
+      }
+      window.pendingScrollTarget = null
+      return
+    }
+
+    navigateTo('about')
+  }
+
   useEffect(() => {
+    const indicatorObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const ind = document.getElementById('globalScrollIndicator');
+        if (ind) {
+          ind.style.opacity = entry.isIntersecting ? '0' : '0.7';
+        }
+      });
+    }, { threshold: 0 });
+
+    const footerEl = document.getElementById('main-footer');
+    if (footerEl) indicatorObserver.observe(footerEl);
+
     const playground = playgroundRef.current
     if (!playground) return
 
@@ -108,52 +145,39 @@ export default function Footer() {
       Composite.add(engine.world, body); items.push({ el, body, w, h, isBlob: false })
     })
 
-    // Sandbox Matter.js listeners on a dummy off-DOM element.
-    // This prevents Matter.js from attaching its `wheel`/`touchmove` passive:false listeners
-    // (which call e.preventDefault()) to the real playground.
     const dummyEl = document.createElement('div');
     const mouse = Mouse.create(dummyEl);
-    mouse.element = playground; // point to real element for coordinate math
+    mouse.element = playground;
 
-    const mouseConstraint = MouseConstraint.create(engine, { mouse, constraint: { stiffness: 0.18, render: { visible: false } } })
-    Composite.add(engine.world, mouseConstraint)
-    Events.on(mouseConstraint, 'startdrag', () => playground.style.cursor = 'grabbing')
-    Events.on(mouseConstraint, 'enddrag', () => playground.style.cursor = 'grab')
+    const mConstraint = MouseConstraint.create(engine, {
+      mouse: mouse,
+      constraint: { stiffness: 0.1, render: { visible: false } }
+    })
+    Composite.add(engine.world, mConstraint)
 
-    // Helper: update mouse position from a pointer/touch event WITHOUT calling any
-    // Matter.js handler (they call e.preventDefault() internally for touch events)
-    const updateMousePos = (clientX, clientY) => {
+    const updateMousePos = (cx, cy) => {
       const rect = playground.getBoundingClientRect();
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
-      mouse.absolute.x = x;
-      mouse.absolute.y = y;
-      mouse.position.x = x * mouse.scale.x + mouse.offset.x;
-      mouse.position.y = y * mouse.scale.y + mouse.offset.y;
+      mouse.position.x = cx - rect.left;
+      mouse.position.y = cy - rect.top;
+      mouse.absolute.x = mouse.position.x;
+      mouse.absolute.y = mouse.position.y;
     };
 
     const onStart = (e) => {
       const src = e.touches ? e.touches[0] : e;
       updateMousePos(src.clientX, src.clientY);
-      if (e.target.closest('.footer-blob')) {
-        mouse.button = 0;
-        mouse.mousedownPosition.x = mouse.position.x;
-        mouse.mousedownPosition.y = mouse.position.y;
-        if (e.cancelable) e.preventDefault(); // only block scroll for physics drag
-      }
+      mouse.button = 0;
+      mouse.mousedownPosition.x = mouse.position.x;
+      mouse.mousedownPosition.y = mouse.position.y;
     };
 
     const onMove = (e) => {
       const src = e.touches ? e.touches[0] : e;
       updateMousePos(src.clientX, src.clientY);
-      // Only block scroll if actively dragging a physics object
-      if (mouse.button === 0 && e.cancelable) e.preventDefault();
     };
 
     const onEnd = () => {
       mouse.button = -1;
-      mouse.mouseupPosition.x = mouse.position.x;
-      mouse.mouseupPosition.y = mouse.position.y;
     };
 
     const globalUp = () => { mouse.button = -1; };
@@ -162,26 +186,22 @@ export default function Footer() {
 
     playground.addEventListener('mousedown', onStart);
     playground.addEventListener('touchstart', onStart, { passive: false });
-    playground.addEventListener('mousemove', onMove);         // passive — NEVER blocks scroll
-    playground.addEventListener('touchmove', onMove, { passive: false }); // passive:false only to allow e.preventDefault when dragging
+    playground.addEventListener('mousemove', onMove);
+    playground.addEventListener('touchmove', onMove, { passive: false });
     playground.addEventListener('mouseup', onEnd);
     playground.addEventListener('touchend', onEnd);
-
 
     Events.on(engine, 'afterUpdate', () => {
       const floor = playFloor()
       for (const { body } of items) {
         const spd = Math.sqrt(body.velocity.x ** 2 + body.velocity.y ** 2)
         if (spd > MAX_SPEED) { const scale = MAX_SPEED / spd; Body.setVelocity(body, { x: body.velocity.x * scale, y: body.velocity.y * scale }) }
-        const margin = 20; let px = body.position.x; let py = body.position.y; let clamped = false
-        if (px < margin) { px = margin; clamped = true }; if (px > pW - margin) { px = pW - margin; clamped = true }
         
-        // Only clamp Y if the floor provides enough space
-        if (floor > margin * 2) {
-          const minY = (isMobile ? 40: 0) + margin;
-          if (py < minY) { py = minY; clamped = true }; 
-          if (py > floor - margin) { py = floor - margin; clamped = true }
-        }
+        const px = body.position.x; const py = body.position.y
+        let clamped = false
+        if (px < body.circleRadius || px < 0) { Body.setPosition(body, { x: body.circleRadius || 10, y: py }); Body.setVelocity(body, { x: Math.abs(body.velocity.x) * 0.5, y: body.velocity.y }); clamped = true }
+        if (px > pW - (body.circleRadius || 0)) { Body.setPosition(body, { x: pW - (body.circleRadius || 10), y: py }); Body.setVelocity(body, { x: -Math.abs(body.velocity.x) * 0.5, y: body.velocity.y }); clamped = true }
+        if (py > floor + 50) { Body.setPosition(body, { x: px, y: floor - 10 }); Body.setVelocity(body, { x: body.velocity.x, y: -Math.abs(body.velocity.y) * 0.5 }); clamped = true }
         
         if (clamped) { Body.setPosition(body, { x: px, y: py }); Body.setVelocity(body, { x: 0, y: 0 }) }
       }
@@ -201,7 +221,6 @@ export default function Footer() {
       syncRAF = requestAnimationFrame(syncDOM)
     }
 
-    // Anchor all items at origin so translate drives position
     items.forEach(({ el }) => { el.style.left = '0px'; el.style.top = '0px' })
 
     const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) startPhysics(); else stopPhysics() }) }, { rootMargin: '100px', threshold: 0 })
@@ -223,11 +242,12 @@ export default function Footer() {
       playground.removeEventListener('mouseup', onEnd)
       playground.removeEventListener('touchend', onEnd)
       Engine.clear(engine)
+      indicatorObserver.disconnect()
     }
   }, [])
 
   return (
-    <section className="footer-section">
+    <section className="footer-section" id="main-footer">
       <div className="footer-playground" ref={playgroundRef}>
         <FloatingHearts />
 
@@ -344,8 +364,8 @@ export default function Footer() {
               </div>
               <div className="fpo-col">
                 <div className="fpo-col-header"><i className="fas fa-info-circle col-icon"></i> ABOUT US</div>
-                <a href="#" onClick={(e) => { e.preventDefault(); window.pendingScrollTarget = 'process-section'; navigateTo('about'); }}>The Process</a>
-                <a href="#" onClick={(e) => { e.preventDefault(); window.pendingScrollTarget = 'makers-section'; navigateTo('about'); }}>Makers</a>
+                <a href="#process-section" onClick={(e) => handleAboutShortcut(e, 'process-section')}>The Process</a>
+                <a href="#makers-section" onClick={(e) => handleAboutShortcut(e, 'makers-section')}>Makers</a>
               </div>
               <div className="fpo-col">
                 <div className="fpo-col-header"><i className="fas fa-shield-alt col-icon"></i> SUPPORT & POLICIES</div>

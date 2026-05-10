@@ -77,6 +77,40 @@
     }
 }
 
+/* =========================================
+   Custom Global Scrollbar
+   ========================================= */
+::-webkit-scrollbar {
+    width: 10px; /* Slim for Desktop */
+}
+
+/* Thicker scrollbar for Mobile for better accessibility */
+@media (max-width: 768px) {
+    ::-webkit-scrollbar {
+        width: 20px;
+    }
+}
+
+::-webkit-scrollbar-track {
+    background: #050508; /* Match deep-space theme */
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #f472b6, #a855f7);
+    border-radius: 10px;
+    border: 2px solid #050508;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff00de, #7000ff);
+}
+
+/* Firefox Support */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #f472b6 #050508;
+}
+
 body {
     font-family: 'Inter', sans-serif;
     background: #111;
