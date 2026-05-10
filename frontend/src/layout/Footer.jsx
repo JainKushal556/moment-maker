@@ -40,7 +40,23 @@ const FloatingHearts = () => {
 
 export default function Footer() {
   const playgroundRef = useRef(null)
-  const [, navigateTo] = useContext(ViewContext)
+  const [currentView, navigateTo] = useContext(ViewContext)
+
+  const handleLandingShortcut = (event, targetId) => {
+    event.preventDefault()
+    window.pendingScrollTarget = targetId
+
+    if (currentView === 'landing') {
+      if (typeof window.scrollLandingSection === 'function') {
+        window.scrollLandingSection(targetId)
+      } else {
+        window.setTimeout(() => window.scrollLandingSection?.(targetId), 50)
+      }
+      return
+    }
+
+    navigateTo('landing')
+  }
 
   useEffect(() => {
     const playground = playgroundRef.current
@@ -92,38 +108,65 @@ export default function Footer() {
       Composite.add(engine.world, body); items.push({ el, body, w, h, isBlob: false })
     })
 
-    const mouse = Mouse.create(playground)
+    // Sandbox Matter.js listeners on a dummy off-DOM element.
+    // This prevents Matter.js from attaching its `wheel`/`touchmove` passive:false listeners
+    // (which call e.preventDefault()) to the real playground.
+    const dummyEl = document.createElement('div');
+    const mouse = Mouse.create(dummyEl);
+    mouse.element = playground; // point to real element for coordinate math
+
     const mouseConstraint = MouseConstraint.create(engine, { mouse, constraint: { stiffness: 0.18, render: { visible: false } } })
     Composite.add(engine.world, mouseConstraint)
     Events.on(mouseConstraint, 'startdrag', () => playground.style.cursor = 'grabbing')
     Events.on(mouseConstraint, 'enddrag', () => playground.style.cursor = 'grab')
 
-    // COMPLEX EVENT BYPASS (Mobile Scroll Fix)
-    // 1. Remove Matter.js aggressive default touch listeners that block all scrolling
-    playground.removeEventListener('touchstart', mouse.mousedown);
-    playground.removeEventListener('touchmove', mouse.mousemove);
-    playground.removeEventListener('touchend', mouse.mouseup);
+    // Helper: update mouse position from a pointer/touch event WITHOUT calling any
+    // Matter.js handler (they call e.preventDefault() internally for touch events)
+    const updateMousePos = (clientX, clientY) => {
+      const rect = playground.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      mouse.absolute.x = x;
+      mouse.absolute.y = y;
+      mouse.position.x = x * mouse.scale.x + mouse.offset.x;
+      mouse.position.y = y * mouse.scale.y + mouse.offset.y;
+    };
 
-    // 2. Add SMART touch listeners
-    playground.addEventListener('touchstart', (e) => {
-      // Only intercept if touching a blob or pill
-      if (e.target.closest('.footer-blob') || e.target.closest('.footer-pill')) {
-        if (e.cancelable) e.preventDefault(); // Stop native scroll for smooth drag
-        mouse.mousedown(e); 
+    const onStart = (e) => {
+      const src = e.touches ? e.touches[0] : e;
+      updateMousePos(src.clientX, src.clientY);
+      if (e.target.closest('.footer-blob')) {
+        mouse.button = 0;
+        mouse.mousedownPosition.x = mouse.position.x;
+        mouse.mousedownPosition.y = mouse.position.y;
+        if (e.cancelable) e.preventDefault(); // only block scroll for physics drag
       }
-    }, { passive: false });
+    };
 
-    playground.addEventListener('touchmove', (e) => {
-      // If Matter.js mouse is active (dragging), keep updating and blocking scroll
-      if (mouse.button === 0) {
-        if (e.cancelable) e.preventDefault();
-        mouse.mousemove(e);
-      }
-    }, { passive: false });
+    const onMove = (e) => {
+      const src = e.touches ? e.touches[0] : e;
+      updateMousePos(src.clientX, src.clientY);
+      // Only block scroll if actively dragging a physics object
+      if (mouse.button === 0 && e.cancelable) e.preventDefault();
+    };
 
-    playground.addEventListener('touchend', (e) => {
-      if (mouse.button === 0) { mouse.mouseup(e); }
-    });
+    const onEnd = () => {
+      mouse.button = -1;
+      mouse.mouseupPosition.x = mouse.position.x;
+      mouse.mouseupPosition.y = mouse.position.y;
+    };
+
+    const globalUp = () => { mouse.button = -1; };
+    window.addEventListener('mouseup', globalUp);
+    window.addEventListener('touchend', globalUp);
+
+    playground.addEventListener('mousedown', onStart);
+    playground.addEventListener('touchstart', onStart, { passive: false });
+    playground.addEventListener('mousemove', onMove);         // passive — NEVER blocks scroll
+    playground.addEventListener('touchmove', onMove, { passive: false }); // passive:false only to allow e.preventDefault when dragging
+    playground.addEventListener('mouseup', onEnd);
+    playground.addEventListener('touchend', onEnd);
+
 
     Events.on(engine, 'afterUpdate', () => {
       const floor = playFloor()
@@ -168,21 +211,17 @@ export default function Footer() {
     const resizeHandler = () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { pW = playground.clientWidth; pH = playground.clientHeight; Composite.remove(engine.world, walls); walls = createWalls(); Composite.add(engine.world, walls) }, 250) }
     window.addEventListener('resize', resizeHandler)
 
-    const mouseMoveHandler = (e) => { const rect = playground.getBoundingClientRect(); mouse.position.x = e.clientX - rect.left; mouse.position.y = e.clientY - rect.top }
-    playground.addEventListener('mousemove', mouseMoveHandler)
-
-    function setTouchPos(t) { const rect = playground.getBoundingClientRect(); mouse.position.x = t.clientX - rect.left; mouse.position.y = t.clientY - rect.top }
-    const touchStartHandler = (e) => { if (e.touches.length === 1) setTouchPos(e.touches[0]) }
-    const touchMoveHandler = (e) => { if (e.touches.length === 1) setTouchPos(e.touches[0]) }
-    playground.addEventListener('touchstart', touchStartHandler)
-    playground.addEventListener('touchmove', touchMoveHandler)
-
     return () => {
       stopPhysics(); observer.disconnect()
       window.removeEventListener('resize', resizeHandler)
-      playground.removeEventListener('mousemove', mouseMoveHandler)
-      playground.removeEventListener('touchstart', touchStartHandler)
-      playground.removeEventListener('touchmove', touchMoveHandler)
+      window.removeEventListener('mouseup', globalUp)
+      window.removeEventListener('touchend', globalUp)
+      playground.removeEventListener('mousedown', onStart)
+      playground.removeEventListener('touchstart', onStart)
+      playground.removeEventListener('mousemove', onMove)
+      playground.removeEventListener('touchmove', onMove)
+      playground.removeEventListener('mouseup', onEnd)
+      playground.removeEventListener('touchend', onEnd)
       Engine.clear(engine)
     }
   }, [])
@@ -235,19 +274,19 @@ export default function Footer() {
         </div>
 
         {/* Pill Buttons */}
-        <a href="#categories" className="footer-pill">
+        <a href="#landing-categories" className="footer-pill" onClick={(e) => handleLandingShortcut(e, 'landing-categories')}>
           <span className="pill-text">Browse Categories</span>
           <span className="pill-hover-text">Find the perfect wish</span>
         </a>
-        <a href="#create" className="footer-pill">
+        <a href="#landing-create" className="footer-pill" onClick={(e) => handleLandingShortcut(e, 'landing-create')}>
           <span className="pill-text">Try Customization</span>
           <span className="pill-hover-text">Make it truly yours</span>
         </a>
-        <a href="#" className="footer-pill">
+        <a href="#landing-cta" className="footer-pill" onClick={(e) => handleLandingShortcut(e, 'landing-cta')}>
           <span className="pill-text">Send a Wish</span>
           <span className="pill-hover-text">Spread the joy</span>
         </a>
-        <a href="#" className="footer-pill">
+        <a href="#landing-community" className="footer-pill" onClick={(e) => handleLandingShortcut(e, 'landing-community')}>
           <span className="pill-text">Join Community</span>
           <span className="pill-hover-text">Meet fellow wishers</span>
         </a>
@@ -260,7 +299,7 @@ export default function Footer() {
             {/* Brand + Newsletter */}
             <div className="fpo-brand">
               <div className="fpo-logo-tagline">
-                <a href="#" className="footer-logo-link" aria-label="Moment Crafter Home">
+                <a href="#landing-hero" className="footer-logo-link" aria-label="Moment Crafter Home" onClick={(e) => handleLandingShortcut(e, 'landing-hero')}>
                   <svg className="footer-logo-svg" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
                     <polygon points="16,2 18.5,11 28,11 20.5,16.5 23,26 16,21 9,26 11.5,16.5 4,11 13.5,11" fill="#ff69b4" />
                     <line x1="16" y1="0" x2="16" y2="3" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
@@ -294,19 +333,19 @@ export default function Footer() {
             <div className="fpo-nav-cols">
               <div className="fpo-col">
                 <div className="fpo-col-header"><i className="fas fa-home col-icon"></i> HOME</div>
-                <a href="#">Interactive carousel</a>
-                <a href="#">How It Works</a>
-                <a href="#">Personalize The Magic</a>
+                <a href="#landing-categories" onClick={(e) => handleLandingShortcut(e, 'landing-categories')}>Interactive carousel</a>
+                <a href="#landing-how-it-works" onClick={(e) => handleLandingShortcut(e, 'landing-how-it-works')}>How It Works</a>
+                <a href="#landing-create" onClick={(e) => handleLandingShortcut(e, 'landing-create')}>Personalize The Magic</a>
               </div>
               <div className="fpo-col">
                 <div className="fpo-col-header"><i className="fas fa-clipboard-list col-icon"></i> TEMPLATES</div>
-                <a href="#categories">Browse Categories</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('categories'); }}>Browse Categories</a>
                 <a href="#">Popular Wishes</a>
               </div>
               <div className="fpo-col">
                 <div className="fpo-col-header"><i className="fas fa-info-circle col-icon"></i> ABOUT US</div>
-                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('about'); }}>The Process</a>
-                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('about'); }}>Makers</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); window.pendingScrollTarget = 'process-section'; navigateTo('about'); }}>The Process</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); window.pendingScrollTarget = 'makers-section'; navigateTo('about'); }}>Makers</a>
               </div>
               <div className="fpo-col">
                 <div className="fpo-col-header"><i className="fas fa-shield-alt col-icon"></i> SUPPORT & POLICIES</div>

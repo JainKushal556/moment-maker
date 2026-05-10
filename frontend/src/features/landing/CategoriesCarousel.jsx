@@ -211,6 +211,9 @@ export default function CategoriesCarousel() {
   const transitionPlayed = useRef(false)
 
   useEffect(() => {
+    const sectionEl = sectionRef.current
+    if (!sectionEl) return
+
     const ctx = gsap.context(() => {
       const stage = stageRef.current
       if (!stage) return
@@ -221,7 +224,7 @@ export default function CategoriesCarousel() {
 
 
 
-      const carouselContent = sectionRef.current?.querySelector('.carousel-content-wrapper')
+      const carouselContent = sectionEl.querySelector('.carousel-content-wrapper')
 
       // Hide carousel immediately before animation
       if (carouselContent) {
@@ -230,15 +233,15 @@ export default function CategoriesCarousel() {
 
       if (overlay && !transitionPlayed.current) {
         const blocks = overlay.querySelectorAll('.ct-block')
-        const text = overlay.querySelector('.ct-text')
-
         const textEl = overlay.querySelector('.ct-text')
+
         if (textEl) textEl.textContent = 'MOMENTS'
         overlay.classList.remove('ct-hidden')
 
         const master = gsap.timeline({
           scrollTrigger: {
-            trigger: sectionRef.current,
+            id: 'landing-categories-sequence',
+            trigger: sectionEl,
             start: 'top top',
             end: '+=300%', // Reduced scroll distance for faster timing per user request
             scrub: 1.5,    // Slightly more smoothing
@@ -247,6 +250,14 @@ export default function CategoriesCarousel() {
             onUpdate: (self) => {
               if (self.progress === 1) overlay.classList.add('ct-hidden')
               else overlay.classList.remove('ct-hidden')
+
+              if (textEl) {
+                if (self.direction === -1) {
+                  if (textEl.textContent !== 'PUNCHLINES') textEl.textContent = 'PUNCHLINES'
+                } else if (self.direction === 1) {
+                  if (textEl.textContent !== 'MOMENTS') textEl.textContent = 'MOMENTS'
+                }
+              }
             }
           }
         })
@@ -263,13 +274,13 @@ export default function CategoriesCarousel() {
         master.set('.hero, .hero-clone', { opacity: 0 }, 0.8)
 
         // Phase 3: Text Reveal
-        master.to(text, { opacity: 1, scale: 1, duration: 0.6, ease: 'power3.out' }, 0.8)
+        master.to(textEl, { opacity: 1, scale: 1, duration: 0.6, ease: 'power3.out' }, 0.8)
 
         // Phase 4: Hold
         master.to({}, { duration: 0.6 })
 
         // Phase 5: Text out
-        master.to(text, { opacity: 0, scale: 1.05, duration: 0.5, ease: 'power2.out' })
+        master.to(textEl, { opacity: 0, scale: 1.05, duration: 0.5, ease: 'power2.out' })
 
         // Phase 6: Blocks exit
         master.to(blocks, { y: '-100%', duration: 0.8, stagger: 0.08, ease: 'expo.inOut' })
@@ -361,8 +372,7 @@ export default function CategoriesCarousel() {
       gsap.ticker.add(carouselTick)
 
       const carouselObs = new IntersectionObserver((entries) => { entries.forEach(entry => { carouselTickerActive = entry.isIntersecting }) }, { rootMargin: '200px', threshold: 0 })
-      const sectionEl = sectionRef.current
-      if (sectionEl) carouselObs.observe(sectionEl)
+      carouselObs.observe(sectionEl)
 
       const resizeHandler = () => updateRadius()
       window.addEventListener('resize', resizeHandler)
@@ -415,7 +425,7 @@ export default function CategoriesCarousel() {
 
       const floatTween = gsap.to(stage, { y: '-=10', duration: 3, repeat: -1, yoyo: true, ease: 'sine.inOut' })
       const scrollFrom = gsap.from(cards, {
-        scrollTrigger: { trigger: sectionRef.current, start: 'top 80%' },
+        scrollTrigger: { trigger: sectionEl, start: 'top 80%' },
         y: 300, z: -850, rotationX: 35, opacity: 0, stagger: 0.1, duration: 1.5, ease: 'back.out(1.2)'
       })
 
@@ -436,12 +446,12 @@ export default function CategoriesCarousel() {
         if (dimmer) dimmer.onclick = null
         stage.replaceChildren()
       }
-    }, sectionRef)
+    }, sectionEl)
     return () => ctx.revert()
   }, [])
 
   return (
-    <section className="carousel-section" ref={sectionRef}>
+    <section id="landing-categories" className="carousel-section" ref={sectionRef}>
       <div className="ct-overlay" ref={overlayRef}>
         <div className="ct-blocks">
           {Array.from({ length: BLOCK_COUNT }, (_, i) => (

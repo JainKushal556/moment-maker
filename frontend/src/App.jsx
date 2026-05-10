@@ -1,4 +1,4 @@
-import { useEffect, useRef, useContext, lazy, Suspense } from 'react'
+import { useEffect, useRef, useContext, useLayoutEffect, lazy, Suspense } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger, Observer } from 'gsap/all'
 import Lenis from 'lenis'
@@ -84,6 +84,19 @@ function AppContent() {
 
   const prevViewRef = useRef(currentView)
 
+  useLayoutEffect(() => {
+    document.body.style.overflow = ''
+    document.documentElement.style.overflow = ''
+    document.body.style.touchAction = ''
+
+    if (window.lenis && currentView !== 'editor' && currentView !== 'moments' && currentView !== 'preview' && currentView !== 'settings') {
+      window.lenis.start()
+      window.lenis.scrollTo(0, { immediate: true, force: true })
+    } else if (currentView !== 'editor' && currentView !== 'moments' && currentView !== 'settings') {
+      window.scrollTo(0, 0)
+    }
+  }, [currentView])
+
   useEffect(() => {
     if (prevViewRef.current !== currentView) {
       const dotGridBg = document.getElementById('dot-grid-bg')
@@ -92,7 +105,19 @@ function AppContent() {
       document.querySelectorAll('body > .icon').forEach((el) => el.remove())
       document.querySelectorAll('.falling-emoji, .minimal-glow, .light-wave, .minimal-particle, .minimal-heart, #ty-canvas-fullscreen, .soap-bubble, .bubble-blast-particle').forEach((el) => el.remove())
 
-      document.body.style.overflow = ''
+      // Global scroll/touch reset fail-safe — use double-RAF so it runs AFTER
+      // all child component cleanup effects AND any pending RAF loops complete.
+      const forceUnlockScroll = () => {
+        document.body.style.overflow = ''
+        document.documentElement.style.overflow = ''
+        document.body.style.touchAction = ''
+        if (window.lenis) window.lenis.start()
+      }
+      // Double-RAF: fires after all pending paint + RAF callbacks finish
+      requestAnimationFrame(() => requestAnimationFrame(forceUnlockScroll))
+      // Mobile safety net: some touch-action locks persist longer on mobile browsers
+      setTimeout(forceUnlockScroll, 100)
+
       if (currentView === 'editor' || currentView === 'share' || currentView === 'preview') {
         // Only lock overflow on desktop. Let mobile scroll naturally.
         if (window.innerWidth > 768) {

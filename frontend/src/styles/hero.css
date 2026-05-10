@@ -130,7 +130,6 @@
 }
 
 .magnetic-btn {
-    display: inline-block;
     will-change: transform;
 }
 

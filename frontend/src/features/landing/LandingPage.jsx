@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useEffect } from 'react'
+import { lazy, Suspense, useRef, useEffect, useLayoutEffect } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -15,6 +15,9 @@ const SectionTransition = lazy(() => import('./SectionTransition'))
 
 const LandingPage = () => {
     const transitionRef = useRef(null);
+    const landingGatesRef = useRef([]);
+    const gateSkipUntilRef = useRef(0);
+    const gateSkipTimerRef = useRef(null);
 
     // ── Scroll-gate progress bar (injected once) ──────────────────────
     useEffect(() => {
@@ -39,9 +42,112 @@ const LandingPage = () => {
         };
     }, []);
 
-    // ── Section-transition scroll gates ──────────────────────────────
     useEffect(() => {
+        const getLandingScrollDestination = (targetId) => {
+            if (targetId === 'landing-categories') {
+                const carouselTrigger = ScrollTrigger.getById('landing-categories-sequence');
+                if (!carouselTrigger) return null;
+
+                // The carousel intro is a long pinned sequence.
+                // 0.72 lands inside the dark block transition; push deeper so the cards are visible.
+                const visibleProgress = 0.9;
+                return carouselTrigger.start + ((carouselTrigger.end - carouselTrigger.start) * visibleProgress);
+            }
+
+            return document.getElementById(targetId);
+        };
+
+        const scrollToLandingSection = (targetId, attempt = 0) => {
+            const target = getLandingScrollDestination(targetId);
+
+            if (!target) {
+                if (attempt < 20) {
+                    window.setTimeout(() => scrollToLandingSection(targetId, attempt + 1), 150);
+                }
+                return;
+            }
+
+            gateSkipUntilRef.current = Date.now() + 2000;
+            landingGatesRef.current.forEach((gate) => gate?.deactivate?.());
+            if (gateSkipTimerRef.current) {
+                window.clearTimeout(gateSkipTimerRef.current);
+            }
+            gateSkipTimerRef.current = window.setTimeout(() => {
+                gateSkipUntilRef.current = 0;
+                gateSkipTimerRef.current = null;
+            }, 2100);
+
+            window.pendingScrollTarget = null;
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
+            document.documentElement.style.overflow = '';
+            window.lenis?.start();
+
+            const offset = typeof target === 'number' ? 0 : -40;
+
+            if (window.lenis) {
+                window.lenis.scrollTo(target, {
+                    offset: offset,
+                    duration: 1.5, // Always smooth scroll so layout shifts mid-scroll are handled gracefully
+                    force: true,
+                });
+            } else if (typeof target === 'number') {
+                window.scrollTo({ top: target, behavior: 'smooth' });
+            } else {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+
+        window.scrollLandingSection = scrollToLandingSection;
+
+        if (window.pendingScrollTarget) {
+            const targetId = window.pendingScrollTarget;
+            // Wait 800ms for transition to almost finish and layout to stabilize
+            window.setTimeout(() => scrollToLandingSection(targetId), 800);
+        }
+
+        return () => {
+            if (gateSkipTimerRef.current) {
+                window.clearTimeout(gateSkipTimerRef.current);
+            }
+            if (window.scrollLandingSection === scrollToLandingSection) {
+                delete window.scrollLandingSection;
+            }
+        };
+    }, []);
+
+    // ── Section-transition scroll gates ──────────────────────────────
+    useLayoutEffect(() => {
         let initialized = false;
+
+        // Snap watcher — hoisted to outer scope so cleanup can cancel it
+        let snapWatcherRaf = null;
+        const stopSnapWatcher = () => {
+            if (snapWatcherRaf) {
+                cancelAnimationFrame(snapWatcherRaf);
+                snapWatcherRaf = null;
+            }
+        };
+
+        // All gates — tracked here so cleanup can deactivate them all
+        const allGates = [];
+        landingGatesRef.current = allGates;
+
+        const releaseLandingScrollLocks = () => {
+            allGates.forEach(gate => gate.deactivate());
+            stopSnapWatcher();
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
+            document.documentElement.style.overflow = '';
+            window._hiwTriggered = false;
+            window._curtainTriggered = false;
+            window._archiveTriggered = false;
+            if (window.lenis) {
+                window.lenis.start();
+            }
+        };
+
+        window.releaseLandingScrollLocks = releaseLandingScrollLocks;
 
         const initTriggers = () => {
             if (initialized) return true;
@@ -56,16 +162,6 @@ const LandingPage = () => {
 
             const bar = document.getElementById('sp-scroll-gate-bar');
             const THRESHOLD = 1200;
-
-            // ── Snap helper (Bulletproof for Mobile Momentum) ─────────────
-            let snapWatcherRaf = null;
-
-            const stopSnapWatcher = () => {
-                if (snapWatcherRaf) {
-                    cancelAnimationFrame(snapWatcherRaf);
-                    snapWatcherRaf = null;
-                }
-            };
 
             const lockScrollAt = (pos) => {
                 stopSnapWatcher();
@@ -195,6 +291,7 @@ const LandingPage = () => {
                 return {
                     activate: (lockPos, offset = 0) => {
                         if (active) return;
+                        if (Date.now() < gateSkipUntilRef.current) return;
                         active = true;
                         accum  = 0;
                         touchStartY = -1; // wait for the NEXT fresh touch
@@ -249,6 +346,7 @@ const LandingPage = () => {
                         );
                     }
                 );
+                allGates.push(fwdGate);
 
                 const bkGate = createGate(
                     'up',
@@ -275,6 +373,7 @@ const LandingPage = () => {
                         );
                     }
                 );
+                allGates.push(bkGate);
 
                 ScrollTrigger.create({
                     id: 'forward-hiw-cust',
@@ -310,6 +409,7 @@ const LandingPage = () => {
                                     window.lenis.stop();
                                 }
                             },
+                            'forward',
                             () => {
                                 if (window.lenis) window.lenis.start();
                                 document.body.style.overflow = '';
@@ -319,6 +419,7 @@ const LandingPage = () => {
                         );
                     }
                 );
+                allGates.push(fwdGate);
 
                 // Gate 1 reverse: CTA ──► SocialProof (scroll UP)
                 const bkGate = createGate(
@@ -336,6 +437,7 @@ const LandingPage = () => {
                                     window.lenis.stop();
                                 }
                             },
+                            'backward',
                             () => {
                                 if (window.lenis) window.lenis.start();
                                 document.body.style.overflow = '';
@@ -345,6 +447,7 @@ const LandingPage = () => {
                         );
                     }
                 );
+                allGates.push(bkGate);
 
                 // Fires when BigCTA's top reaches the BOTTOM of the viewport
                 ScrollTrigger.create({
@@ -393,6 +496,7 @@ const LandingPage = () => {
                         );
                     }
                 );
+                allGates.push(fwdGate);
 
                 // Gate 2 reverse: FAQ ──► CTA (scroll UP)
                 const bkGate = createGate(
@@ -419,6 +523,7 @@ const LandingPage = () => {
                         );
                     }
                 );
+                allGates.push(bkGate);
 
                 // Fires when FAQ enters the viewport from the bottom
                 ScrollTrigger.create({
@@ -450,10 +555,22 @@ const LandingPage = () => {
 
         return () => {
             clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
-            ScrollTrigger.getById('forward-sp-cta')?.kill();
-            ScrollTrigger.getById('backward-cta-sp')?.kill();
-            ScrollTrigger.getById('forward-cta-faq')?.kill();
-            ScrollTrigger.getById('backward-faq-cta')?.kill();
+
+            // Deactivate all gates — removes the stray touchmove/wheel
+            // window listeners that would block scroll on other pages
+            releaseLandingScrollLocks();
+            landingGatesRef.current = [];
+
+            // Kill all ScrollTriggers created by this page
+            ['forward-hiw-cust', 'backward-cust-hiw',
+             'forward-sp-cta', 'backward-cta-sp',
+             'forward-cta-faq', 'backward-faq-cta'].forEach(id => {
+                ScrollTrigger.getById(id)?.kill();
+            });
+
+            if (window.releaseLandingScrollLocks === releaseLandingScrollLocks) {
+                delete window.releaseLandingScrollLocks;
+            }
         };
     }, []);
 

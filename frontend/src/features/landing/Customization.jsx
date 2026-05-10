@@ -140,7 +140,7 @@ export default function Customization() {
   }
 
   return (
-    <section className="customization" ref={containerRef}>
+    <section id="landing-create" className="customization" ref={containerRef}>
       <div className="container">
         <header className="cust-header">
           <div className="cust-header-left">

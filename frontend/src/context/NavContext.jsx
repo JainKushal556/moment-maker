@@ -97,8 +97,24 @@ export const NavProvider = ({ children }) => {
 
         isTransitioning.current = true
 
+        if (currentView === 'landing' && nextView !== 'landing') {
+            window.releaseLandingScrollLocks?.()
+        }
+
         // playPromise resolves at the midpoint of the SVG animation
         transition.play(nextView).then(() => {
+            if (currentView === 'landing' && nextView !== 'landing') {
+                window.releaseLandingScrollLocks?.()
+            }
+            if (window.lenis) {
+                window.lenis.start()
+                window.lenis.scrollTo(0, { immediate: true, force: true })
+            } else {
+                window.scrollTo(0, 0)
+            }
+            document.body.style.overflow = ''
+            document.documentElement.style.overflow = ''
+            document.body.style.touchAction = ''
             setCurrentView(nextView)
             // Faster lock time (1.5s) as recently tuned
             setTimeout(() => { isTransitioning.current = false }, 1500)

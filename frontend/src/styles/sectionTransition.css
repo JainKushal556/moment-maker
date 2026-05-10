@@ -74,3 +74,12 @@
 .archive-overlay svg path {
     stroke: url(#momentsGradient);
 }
+
+/* ====== MOBILE RESPONSIVE ====== */
+@media (max-width: 768px) {
+    .curtain-text {
+        font-size: 1.8rem;
+        letter-spacing: 0.1em;
+        padding: 0 1.5rem;
+    }
+}

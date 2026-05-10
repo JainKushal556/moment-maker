@@ -474,7 +474,7 @@ export default function HeroSection() {
   }, [])
 
   return (
-    <section className="hero" ref={heroRef}>
+    <section id="landing-hero" className="hero" ref={heroRef}>
       <div className="header-block" ref={headerRef}>
         <h2 className="hero-logo">
           <span className="moment-text">Moment</span>{' '}

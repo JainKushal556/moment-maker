@@ -27,6 +27,8 @@ export default function FAQ() {
 
   useEffect(() => {
     if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return
+    const sectionEl = sectionRef.current
+    if (!sectionEl) return
 
     const ctx = gsap.context(() => {
 
@@ -68,7 +70,7 @@ export default function FAQ() {
       }
 
 
-    }, sectionRef)
+    }, sectionEl)
 
     return () => ctx.revert()
   }, [])

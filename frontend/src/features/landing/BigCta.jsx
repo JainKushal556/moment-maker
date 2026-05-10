@@ -23,7 +23,7 @@ export default function BigCta() {
   const [, navigateTo] = useContext(ViewContext)
 
   return (
-    <section className="big-cta" aria-label="Call to action">
+    <section id="landing-cta" className="big-cta" aria-label="Call to action">
 
       {/* ── Ambient Background Orbs ── */}
       <div className="big-cta__orb big-cta__orb--purple-left" aria-hidden="true" />

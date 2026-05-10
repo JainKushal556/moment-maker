@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useContext, useCallback } from 'react'
+import { useState, useMemo, useRef, useEffect, useLayoutEffect, useContext, useCallback } from 'react'
 import gsap from 'gsap'
 import BentoCard from './BentoCard'
 import { templates } from '../../data/templates'
@@ -164,6 +164,19 @@ const categories = [
 
 const CategoriesExplorer = () => {
     const [, navigateTo] = useContext(ViewContext)
+
+    useLayoutEffect(() => {
+        document.body.style.overflow = ''
+        document.documentElement.style.overflow = ''
+        document.body.style.touchAction = ''
+
+        if (window.lenis) {
+            window.lenis.start()
+            window.lenis.scrollTo(0, { immediate: true, force: true })
+        } else {
+            window.scrollTo(0, 0)
+        }
+    }, [])
 
     useEffect(() => {
         window.dispatchEvent(new CustomEvent('momentNavToggle', {

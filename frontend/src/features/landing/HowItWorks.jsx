@@ -150,16 +150,16 @@ export default function HowItWorks() {
     let animRAF; let isAnimating = false
     let lastActiveIdx = -1
     const zones = [
-      { start: 0, end: 0.33, recedeEnd: 0.4 },
-      { start: 0.33, end: 0.66, recedeEnd: 0.75 },
-      { start: 0.66, end: 1.0, recedeEnd: 1.0 }
+      { start: 0, end: 0.25, recedeEnd: 0.3 },
+      { start: 0.25, end: 0.5, recedeEnd: 0.55 },
+      { start: 0.5, end: 1.0, recedeEnd: 1.0 } // Stay active until the very end
     ]
 
     let cachedScrollProgress = 0
 
     const manualScrollUpdate = () => {
       if (cardsTrack) {
-      let activeIdx = cachedScrollProgress >= 0.66 ? 2 : cachedScrollProgress >= 0.33 ? 1 : 0
+      let activeIdx = cachedScrollProgress >= 0.5 ? 2 : cachedScrollProgress >= 0.25 ? 1 : 0
         if (activeIdx !== lastActiveIdx) {
           lastActiveIdx = activeIdx
           const cards = cardsTrack.querySelectorAll('.hiw-card-outer')
@@ -220,7 +220,8 @@ export default function HowItWorks() {
 
       masterTl.to(revealMask,
         {
-          '--inset-val': '0%',
+          '--inset-v': '0%',
+          '--inset-h': '0%',
           '--radius-val': '0px',
           backgroundColor: 'transparent',
           borderColor: 'transparent',
@@ -231,9 +232,9 @@ export default function HowItWorks() {
 
       masterTl.to(revealLabel, {
         opacity: 0,
-        scale: 1.2,
-        duration: 0.15,
-        ease: 'power2.in'
+        scale: 2.5, // Crisp high-res zoom
+        duration: 0.2,
+        ease: 'power3.in'
       }, 0)
 
       masterTl.fromTo(hiwContent,
@@ -251,7 +252,7 @@ export default function HowItWorks() {
       ctx.clearRect(0, 0, canvas.width, canvas.height); time += 0.02
       mouse.x += (mouse.tx - mouse.x) * 0.1; mouse.y += (mouse.ty - mouse.y) * 0.1
       // Updated SVG thresholds to 0.25 and 0.50
-      let targetCoords = cachedScrollProgress < 0.33 ? image1Coords : cachedScrollProgress < 0.66 ? image2Coords : image3Coords
+      let targetCoords = cachedScrollProgress < 0.25 ? image1Coords : cachedScrollProgress < 0.5 ? image2Coords : image3Coords
       for (let i = 0; i < particlesArray.length; i++) {
         const p = particlesArray[i]
         if (targetCoords && i < targetCoords.length) { p.targetX = targetCoords[i].x; p.targetY = targetCoords[i].y; p.color = targetCoords[i].color }
@@ -316,11 +317,11 @@ export default function HowItWorks() {
   const CardData = [
     { number: '01', title: 'Choose', accent: 'cyan', description: 'Find the perfect starting point from our handpicked collection of celebration templates', services: ['20+ occasion categories', 'Smart search & filters', 'Trending templates', 'Personalized recommendations'], tools: ['Category browser', 'Preview modal', 'Save favorites', 'Quick-select interface'] },
     { number: '02', title: 'Customize', accent: 'purple', description: 'Add photos, music, and your message watch it come alive in real-time as you edit', services: ['Rich text editor', 'Music library upload', 'Photo filters & cropping', 'Interactive effects'], tools: ['Split-screen editor', 'Color picker', 'Font selector', 'Animation controls'] },
-    { number: '03', title: 'Send', accent: 'emerald', description: 'Get a unique link, share anywhere, and know when your wish is viewed and loved', services: ['Unique URL generation', 'QR code creator', 'One-click sharing', 'Analytics dashboard'], tools: ['Share buttons', 'View tracker', 'Engagement metrics', 'Copy link + QR download'] }
+    { number: '03', title: 'Send', accent: 'orange', description: 'Get a unique link, share anywhere, and know when your wish is viewed and loved', services: ['Unique URL generation', 'QR code creator', 'One-click sharing', 'Analytics dashboard'], tools: ['Share buttons', 'View tracker', 'Engagement metrics', 'Copy link + QR download'] }
   ]
 
   return (
-    <section className="how-it-works-section" ref={sectionRef}>
+    <section id="landing-how-it-works" className="how-it-works-section" ref={sectionRef}>
       <HIWGoldenParticles />
       <svg className="svg-container" style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
         <defs>

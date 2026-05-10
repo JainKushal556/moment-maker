@@ -83,7 +83,7 @@ const SectionTransition = forwardRef((props, ref) => {
                 }
             }, '<+=0.45');
         },
-        playCurtainTransition: (onCover, onReveal) => {
+        playCurtainTransition: (onCover, direction = 'forward', onReveal) => {
             if (isTransitioning.current) return;
             isTransitioning.current = true;
 
@@ -94,6 +94,10 @@ const SectionTransition = forwardRef((props, ref) => {
             const tl = gsap.timeline();
             const curtain = curtainRef.current;
             const text = textRef.current;
+
+            if (text) {
+                text.textContent = direction === 'backward' ? 'Raw Impressions' : 'Start Crafting';
+            }
 
             // Ensure initial state
             // Ensure initial state: zero-width but with thickness (solid stripe)

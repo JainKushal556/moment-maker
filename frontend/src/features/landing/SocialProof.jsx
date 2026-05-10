@@ -348,7 +348,7 @@ export default function SocialProof() {
   }, [])
 
   return (
-    <div className="social-proof-wrapper">
+    <div id="landing-community" className="social-proof-wrapper">
       <section className="social-proof">
         <h2>Real Reactions From Real Wishes</h2>
         <p>Thousands of people are already creating unforgettable moments.</p>
