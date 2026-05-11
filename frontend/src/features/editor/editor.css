@@ -1112,3 +1112,93 @@
 .intro-options-scroll::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3) !important;
 }
+/* --- Device Switcher Buttons (Synced with Preview) --- */
+.tp-device-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.tp-device-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.tp-device-btn.active {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.tp-device-btn svg {
+    stroke-width: 2.5px;
+}
+
+/* --- Mobile Header Animations (Synced with Preview) --- */
+.tp-pulse-white {
+    animation: tp-pulse-white 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes tp-pulse-white {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.1);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+        transform: scale(1.05);
+    }
+}
+
+.tp-fullscreen-svg path {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tp-device-btn:hover .tp-arrow-out-tr { transform: translate(2px, -2px); }
+.tp-device-btn:hover .tp-arrow-out-bl { transform: translate(-2px, 2px); }
+.tp-device-btn:hover .tp-arrow-in-tl { transform: translate(2px, 2px); }
+.tp-device-btn:hover .tp-arrow-in-br { transform: translate(-2px, -2px); }
+
+/* Arrow Animations */
+.tp-arrow-out-tr { animation: tp-arrow-out-tr 2s infinite ease-in-out; }
+.tp-arrow-out-bl { animation: tp-arrow-out-bl 2s infinite ease-in-out; }
+.tp-arrow-in-tl { animation: tp-arrow-in-tl 2s infinite ease-in-out; }
+.tp-arrow-in-br { animation: tp-arrow-in-br 2s infinite ease-in-out; }
+
+@keyframes tp-arrow-out-tr {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(2px, -2px); }
+}
+@keyframes tp-arrow-out-bl {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-2px, 2px); }
+}
+@keyframes tp-arrow-in-tl {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(2px, 2px); }
+}
+@keyframes tp-arrow-in-br {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-2px, -2px); }
+}
+
+.tp-device-btn.tp-fs-active {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+

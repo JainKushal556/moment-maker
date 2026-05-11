@@ -419,7 +419,7 @@ export default function DynamicFormBuilder({ template, customization = {}, onUpd
             <span className="ep-brand-tag">Moment Crafter Studio</span>
           </div>
           <h2 className="ep-title">
-            {template?.category ? template.category.charAt(0).toUpperCase() + template.category.slice(1) : 'Template'} <br/>
+            {template?.category ? template.category.replace(/-/g, ' ') : 'Template'} <br/>
             <span className="ep-title-accent">Editor</span>
           </h2>
         </div>

@@ -198,7 +198,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
                   </>
                 )}
                 <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest truncate">
-                  {moment.category || 'Moment Crafter Original'}
+                  {moment.category?.replace(/-/g, ' ') || 'Moment Crafter Original'}
                 </span>
               </div>
             </div>

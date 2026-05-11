@@ -15,6 +15,7 @@ export default function EditorView() {
   const [isSharing, setIsSharing] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [isMobileFullPreview, setIsMobileFullPreview] = useState(false)
+  const [deviceView, setDeviceView] = useState('desktop')
 
   // New States for Intro
   const [step, setStep] = useState(0) // 0: Intro Selection, 1: Moment Edit
@@ -194,7 +195,13 @@ export default function EditorView() {
 
   return (
     <div className={`editor-container animate-in fade-in duration-700 ${isMobileFullPreview ? 'mobile-preview-fullscreen' : ''}`}>
-      <EditorHeader onRefresh={() => setRefreshKey(prev => prev + 1)} onFullScreen={() => setIsMobileFullPreview(prev => !prev)} isMobileFullPreview={isMobileFullPreview} />
+      <EditorHeader 
+        onRefresh={() => setRefreshKey(prev => prev + 1)} 
+        onFullScreen={() => setIsMobileFullPreview(prev => !prev)} 
+        isMobileFullPreview={isMobileFullPreview}
+        deviceView={deviceView}
+        setDeviceView={setDeviceView}
+      />
 
       <main className="editor-main">
         <DynamicFormBuilder
@@ -218,6 +225,7 @@ export default function EditorView() {
           senderName={currentUser?.displayName || currentUser?.email?.split('@')[0]}
           isMobileFullPreview={isMobileFullPreview}
           setIsMobileFullPreview={setIsMobileFullPreview}
+          deviceView={deviceView}
         />
       </main>
     </div>

@@ -4,11 +4,14 @@ export const templates = [
         id: 'birthday-mosaic', 
         title: "Birthday Mosaic", 
         category: "birthday", 
-        rating: 4.9, 
-        isPremium: false, 
         img: "/assets/templates-thumbnails/birthday-mosaic.png", 
         desc: "A stunning 3D photo mosaic carousel for the perfect birthday surprise.", 
         url: "/templates/birthday/birthday-mosaic/index.html",
+        features: [
+            { emoji: "✨", text: "Stunning 3D photo mosaic carousel" },
+            { emoji: "🎁", text: "Perfect for big birthday surprises" },
+            { emoji: "📸", text: "Display 5 of your favorite photos" }
+        ],
         schema: [
             {
                 id: 'recipient_name',
@@ -49,11 +52,14 @@ export const templates = [
         id: 'chic-complement', 
         title: "Chic Complement", 
         category: "special", 
-        rating: 5.0, 
-        isPremium: false, 
         img: "/assets/templates-thumbnails/chic-complement.png", 
         desc: "A beautiful, premium template for someone special.", 
         url: "/templates/special/chic-complement/index.html",
+        features: [
+            { emoji: "🌸", text: "Elegant and soft aesthetic design" },
+            { emoji: "💌", text: "Personalized letter for someone special" },
+            { emoji: "🎁", text: "Interactive gift box photo reveal" }
+        ],
         schema: [
             {
                 id: 'font_set',
@@ -105,11 +111,14 @@ export const templates = [
         id: 'pearl-glow-birthday', 
         title: "Pearl Glow Birthday", 
         category: "birthday", 
-        rating: 4.8, 
-        isPremium: false, 
         img: "/assets/templates-thumbnails/pearl-glow-birthday.png", 
         desc: "A premium birthday template with interactive tree and holograhic photo stack.", 
         url: "/templates/birthday/pearl-glow-birthday/index.html",
+        features: [
+            { emoji: "🌳", text: "Interactive memory tree animation" },
+            { emoji: "💎", text: "Holographic parallax photo stack" },
+            { emoji: "✨", text: "Premium and modern birthday experience" }
+        ],
         schema: [
             {
                 id: 'font_set',
@@ -162,11 +171,14 @@ export const templates = [
         id: 'charming-proposal', 
         title: "Charming Proposal", 
         category: "proposal", 
-        rating: 5.0, 
-        isPremium: false, 
         img: "/assets/templates-thumbnails/charming-proposal.png", 
         desc: "A stunning, multi-stage proposal experience with a personalized letter and memory gallery.", 
         url: "/templates/proposal/charming-proposal/index.html",
+        features: [
+            { emoji: "💍", text: "Multi-stage romantic proposal journey" },
+            { emoji: "📖", text: "Personalized memory gallery with letter" },
+            { emoji: "✨", text: "Cinematic storytelling experience" }
+        ],
         schema: [
             {
                 id: 'font_set',
@@ -220,11 +232,14 @@ export const templates = [
         id: 'imperial-friendship', 
         title: "Imperial Friendship", 
         category: "friendship", 
-        rating: 5.0, 
-        isPremium: false, 
         img: "/assets/templates-thumbnails/imperial-friendship.png", 
         desc: "A premium friendship template with a personalized letter and memory gallery.", 
         url: "/templates/friendship/imperial-friendship/index.html",
+        features: [
+            { emoji: "🤝", text: "Celebrate your bond with a unique letter" },
+            { emoji: "📸", text: "Interactive memory album with captions" },
+            { emoji: "✨", text: "Clean and modern typography" }
+        ],
         schema: [
             {
                 id: 'font_set',
@@ -304,4 +319,98 @@ export const templates = [
             ]
         }
     },
+    { 
+        id: 'missing-motif', 
+        title: "Missing Motif", 
+        category: "miss-you", 
+        img: "/assets/templates-thumbnails/missing-motif.png", 
+        desc: "A moody, emotional template with interactive fog-wiping and polaroid memories.", 
+        url: "/templates/miss-you/missing-motif/index.html",
+        features: [
+            { emoji: "🌧️", text: "Moody and emotional rainy window theme" },
+            { emoji: "🪟", text: "Interactive fog-wipe memory reveal" },
+            { emoji: "🎞️", text: "Polaroid-style nostalgia gallery" }
+        ],
+        schema: [
+            {
+                id: 'memory_photos',
+                type: 'image-gallery',
+                label: 'Memory Photos',
+                description: 'Upload 4 photos for the memory gallery.',
+                maxCount: 4,
+                stateKey: 'images'
+            },
+            {
+                id: 'photo_captions',
+                type: 'text-list',
+                label: 'Photo Captions',
+                description: 'Add a caption for each of the 4 photos.',
+                count: 4,
+                stateKey: 'captions'
+            },
+            {
+                id: 'letter_header',
+                type: 'text',
+                label: 'Letter Header',
+                placeholder: 'e.g. Dear my love,',
+                stateKey: 'letterHeader'
+            },
+            {
+                id: 'letter_body',
+                type: 'textarea',
+                label: 'Letter Body',
+                placeholder: 'Type your message...',
+                stateKey: 'letterBody'
+            },
+            {
+                id: 'outro_line1',
+                type: 'text',
+                label: 'Outro Line 1',
+                placeholder: 'e.g. I miss you every day.',
+                stateKey: 'outroLine1'
+            },
+            {
+                id: 'outro_line2',
+                type: 'text',
+                label: 'Outro Line 2',
+                placeholder: 'e.g. I want to see you soon.',
+                stateKey: 'outroLine2'
+            },
+            {
+                id: 'outro_final',
+                type: 'text',
+                label: 'Final Outro',
+                placeholder: 'e.g. I love you so much.',
+                stateKey: 'outroFinal'
+            },
+            {
+                id: 'sender_name',
+                type: 'text',
+                label: 'Complimentary Close',
+                placeholder: 'e.g. — Yours forever',
+                stateKey: 'senderName'
+            }
+        ],
+        defaults: {
+            recipientName: "Hey... are you there?",
+            images: [
+                '/templates/miss-you/missing-motif/images/memory1.png',
+                '/templates/miss-you/missing-motif/images/memory2.png',
+                '/templates/miss-you/missing-motif/images/memory3.png',
+                '/templates/miss-you/missing-motif/images/memory4.png',
+            ],
+            captions: [
+                "I remember this day so well.",
+                "I miss your beautiful smile.",
+                "I wish we were together right now.",
+                "Every memory of you makes me happy.",
+            ],
+            letterHeader: "Dear my love,",
+            letterBody: "I am sitting here alone and thinking about you. I really wish you were here with me right now. I miss everything about you—your voice, your smile, and how you hold my hand. \n\nBeing away from you is very hard. The days feel so long and quiet without you. I am just waiting for the day when we can meet again.\n\nI just wanted to tell you that I think about you all the time. No matter how far we are, you are the only one in my heart. I miss you so much.\n\nI love you.",
+            outroLine1: "I miss you every day.",
+            outroLine2: "I want to see you soon.",
+            outroFinal: "I love you so much.",
+            senderName: "— Yours forever"
+        }
+    }
 ];
