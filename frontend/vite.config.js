@@ -17,14 +17,18 @@ export default defineConfig({
     },
   },
   build: {
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom')) return 'vendor-react';
+            if (id.includes('firebase')) return 'vendor-firebase';
             if (id.includes('gsap')) return 'vendor-gsap';
+            if (id.includes('framer-motion')) return 'vendor-animation';
             if (id.includes('matter-js')) return 'vendor-physics';
             if (id.includes('lucide-react') || id.includes('lenis') || id.includes('canvas-confetti')) return 'vendor-ui';
+            return 'vendor-misc';
           }
         },
       },

@@ -146,28 +146,33 @@ export default function TemplatePreview() {
         if (currentView === 'preview' && selectedTemplate) {
             setHasSeenPreview(false);
 
-            // Entrance animation
-            const tl = gsap.timeline({ defaults: { ease: "power4.out" } })
+            // Entrance animation - more subtle and premium
+            const tl = gsap.timeline({ 
+                defaults: { 
+                    ease: "expo.out",
+                    duration: 1.4
+                } 
+            })
 
             tl.fromTo(containerRef.current,
                 { opacity: 0 },
-                { opacity: 1, duration: 0.8 }
+                { opacity: 1, duration: 0.6 }
             )
-                .fromTo(cardRef.current,
-                    { y: 60, opacity: 0, scale: 0.95 },
-                    { y: 0, opacity: 1, scale: 1, duration: 1.2 },
-                    "-=0.4"
-                )
-                .fromTo(contentRef.current,
-                    { y: 30, opacity: 0 },
-                    { y: 0, opacity: 1, duration: 0.8 },
-                    "-=0.8"
-                )
-                .fromTo(actionsRef.current,
-                    { y: 20, opacity: 0 },
-                    { y: 0, opacity: 1, duration: 0.8 },
-                    "-=0.6"
-                )
+            .fromTo(cardRef.current,
+                { y: 40, opacity: 0, scale: 0.98 },
+                { y: 0, opacity: 1, scale: 1, clearProps: "opacity,transform" },
+                "-=0.4"
+            )
+            .fromTo(contentRef.current,
+                { y: 20, opacity: 0 },
+                { y: 0, opacity: 1, duration: 1, clearProps: "opacity,transform" },
+                "-=1.1"
+            )
+            .fromTo(actionsRef.current,
+                { y: 15, opacity: 0 },
+                { y: 0, opacity: 1, duration: 1, clearProps: "opacity,transform" },
+                "-=0.9"
+            )
         }
     }, [currentView, selectedTemplate])
 
@@ -219,7 +224,7 @@ export default function TemplatePreview() {
             display: 'flex',
             flexDirection: 'column',
             padding: '6px', // Gap between border and content
-            transition: 'all 0.5s cubic-bezier(0.4,0,0.2,1)',
+            transition: 'all 0.5s cubic-bezier(0.23, 1, 0.32, 1)',
         }
 
         if (isMobileFullPreview) {
@@ -227,6 +232,7 @@ export default function TemplatePreview() {
                 ...base, 
                 width: '100%', 
                 height: '100%', 
+                aspectRatio: '9/16',
                 borderRadius: '0', 
                 border: 'none', 
                 padding: '0', 
@@ -263,7 +269,11 @@ export default function TemplatePreview() {
             borderRadius: isMobileFullPreview ? '0' : '26px', // Matches outer 32px - 6px padding
             overflow: 'hidden',
             background: '#000',
-            transition: 'all 0.5s cubic-bezier(0.4,0,0.2,1)',
+            transition: 'all 0.5s cubic-bezier(0.23, 1, 0.32, 1)',
+            isolation: 'isolate',
+            maskImage: 'radial-gradient(white, black)',
+            WebkitMaskImage: 'radial-gradient(white, black)',
+            transform: 'translateZ(0)',
         }
 
         if (isMobileFullPreview) {
@@ -273,7 +283,7 @@ export default function TemplatePreview() {
                 height: '100%', 
                 maxWidth: 'none',
                 maxHeight: 'none',
-                aspectRatio: 'auto',
+                aspectRatio: '9/16',
                 margin: '0',
                 borderRadius: '0'
             }
@@ -511,6 +521,9 @@ export default function TemplatePreview() {
                                             border: 'none',
                                             display: 'block',
                                             pointerEvents: 'auto',
+                                            borderRadius: 'inherit',
+                                            backfaceVisibility: 'hidden',
+                                            WebkitBackfaceVisibility: 'hidden',
                                         }}
                                     />
                                 );

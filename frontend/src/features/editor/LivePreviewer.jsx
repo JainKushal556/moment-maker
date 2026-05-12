@@ -36,14 +36,15 @@ export default function LivePreviewer({ template, customization, refreshKey, int
     const syncCustomization = (data) => {
         const iframe = frameRef.current
         if (iframe?.contentWindow) {
-            iframe.contentWindow.postMessage({ type: 'customize', ...(data ?? customizationRef.current) }, '*')
+            // Send the explicit data or the current customization prop
+            iframe.contentWindow.postMessage({ type: 'customize', ...(data ?? customization) }, '*')
         }
     }
 
     // Only sync/reload on template change or explicit refresh
     useEffect(() => {
-        if (!showIntro) syncCustomization()
-    }, [template, refreshKey, internalRefreshKey, showIntro])
+        if (!showIntro) syncCustomization(customization)
+    }, [template, refreshKey, internalRefreshKey, showIntro, customization])
 
     // Play intro when a new intro is selected
     useEffect(() => {
@@ -97,7 +98,7 @@ export default function LivePreviewer({ template, customization, refreshKey, int
         return () => {
             if (iframe) iframe.removeEventListener('load', handleLoad)
         }
-    }, [refreshKey, template, internalRefreshKey, showIntro])
+    }, [refreshKey, template, internalRefreshKey, showIntro, customization?.selectedFontSet])
 
     const getFrameStyle = () => {
         const base = {
@@ -196,7 +197,7 @@ export default function LivePreviewer({ template, customization, refreshKey, int
                         </div>
                     ) : template ? (
                         <iframe
-                            key={`${refreshKey}-${internalRefreshKey}`}
+                            key={`${refreshKey}-${internalRefreshKey}-${customization?.selectedFontSet || ''}`}
                             ref={frameRef}
                             src={getIframeSrc()}
                             title="Preview"

@@ -215,6 +215,7 @@ export default function EditorView() {
           currentMomentStatus={currentMomentStatus}
           selectedIntroId={selectedIntroId}
           setSelectedIntroId={setSelectedIntroId}
+          currentUser={currentUser}
         />
 
         <LivePreviewer

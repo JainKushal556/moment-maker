@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useContext } from 'react'
+import { ViewContext } from '../../context/NavContext'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Observer } from 'gsap/Observer'
@@ -204,6 +205,7 @@ function triggerThankYouAnimation(card, data, onComplete) {
 }
 
 export default function CategoriesCarousel() {
+  const [, navigateTo] = useContext(ViewContext)
   const sectionRef = useRef(null)
   const stageRef = useRef(null)
   const canvasRef = useRef(null)
@@ -296,6 +298,7 @@ export default function CategoriesCarousel() {
       let radius = 450; let rotationValue = 0; let targetRotation = 0
       let isInteracting = false; let isFocused = false; let focusedCard = null; let sliderOutsideHandler = null
       let autoRotationSpeed = 0.18; let currentDirection = -1
+      let isDragging = false;
       const cards = []
 
       function updateRadius() {
@@ -310,8 +313,9 @@ export default function CategoriesCarousel() {
       for (let i = 0; i < TOTAL; i++) {
         const card = document.createElement('div'); card.className = 'slider-card'
         const data = imageData[i]
-        card.innerHTML = `<div class="slider-card-content"><img src="${data.img}" alt="${data.title}" loading="lazy"><div class="slider-card-overlay"><h3>${data.title}</h3><p>${data.sub}</p></div></div>`
-        card.addEventListener('click', () => {
+        card.innerHTML = `<div class="slider-card-content"><img src="${data.img}" alt="${data.title}" loading="lazy" draggable="false"><div class="slider-card-overlay"><h3>${data.title}</h3><p>${data.sub}</p></div></div>`
+        card.addEventListener('click', (e) => {
+          if (isDragging) { e.preventDefault(); e.stopPropagation(); return; }
           const vp = document.querySelector('.viewport')
           if (!vp || !vp.classList.contains('fullscreen')) return
           handleCardClick(i, card)
@@ -331,7 +335,36 @@ export default function CategoriesCarousel() {
         dimmer.classList.add('active')
         cards.forEach(c => { c.classList.remove('focused'); if (c !== card) { gsap.to(c, { opacity: 0.15, filter: 'blur(12px) grayscale(40%)', duration: 0.8, ease: 'power2.out' }); c.style.pointerEvents = 'none' } else { c.style.pointerEvents = 'auto' } })
         card.classList.add('focused')
-        const onCompletedEffect = () => unfocusCard()
+        const onCompletedEffect = () => {
+            if (!isFocused || focusedCard !== card) return;
+
+            const data = imageData[index];
+            const categoryId = data.title.toLowerCase().replace(/\s+/g, '-');
+            sessionStorage.setItem('explorerSelectedCategory', JSON.stringify({
+                id: categoryId,
+                title: data.title.toUpperCase(),
+                tag: data.title.toUpperCase(),
+                img: data.img
+            }));
+            
+            const vp = document.querySelector('.viewport');
+            vp?.classList.remove('fullscreen');
+            document.getElementById('page-dim-blur')?.classList.remove('visible');
+            document.body.style.overflow = '';
+            if (window.lenis) window.lenis.start();
+            
+            window.dispatchEvent(new CustomEvent('momentNavToggle', { detail: { visible: true } }));
+            const indicator = document.getElementById('globalScrollIndicator');
+            if (indicator) indicator.style.opacity = '0.7';
+
+            if (sliderOutsideHandler) {
+                try { document.removeEventListener('click', sliderOutsideHandler, true) } catch (e) {}
+                try { document.removeEventListener('wheel', sliderOutsideHandler, { capture: true }) } catch (e) {}
+                sliderOutsideHandler = null;
+            }
+            
+            navigateTo('gallery');
+        }
 
         const isMobile = window.innerWidth < 768
         gsap.to(card, {
@@ -384,8 +417,9 @@ export default function CategoriesCarousel() {
         sliderObserver = Observer.create({
           target: stage, type: 'wheel,touch,pointer',
           onWheel: e => { if (!viewportEl?.classList.contains('fullscreen')) return; if (isFocused) unfocusCard(); isInteracting = true; targetRotation -= e.deltaY * 0.08; clearTimeout(interactionTimeout); interactionTimeout = setTimeout(() => { isInteracting = false; snapToGrid() }, 1000) },
-          onDrag: e => { if (!viewportEl?.classList.contains('fullscreen')) return; if (isFocused) return; isInteracting = true; targetRotation += e.deltaX * 0.18 },
-          onDragEnd: () => { if (!viewportEl?.classList.contains('fullscreen')) return; if (isFocused) return; clearTimeout(interactionTimeout); interactionTimeout = setTimeout(() => { isInteracting = false; snapToGrid() }, 1000) },
+          onDragStart: () => { isDragging = true; },
+          onDrag: e => { if (!viewportEl?.classList.contains('fullscreen')) return; if (isFocused) return; isInteracting = true; targetRotation -= e.deltaX * 0.18 },
+          onDragEnd: () => { setTimeout(() => { isDragging = false; }, 50); if (!viewportEl?.classList.contains('fullscreen')) return; if (isFocused) return; clearTimeout(interactionTimeout); interactionTimeout = setTimeout(() => { isInteracting = false; snapToGrid() }, 1000) },
           tolerance: 5, preventDefault: true
         })
         sliderObserver.disable()
@@ -403,6 +437,11 @@ export default function CategoriesCarousel() {
         window.lenis?.stop(); sliderObserver?.enable()
         exitBtn?.classList.add('visible')
         if (interactBtn) interactBtn.style.display = 'none'
+        
+        window.dispatchEvent(new CustomEvent('momentNavToggle', { detail: { visible: false } }))
+        const indicator = document.getElementById('globalScrollIndicator')
+        if (indicator) indicator.style.opacity = '0'
+
         gsap.to(stage, { scale: 1.02, duration: 0.5, ease: 'power2.out', yoyo: true, repeat: 1 })
         snapToGrid()
       }
@@ -414,6 +453,10 @@ export default function CategoriesCarousel() {
         window.lenis?.start(); sliderObserver?.disable()
         exitBtn?.classList.remove('visible')
         if (interactBtn) interactBtn.style.display = 'inline-block'
+
+        window.dispatchEvent(new CustomEvent('momentNavToggle', { detail: { visible: true } }))
+        const indicator = document.getElementById('globalScrollIndicator')
+        if (indicator) indicator.style.opacity = '0.7'
       }
       interactBtn?.addEventListener('click', handleInteract)
       exitBtn?.addEventListener('click', handleExit)

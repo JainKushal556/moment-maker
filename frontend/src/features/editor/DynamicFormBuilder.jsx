@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { uploadImage } from '../../services/cloudinary'
 import { intros } from '../../data/intros'
 
@@ -63,6 +63,92 @@ function IntroSelectionField({ selectedIntroId, onSelect }) {
              </div>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+// ── SUB-COMPONENT: SENDER NAME FIELD ─────────────────────────────────────────
+function SenderNameField({ currentUser }) {
+  const [showTooltip, setShowTooltip] = useState(false)
+  const name = currentUser?.displayName || currentUser?.email?.split('@')[0] || "Someone Special"
+
+  return (
+    <div className="ep-section editor-section">
+      <div className="ep-section-header">
+        <span className="ep-section-num">01</span>
+        <span className="ep-section-title">Sender Identity</span>
+        <div className="ep-section-line" />
+      </div>
+      <div className="ep-field">
+        <div className="ep-label-row">
+          <label className="ep-label">Sending As</label>
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+              onClick={() => setShowTooltip(!showTooltip)}
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '50%',
+                width: '18px',
+                height: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'help',
+                color: 'rgba(255,255,255,0.4)',
+                fontSize: '10px',
+                fontFamily: 'serif',
+                fontWeight: 'bold'
+              }}
+            >
+              i
+            </button>
+            {showTooltip && (
+              <div style={{
+                position: 'absolute',
+                bottom: 'calc(100% + 10px)',
+                right: '0',
+                width: '200px',
+                padding: '10px 12px',
+                background: '#1a1a1f',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: '8px',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                fontSize: '11px',
+                lineHeight: '1.4',
+                color: 'rgba(255,255,255,0.8)',
+                zIndex: 100,
+                pointerEvents: 'none'
+              }}>
+                This name is pulled from your account profile. To change it, please update your name in <strong>Account Settings</strong>.
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: '4px',
+                  border: '6px solid transparent',
+                  borderTopColor: '#1a1a1f'
+                }} />
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="ep-input" style={{ 
+          background: 'rgba(255,255,255,0.02)', 
+          color: 'rgba(255,255,255,0.5)',
+          cursor: 'not-allowed',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          {name}
+        </div>
       </div>
     </div>
   )
@@ -189,7 +275,25 @@ function ImageGalleryField({ field, customization, onUpdate, sectionIndex }) {
 // ── SUB-COMPONENT: TEXT AREA FIELD ───────────────────────────────────────────
 function TextAreaField({ field, customization, onUpdate, sectionIndex }) {
   const { label, placeholder, stateKey, maxLength } = field
-  const value = customization[stateKey] || ''
+  const externalValue = customization[stateKey] || ''
+
+  // Local state prevents cursor jumping on every parent re-render
+  const [localValue, setLocalValue] = useState(externalValue)
+  const debounceRef = useRef(null)
+
+  // Sync local state if the external value changes from a source OTHER than typing
+  // (e.g. loading a saved moment or switching templates)
+  useEffect(() => {
+    setLocalValue(externalValue)
+  }, [stateKey, customization[stateKey] === '' ? '' : undefined])
+
+  const handleChange = useCallback((e) => {
+    const val = e.target.value
+    setLocalValue(val)
+    // Debounce the parent update so preview stays live without cursor thrash
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => onUpdate(stateKey, val), 300)
+  }, [stateKey, onUpdate])
 
   return (
     <div className="ep-section editor-section">
@@ -201,13 +305,13 @@ function TextAreaField({ field, customization, onUpdate, sectionIndex }) {
       <div className="ep-field">
         <div className="ep-label-row">
           <label className="ep-label">{label}</label>
-          <span className="ep-char-count">{value.length}{maxLength ? ` / ${maxLength}` : ''} chars</span>
+          <span className="ep-char-count">{localValue.length}{maxLength ? ` / ${maxLength}` : ''} chars</span>
         </div>
         <textarea
           className="ep-textarea"
           placeholder={placeholder || 'Type here...'}
-          value={value}
-          onChange={(e) => onUpdate(stateKey, e.target.value)}
+          value={localValue}
+          onChange={handleChange}
           maxLength={maxLength}
           style={{ minHeight: '200px' }}
           data-lenis-prevent="true"
@@ -220,7 +324,21 @@ function TextAreaField({ field, customization, onUpdate, sectionIndex }) {
 // ── SUB-COMPONENT: TEXT FIELD ───────────────────────────────────────────────
 function TextField({ field, customization, onUpdate, sectionIndex }) {
   const { label, placeholder, stateKey, maxLength } = field
-  const value = customization[stateKey] || ''
+  const externalValue = customization[stateKey] || ''
+
+  const [localValue, setLocalValue] = useState(externalValue)
+  const debounceRef = useRef(null)
+
+  useEffect(() => {
+    setLocalValue(externalValue)
+  }, [stateKey, customization[stateKey] === '' ? '' : undefined])
+
+  const handleChange = useCallback((e) => {
+    const val = e.target.value
+    setLocalValue(val)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => onUpdate(stateKey, val), 300)
+  }, [stateKey, onUpdate])
 
   return (
     <div className="ep-section editor-section">
@@ -235,8 +353,8 @@ function TextField({ field, customization, onUpdate, sectionIndex }) {
           type="text"
           className="ep-input"
           placeholder={placeholder || 'Enter text...'}
-          value={value}
-          onChange={(e) => onUpdate(stateKey, e.target.value)}
+          value={localValue}
+          onChange={handleChange}
           maxLength={maxLength}
         />
       </div>
@@ -245,15 +363,41 @@ function TextField({ field, customization, onUpdate, sectionIndex }) {
 }
 
 // ── SUB-COMPONENT: TEXT LIST FIELD ──────────────────────────────────────────
+function TextListItem({ value, index, onUpdate }) {
+  const [localValue, setLocalValue] = useState(value || '')
+  const debounceRef = useRef(null)
+
+  useEffect(() => {
+    setLocalValue(value || '')
+  }, [value])
+
+  const handleChange = useCallback((e) => {
+    const val = e.target.value
+    setLocalValue(val)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => onUpdate(index, val), 300)
+  }, [index, onUpdate])
+
+  return (
+    <input
+      type="text"
+      className="ep-input"
+      placeholder={`Enter text for item ${index + 1}...`}
+      value={localValue}
+      onChange={handleChange}
+    />
+  )
+}
+
 function TextListField({ field, customization, onUpdate, sectionIndex }) {
   const { label, count, stateKey, description } = field
   const values = customization[stateKey] || Array(count).fill('')
 
-  const handleUpdate = (index, val) => {
-    const newValues = [...values]
+  const handleItemUpdate = useCallback((index, val) => {
+    const newValues = [...(customization[stateKey] || Array(count).fill(''))]
     newValues[index] = val
     onUpdate(stateKey, newValues)
-  }
+  }, [stateKey, onUpdate, customization, count])
 
   return (
     <div className="ep-section editor-section">
@@ -271,13 +415,7 @@ function TextListField({ field, customization, onUpdate, sectionIndex }) {
         {Array.from({ length: count }).map((_, i) => (
           <div key={i} className="ep-field" style={{ margin: 0 }}>
             <label className="ep-label" style={{ fontSize: '10px', marginBottom: '4px', opacity: 0.6 }}>Item {i + 1}</label>
-            <input
-              type="text"
-              className="ep-input"
-              placeholder={`Enter text for item ${i + 1}...`}
-              value={values[i] || ''}
-              onChange={(e) => handleUpdate(i, e.target.value)}
-            />
+            <TextListItem value={values[i]} index={i} onUpdate={handleItemUpdate} />
           </div>
         ))}
       </div>
@@ -386,7 +524,7 @@ function SelectField({ field, customization, onUpdate, sectionIndex }) {
 }
 
 // ── MAIN EXPORT — DYNAMIC FORM BUILDER ────────────────────────────────────────
-export default function DynamicFormBuilder({ template, customization = {}, onUpdate, onSave, onShare, saveStatus, setSaveStatus, currentMomentStatus, selectedIntroId, setSelectedIntroId }) {
+export default function DynamicFormBuilder({ template, customization = {}, onUpdate, onSave, onShare, saveStatus, setSaveStatus, currentMomentStatus, selectedIntroId, setSelectedIntroId, currentUser }) {
 
   if (!customization) {
     return <div className="editor-panel p-8 text-white/40 font-mono text-xs uppercase tracking-widest">Initialising...</div>
@@ -445,11 +583,14 @@ export default function DynamicFormBuilder({ template, customization = {}, onUpd
             onSelect={handleIntroSelect} 
         />
 
-        {schema.length > 0 && <div className="ep-divider" />}
+        {/* ── SENDER IDENTITY ── */}
+        <SenderNameField currentUser={currentUser} />
+
+        <div className="ep-divider" />
 
         {/* ── DYNAMIC SCHEMA RENDERER ── */}
         {schema.map((field, index) => {
-          const sectionIndex = index + 1
+          const sectionIndex = index + 2
           
           let fieldComponent = null
           switch (field.type) {

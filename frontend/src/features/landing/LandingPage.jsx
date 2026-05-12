@@ -158,6 +158,9 @@ const LandingPage = () => {
             const indicator = document.getElementById('globalScrollIndicator');
             if (!indicator) return;
 
+            // Prevent Lenis from overriding the indicator direction while we are in a fake scroll gate
+            if (document.body.style.overflow === 'hidden') return;
+
             // Always point down when within the Hero section (top of the page)
             if (window.scrollY < window.innerHeight * 0.8) {
                 indicator.classList.remove('scrolling-up');
@@ -221,6 +224,7 @@ const LandingPage = () => {
                 let active = false;
                 let accum  = 0;
                 let touchStartY = -1; // -1 = "waiting for a fresh touch start"
+                let lastTouchY = -1;
                 let touchAccumBase = 0;
 
 
@@ -264,6 +268,13 @@ const LandingPage = () => {
                 const onWheel = (e) => {
                     if (!active) return;
                     e.preventDefault();
+
+                    const indicator = document.getElementById('globalScrollIndicator');
+                    if (indicator && e.deltaY !== 0) {
+                        if (e.deltaY < 0) indicator.classList.add('scrolling-up');
+                        else indicator.classList.remove('scrolling-up');
+                    }
+
                     const delta = direction === 'down' ? e.deltaY : -e.deltaY;
                     
                     accum += delta;
@@ -284,6 +295,7 @@ const LandingPage = () => {
                 const onTouchStart = (e) => {
                     // Fresh touch — now we can start accumulating
                     touchStartY = e.touches[0].clientY;
+                    lastTouchY = touchStartY;
                     touchAccumBase = accum;
                 };
 
@@ -293,7 +305,18 @@ const LandingPage = () => {
                     // triggered this gate is still in progress — ignore it.
                     if (touchStartY < 0) { e.preventDefault(); return; }
                     e.preventDefault();
-                    const rawDelta = touchStartY - e.touches[0].clientY;
+                    
+                    const currentY = e.touches[0].clientY;
+                    const immediateDelta = lastTouchY - currentY;
+                    
+                    const indicator = document.getElementById('globalScrollIndicator');
+                    if (indicator && immediateDelta !== 0) {
+                        if (immediateDelta < 0) indicator.classList.add('scrolling-up');
+                        else indicator.classList.remove('scrolling-up');
+                    }
+                    lastTouchY = currentY;
+
+                    const rawDelta = touchStartY - currentY;
                     const delta = direction === 'down' ? rawDelta : -rawDelta;
                     
                     accum = touchAccumBase + (delta * 1.5);

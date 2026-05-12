@@ -61,16 +61,16 @@ const BentoCard = ({ category, templateCount, onClick }) => {
     // Strict mobile layout mapping from user diagram (only for screens < 768px)
     const getMobileSpans = (id) => {
         switch (id) {
-            case 'thank-you': return 'col-span-2 row-span-1'; // Wide Full (Top)
-            case 'friendship': return 'col-span-1 row-span-1'; // Small Left (Below Thank You)
-            case 'miss-you': return 'col-span-1 row-span-1'; // Small Right (Below Thank You)
-            case 'proposal': return 'col-span-2 row-span-1'; // Wide Full
-            case 'confession': return 'col-span-1 row-span-1'; // Small Left
-            case 'birthday': return 'col-span-1 row-span-1'; // Small Right
-            case 'celebration': return 'col-span-2 row-span-1'; // Wide Full
-            case 'sorry': return 'col-span-1 row-span-1'; // Small Left
-            case 'romantic': return 'col-span-1 row-span-1'; // Small Right
-            case 'special': return 'col-span-1 row-span-1'; // Small (Below Sorry & Romantic)
+            case 'birthday': return 'col-span-2 row-span-1'; // Pos 1: Wide Full (Top)
+            case 'friendship': return 'col-span-1 row-span-1'; // Pos 2: Small Left
+            case 'special': return 'col-span-1 row-span-1'; // Pos 3: Small Right
+            case 'proposal': return 'col-span-2 row-span-1'; // Pos 4: Wide Full
+            case 'miss-you': return 'col-span-1 row-span-1'; // Pos 5: Small Left
+            case 'romantic': return 'col-span-1 row-span-1'; // Pos 6: Small Right
+            case 'thank-you': return 'col-span-2 row-span-1'; // Pos 7: Wide Full
+            case 'sorry': return 'col-span-1 row-span-1'; // Pos 8: Small Left
+            case 'celebration': return 'col-span-1 row-span-1'; // Pos 9: Small Right
+            case 'confession': return 'col-span-1 row-span-1'; // Pos 10: Small
             default: return 'col-span-1 row-span-1';
         }
     }
@@ -155,22 +155,16 @@ const BentoCard = ({ category, templateCount, onClick }) => {
 
                 {/* Bottom Body */}
                 <div className="w-full">
-                    <p className="font-mono text-[9px] md:text-[10px] text-[#f472b6] uppercase tracking-[0.2em] md:tracking-[0.3em] mb-2 md:mb-4 opacity-70">
+                    <p className="font-mono text-[9px] md:text-[10px] text-[#f472b6] uppercase tracking-[0.2em] md:tracking-[0.3em] mb-1 md:mb-4 opacity-70 min-h-[1.2rem] md:min-h-0">
                         {category.subtitle}
                     </p>
                     <h3
-                        className={`font-montserrat font-black tracking-tighter text-white leading-[1] uppercase transition-colors break-words ${['proposal', 'celebration'].includes(category.id) ? 'title-proposal-celebration' : ''}`}
+                        className={`font-montserrat font-black tracking-tighter text-white leading-[1] uppercase transition-colors break-words 
+                            ${mobileSpans.includes('col-span-2') ? 'text-[clamp(1.8rem,5vw,4.5rem)]' : 'text-[clamp(1.3rem,3.5vw,2.4rem)]'} 
+                            ${isLarge ? 'md:text-[clamp(1.8rem,5vw,4.5rem)]' : isMedium ? 'md:text-[clamp(1.3rem,3.5vw,2.4rem)]' : 'md:text-[clamp(1.05rem,1.8vw,1.25rem)]'}
+                        `}
                         style={{
-                            fontSize: ['proposal', 'celebration'].includes(category.id)
-                                ? undefined
-                                : isLarge 
-                                    ? 'clamp(1.8rem, 5vw, 4.5rem)' 
-                                    : isMedium 
-                                        ? 'clamp(1.3rem, 3.5vw, 2.4rem)' 
-                                        : ['miss-you', 'confession', 'special', 'romantic'].includes(category.id)
-                                            ? 'clamp(1.25rem, 5vw, 1.45rem)' 
-                                            : 'clamp(0.9rem, 2vw, 1.45rem)',
-                            marginBottom: isComingSoon ? '0.25rem' : '1rem'
+                            marginBottom: '0.75rem' // Unified margin for perfect alignment
                         }}
                     >
                         {category.title}

@@ -920,6 +920,11 @@
 
 /* --- Responsive --- */
 @media (max-width: 640px) {
+    .bg-monolith {
+        left: 10vw;
+        font-size: clamp(2.5rem, 8vh, 8rem);
+    }
+
     .slider-card {
         width: 210px;
         height: 210px;

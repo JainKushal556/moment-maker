@@ -24,11 +24,11 @@ export default function EditorHeader({ onBack, onRefresh, onFullScreen, isMobile
       {/* Right: Action buttons & Device Switcher */}
       <div className="flex-1 flex justify-end items-center gap-4">
         {/* Mobile Action Buttons (Hidden on Desktop) */}
-        <div className="flex items-center gap-2">
+        <div className="flex md:hidden items-center gap-2">
           {onRefresh && (
             <button
               onClick={onRefresh}
-              className="md:hidden tp-device-btn"
+              className="tp-device-btn"
               title="Refresh Preview"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -43,7 +43,7 @@ export default function EditorHeader({ onBack, onRefresh, onFullScreen, isMobile
           {onFullScreen && (
             <button
               onClick={onFullScreen}
-              className={`md:hidden tp-device-btn tp-pulse-white ${isMobileFullPreview ? 'tp-fs-active' : ''}`}
+              className={`tp-device-btn tp-pulse-white ${isMobileFullPreview ? 'tp-fs-active' : ''}`}
               title={isMobileFullPreview ? "Exit Full Screen" : "Full Screen Preview"}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="tp-fullscreen-svg">

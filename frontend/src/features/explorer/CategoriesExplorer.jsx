@@ -4,6 +4,10 @@ import BentoCard from './BentoCard'
 import { templates } from '../../data/templates'
 import { ViewContext } from '../../context/NavContext'
 import Footer from '../../layout/Footer'
+import MomentMagicCard from '../moments/MomentMagicCard'
+import { getAllTemplateStats } from '../../services/api'
+import { ChevronDown, Filter, Sparkles, LayoutGrid, TrendingUp } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 // Warm, cute icons
 const HeartIcon = ({ size = 24 }) => (
@@ -57,14 +61,14 @@ export const FloatingHearts = () => {
 
 const categories = [
     {
-        id: "thank-you",
-        title: "THANK YOU",
-        subtitle: "SCENE [01] // GRATITUDE",
+        id: "birthday",
+        title: "BIRTHDAY",
+        subtitle: "SCENE [01] // JOY",
         size: "large",
-        icon: <HeartIcon size={28} />,
-        img: "/cards/thank-you.png",
-        tag: "HEARTFELT",
-        desc: "Deeply grateful always."
+        icon: <StarIcon size={28} />,
+        img: "/cards/birthday.png",
+        tag: "CELEBRATE",
+        desc: "Celebrate your day."
     },
     {
         id: "friendship",
@@ -77,14 +81,14 @@ const categories = [
         desc: "Bonded for life."
     },
     {
-        id: "miss-you",
-        title: "MISS YOU",
-        subtitle: "SCENE [03] // LONGING",
+        id: "special",
+        title: "SPECIAL",
+        subtitle: "SCENE [03] // UNIQUE",
         size: "small",
         icon: <StarIcon size={22} />,
-        img: "/cards/miss-you.png",
-        tag: "DREAMY",
-        desc: "Waiting for you."
+        img: "/cards/special.png",
+        tag: "ONLY YOU",
+        desc: "Simply the best."
     },
     {
         id: "proposal",
@@ -97,34 +101,34 @@ const categories = [
         desc: "Forever starts now."
     },
     {
-        id: "confession",
-        title: "CONFESSION",
-        subtitle: "SCENE [05] // TRUTH",
+        id: "miss-you",
+        title: "MISS YOU",
+        subtitle: "SCENE [05] // LONGING",
         size: "small",
-        icon: <SparkleIcon size={22} />,
-        img: "/cards/confession.png",
-        tag: "SECRET",
-        desc: "My honest truth."
+        icon: <StarIcon size={22} />,
+        img: "/cards/miss-you.png",
+        tag: "DREAMY",
+        desc: "Waiting for you."
     },
     {
-        id: "birthday",
-        title: "BIRTHDAY",
-        subtitle: "SCENE [06] // JOY",
+        id: "romantic",
+        title: "ROMANTIC",
+        subtitle: "SCENE [06] // LOVE",
         size: "medium",
-        icon: <StarIcon size={24} />,
-        img: "/cards/birthday.png",
-        tag: "CELEBRATE",
-        desc: "Celebrate your day."
+        icon: <HeartIcon size={24} />,
+        img: "/cards/romantic.png",
+        tag: "FOREVER",
+        desc: "Pure love shared."
     },
     {
-        id: "celebration",
-        title: "CELEBRATION",
-        subtitle: "SCENE [07] // MAGIC",
+        id: "thank-you",
+        title: "THANK YOU",
+        subtitle: "SCENE [07] // GRATITUDE",
         size: "small",
-        icon: <SparkleIcon size={22} />,
-        img: "/cards/celebration.png",
-        tag: "BLISS",
-        desc: "Magic in moments."
+        icon: <HeartIcon size={22} />,
+        img: "/cards/thank-you.png",
+        tag: "HEARTFELT",
+        desc: "Deeply grateful always."
     },
     {
         id: "sorry",
@@ -137,33 +141,35 @@ const categories = [
         desc: "Sincere apologies sent."
     },
     {
-        id: "romantic",
-        title: "ROMANTIC",
-        subtitle: "SCENE [09] // LOVE",
+        id: "celebration",
+        title: "CELEBRATION",
+        subtitle: "SCENE [09] // MAGIC",
         size: "small",
-        icon: <HeartIcon size={22} />,
-        img: "/cards/romantic.png",
-        tag: "FOREVER",
-        desc: "Pure love shared."
+        icon: <SparkleIcon size={22} />,
+        img: "/cards/celebration.png",
+        tag: "BLISS",
+        desc: "Magic in moments."
     },
     {
-        id: "special",
-        title: "SPECIAL",
-        subtitle: "SCENE [10] // UNIQUE",
+        id: "confession",
+        title: "CONFESSION",
+        subtitle: "SCENE [10] // TRUTH",
         size: "small",
-        icon: <StarIcon size={22} />,
-        img: "/cards/special.png",
-        tag: "ONLY YOU",
-        desc: "Simply the best."
+        icon: <SparkleIcon size={22} />,
+        img: "/cards/confession.png",
+        tag: "SECRET",
+        desc: "My honest truth."
     }
 ]
 
 
 
-
-
 const CategoriesExplorer = () => {
-    const [, navigateTo] = useContext(ViewContext)
+    const [, navigateTo, , setSelectedTemplate, , setTemplateCustomization, , , , , setEditingMomentId] = useContext(ViewContext)
+    const [activeSection, setActiveSection] = useState('categories')
+    const [popularFilter, setPopularFilter] = useState('all')
+    const [templateStats, setTemplateStats] = useState({})
+    const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false)
 
     useLayoutEffect(() => {
         document.body.style.overflow = ''
@@ -182,6 +188,17 @@ const CategoriesExplorer = () => {
         window.dispatchEvent(new CustomEvent('momentNavToggle', {
             detail: { visible: true }
         }))
+
+        // Check if navigated here from footer "Popular Wishes" link
+        const initialSection = sessionStorage.getItem('explorerInitialSection')
+        if (initialSection) {
+            setActiveSection(initialSection)
+            sessionStorage.removeItem('explorerInitialSection')
+        }
+
+        getAllTemplateStats()
+            .then(stats => setTemplateStats(stats || {}))
+            .catch(err => console.error("Failed to fetch template stats:", err))
     }, [])
 
     const containerRef = useRef(null)
@@ -189,39 +206,24 @@ const CategoriesExplorer = () => {
     const headerRef = useRef(null)
 
     useEffect(() => {
-
         const animations = []
-        const cards = gridRef.current ? Array.from(gridRef.current.children) : []
-
-        if (containerRef.current) {
-            animations.push(gsap.fromTo(containerRef.current, {
-                autoAlpha: 0
-            }, {
-                autoAlpha: 1,
-                duration: 0.25,
-                ease: 'power1.out'
-            }))
-        }
+        const gridItems = gridRef.current ? Array.from(gridRef.current.children) : []
 
         if (headerRef.current) {
             animations.push(gsap.fromTo(headerRef.current, {
-                autoAlpha: 0,
-                y: 28
+                autoAlpha: 0
             }, {
                 autoAlpha: 1,
-                y: 0,
                 duration: 0.5,
                 ease: 'power3.out'
             }))
         }
 
-        if (cards.length > 0) {
-            animations.push(gsap.fromTo(cards, {
-                autoAlpha: 0,
-                y: 32
+        if (gridItems.length > 0) {
+            animations.push(gsap.fromTo(gridItems, {
+                autoAlpha: 0
             }, {
                 autoAlpha: 1,
-                y: 0,
                 duration: 0.55,
                 stagger: 0.045,
                 delay: 0.08,
@@ -232,7 +234,7 @@ const CategoriesExplorer = () => {
         return () => {
             animations.forEach((animation) => animation.kill())
         }
-    }, [])
+    }, []) // Only run initial entrance animation once
 
     const handleCategoryClick = useCallback((category) => {
         sessionStorage.setItem('explorerSelectedCategory', JSON.stringify(category))
@@ -244,14 +246,43 @@ const CategoriesExplorer = () => {
         else window.scrollTo(0, 0)
 
         sessionStorage.removeItem('explorerSelectedCategory')
-
         navigateTo('landing')
     }, [navigateTo])
+
+    const handleTemplateClick = useCallback((templateId) => {
+        const template = templates.find(t => t.id === templateId)
+        if (!template) return
+
+        if (setEditingMomentId) setEditingMomentId(null)
+        if (setTemplateCustomization) {
+            setTemplateCustomization(prev => {
+                const next = { ...prev }
+                delete next[template.id]
+                return next
+            })
+        }
+
+        setSelectedTemplate(template)
+        navigateTo('preview')
+    }, [navigateTo, setEditingMomentId, setTemplateCustomization, setSelectedTemplate])
+
+    const popularTemplates = useMemo(() => {
+        return templates.filter(t => {
+            const stats = templateStats[t.id]
+            const isPopular = stats && stats.averageRating >= 3
+            const matchesFilter = popularFilter === 'all' || t.category === popularFilter
+            return isPopular && matchesFilter
+        }).map(t => ({
+            ...t,
+            averageRating: templateStats[t.id]?.averageRating || 0,
+            totalRatings: templateStats[t.id]?.totalRatings || 0
+        }))
+    }, [templateStats, popularFilter])
 
     return (
         <section
             ref={containerRef}
-            className={`categories-explorer relative bg-[#0a0a12] w-full z-40`}
+            className={`categories-explorer relative bg-[#0a0a12] w-full z-40 overflow-x-hidden`}
             style={{
                 minHeight: '100vh',
                 display: 'flex',
@@ -280,14 +311,14 @@ const CategoriesExplorer = () => {
                 style={{
                     maxWidth: '1600px',
                     margin: '0 auto',
-                    paddingLeft: 'clamp(20px, 5vw, 32px)',
-                    paddingRight: 'clamp(20px, 5vw, 32px)',
+                    paddingLeft: 'clamp(12px, 4vw, 24px)',
+                    paddingRight: 'clamp(12px, 4vw, 24px)',
                     paddingTop: 'clamp(60px, 10vw, 96px)',
                 }}
             >
                 <div style={{ paddingBottom: '10rem' }}>
                     {/* SOFT ROMANTIC HEADER */}
-                    <header ref={headerRef} className="mb-12 md:mb-32 lg:mb-40 w-full flex flex-col items-start text-left">
+                    <header ref={headerRef} className="mb-12 md:mb-20 w-full flex flex-col items-start text-left relative z-50">
                         <div className="flex flex-row items-end justify-between w-full text-left items-end">
                             <div className="min-w-0 flex-1 flex flex-col items-start text-left">
                                 <h1
@@ -310,27 +341,158 @@ const CategoriesExplorer = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* SECTION SWITCHER */}
+                        <div className="flex flex-col sm:flex-row-reverse items-center sm:items-center justify-between w-full mt-12 md:mt-24 gap-6">
+                            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 md:gap-8 w-full sm:w-auto pb-2">
+                                {[
+                                    { id: 'categories', label: 'Categories', icon: <LayoutGrid size={14} /> },
+                                    { id: 'popular', label: 'Popular Wishes', icon: <TrendingUp size={14} /> }
+                                ].map((s) => (
+                                    <button
+                                        key={s.id}
+                                        onClick={() => setActiveSection(s.id)}
+                                        className={`group flex items-center gap-2 text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em] relative pt-4 pb-1 transition-all ${activeSection === s.id ? 'text-white' : 'text-white/30 hover:text-white/60'
+                                            }`}
+                                    >
+                                        <span className={`transition-transform duration-300 ${activeSection === s.id ? 'scale-110 text-fuchsia-400' : 'group-hover:scale-110'}`}>
+                                            {s.icon}
+                                        </span>
+                                        {s.label}
+                                        {activeSection === s.id && (
+                                            <motion.div
+                                                layoutId="activeSection"
+                                                className="absolute bottom-0 left-0 right-0 h-[2px] bg-fuchsia-500 shadow-[0_0_15px_#d946ef]"
+                                            />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* POPULAR FILTER DROPDOWN */}
+                            <AnimatePresence>
+                                {activeSection === 'popular' && (
+                                    <motion.div
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 20 }}
+                                        className="relative z-50 w-full sm:w-auto"
+                                    >
+                                        <button
+                                            onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                                            onBlur={() => setTimeout(() => setIsFilterDropdownOpen(false), 200)}
+                                            className="flex items-center justify-between gap-4 px-4 py-2.5 sm:px-5 sm:py-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all w-auto min-w-[160px] sm:min-w-[200px]"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <Filter size={12} className="text-fuchsia-400" />
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">
+                                                    {popularFilter === 'all' ? 'All Wishes' : popularFilter.replace('-', ' ')}
+                                                </span>
+                                            </div>
+                                            <ChevronDown size={14} className={`text-white/30 transition-transform duration-300 ${isFilterDropdownOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+
+                                        <AnimatePresence>
+                                            {isFilterDropdownOpen && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    className="absolute top-full left-0 mt-2 w-48 sm:w-56 bg-zinc-950 border border-white/10 rounded-2xl p-2 shadow-2xl z-[60] overflow-hidden"
+                                                >
+                                                    <div className="max-h-[300px] overflow-y-auto custom-scrollbar" data-lenis-prevent="true">
+                                                        <button
+                                                            onClick={() => { setPopularFilter('all'); setIsFilterDropdownOpen(false); }}
+                                                            className={`w-full text-left px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${popularFilter === 'all' ? 'bg-fuchsia-500/10 text-fuchsia-400' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                                                        >
+                                                            All Wishes
+                                                        </button>
+                                                        <div className="h-px bg-white/5 my-1 mx-2" />
+                                                        {categories.map((cat) => (
+                                                            <button
+                                                                key={cat.id}
+                                                                onClick={() => { setPopularFilter(cat.id); setIsFilterDropdownOpen(false); }}
+                                                                className={`w-full text-left px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${popularFilter === cat.id ? 'bg-fuchsia-500/10 text-fuchsia-400' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                                                            >
+                                                                {cat.title}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </header>
 
-                    <div style={{ height: '60px' }} className="hidden md:block" />
+                    <div style={{ height: '40px' }} className="hidden md:block" />
                     <div style={{ height: '20px' }} className="md:hidden" />
 
-                    {/* Bento Grid */}
-                    <div
-                        ref={gridRef}
-                        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8 auto-rows-[240px] md:auto-rows-[300px] grid-flow-dense"
-                    >
-                        {categories.map((cat) => {
-                            const count = templates.filter(t => t.category === cat.id).length
-                            return (
-                                <BentoCard
-                                    key={cat.id}
-                                    category={cat}
-                                    templateCount={count}
-                                    onClick={handleCategoryClick}
-                                />
-                            )
-                        })}
+                    {/* CONTENT AREA */}
+                    <div ref={gridRef} className="w-full relative">
+                        <AnimatePresence mode="wait">
+                            {activeSection === 'categories' ? (
+                                /* Bento Grid */
+                                <motion.div
+                                    key="categories-grid"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8 auto-rows-[240px] md:auto-rows-[300px] grid-flow-dense"
+                                >
+                                    {categories.map((cat) => {
+                                        const count = templates.filter(t => t.category === cat.id).length
+                                        return (
+                                            <BentoCard
+                                                key={cat.id}
+                                                category={cat}
+                                                templateCount={count}
+                                                onClick={handleCategoryClick}
+                                            />
+                                        )
+                                    })}
+                                </motion.div>
+                            ) : (
+                                /* Popular Wishes Grid */
+                                <motion.div
+                                    key={`popular-grid-${popularFilter}`}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12"
+                                >
+                                    {popularTemplates.length > 0 ? (
+                                        popularTemplates.map((template) => (
+                                            <MomentMagicCard
+                                                key={template.id}
+                                                moment={{
+                                                    ...template,
+                                                    image: template.img,
+                                                    vibe: template.tag || 'CINEMATIC'
+                                                }}
+                                                isTemplate={true}
+                                                onAction={(type) => {
+                                                    if (type === 'build' || type === 'click') {
+                                                        handleTemplateClick(template.id);
+                                                    }
+                                                }}
+                                            />
+                                        ))
+                                    ) : (
+                                        <div className="col-span-full border border-dashed border-white/10 rounded-[3rem] flex flex-col items-center justify-center p-20 text-center gap-6 bg-black/20 w-full">
+                                            <TrendingUp size={40} strokeWidth={1} className="text-white/10 animate-pulse" />
+                                            <div>
+                                                <p className="text-white/30 text-[10px] font-mono uppercase tracking-[0.3em]">Awaiting popular moments.</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
             </div>

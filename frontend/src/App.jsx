@@ -1,4 +1,4 @@
-import { useEffect, useRef, useContext, useLayoutEffect, lazy, Suspense } from 'react'
+import { useEffect, useRef, useContext, useLayoutEffect, lazy, Suspense, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger, Observer } from 'gsap/all'
 import Lenis from 'lenis'
@@ -10,8 +10,8 @@ import DotGrid from './base/DotGrid'
 import SvgTransition from './base/SvgTransition'
 
 // Layout
-import Navbar from './layout/Navbar'
-import FullScreenNav from './layout/FullScreenNav'
+const Navbar = lazy(() => import('./layout/Navbar'))
+const FullScreenNav = lazy(() => import('./layout/FullScreenNav'))
 
 // Context
 import { NavProvider, ViewContext } from './context/NavContext'
@@ -175,8 +175,12 @@ function AppContent() {
         />
       )}
 
-      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && <Navbar />}
-      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && <FullScreenNav requireAuth={openAuthModal} />}
+      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && (
+        <Suspense fallback={null}>
+          <Navbar />
+          <FullScreenNav requireAuth={openAuthModal} />
+        </Suspense>
+      )}
       {currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && currentView !== 'about' && (
         <DotGrid
           dotSize={5}
@@ -208,7 +212,7 @@ function AppContent() {
         </div>
       )}
 
-      {(currentView === 'gallery' || currentView === 'preview') && (
+      {currentView === 'gallery' && (
         <div className="relative z-10">
           <Suspense fallback={<div className="fixed inset-0 z-50 bg-[#050508]"></div>}>
             <GalleryExplorer />
@@ -278,7 +282,87 @@ function AppContent() {
   )
 }
 
+import Preloader from './components/Preloader/Preloader'
+
 export default function App() {
+  const [loadProgress, setLoadProgress] = useState(0)
+  const [preloaderDone, setPreloaderDone] = useState(false)
+  const [appReady, setAppReady] = useState(false) // mounts AppContent behind the preloader during orbit
+
+  useEffect(() => {
+    let currentProgress = 0;
+    let targetProgress = 0;
+    let animationFrameId;
+
+    const addProgress = (amount) => {
+      targetProgress = Math.min(100, targetProgress + amount);
+    };
+
+    // 1. Initial DOM Load (20%)
+    if (document.readyState === 'complete') addProgress(20);
+    else window.addEventListener('load', () => addProgress(20));
+
+    // 2. Fonts Loaded (30%)
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => addProgress(30));
+    } else {
+      addProgress(30);
+    }
+
+    // 3. Preload Main Chunks (Network Request - 30%)
+    Promise.all([
+      import('./features/landing/LandingPage'),
+      import('./layout/Navbar'),
+      import('./layout/FullScreenNav')
+    ]).then(() => addProgress(30)).catch(() => addProgress(30));
+
+    // 4. Preload Critical Images (Network Request - 20%)
+    const imagesToPreload = ['/icon1.svg', '/icon2.svg', '/icon3.svg', '/icon4.svg', '/icon5.svg'];
+    let loadedImages = 0;
+    imagesToPreload.forEach(src => {
+      const img = new Image();
+      img.src = src;
+      img.onload = img.onerror = () => {
+        loadedImages++;
+        addProgress(20 / imagesToPreload.length);
+      };
+    });
+
+    // Smooth interpolator: animate currentProgress towards targetProgress
+    let lastTime = null;
+    const updateProgress = (timestamp) => {
+      if (!lastTime) lastTime = timestamp;
+      const deltaTime = timestamp - lastTime;
+      lastTime = timestamp;
+
+      if (currentProgress < targetProgress) {
+        const diff = targetProgress - currentProgress;
+        
+        // Framerate-independent max speed: 100 progress over 4800ms
+        const maxIncrement = (100 / 4800) * deltaTime;
+        
+        // Ensures it scales perfectly regardless of 60Hz or 120Hz screen
+        const increment = Math.min(maxIncrement, Math.max(0.003 * deltaTime, diff * 0.001 * deltaTime));
+        currentProgress += increment;
+        
+        if (currentProgress > 100) currentProgress = 100;
+        setLoadProgress(Math.floor(currentProgress));
+      }
+      
+      if (currentProgress < 100) {
+        animationFrameId = requestAnimationFrame(updateProgress);
+      } else {
+        setLoadProgress(100);
+      }
+    };
+    
+    animationFrameId = requestAnimationFrame(updateProgress);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
   // Check if the URL path starts with /w/
   const path = window.location.pathname
   const momentId = path.startsWith('/w/') ? path.split('/w/')[1] : null
@@ -309,11 +393,36 @@ export default function App() {
     return <PublicViewer momentId={momentId} />
   }
 
+  // During orbit phase: render AppContent hidden behind the preloader
+  // so it's fully mounted and ready when the animation finishes
   return (
-    <AuthProvider>
-      <NavProvider>
-        <AppContent />
-      </NavProvider>
-    </AuthProvider>
+    <>
+      {/* Preloader sits on top (z-index 99999) until done */}
+      {!preloaderDone && (
+        <Preloader
+          loadProgress={loadProgress}
+          onOrbitStart={() => setAppReady(true)}
+          onComplete={() => setPreloaderDone(true)}
+        />
+      )}
+
+      {/* AppContent mounts hidden during orbit, becomes visible instantly on complete */}
+      {appReady && (
+        <div style={!preloaderDone ? {
+          opacity: 0,
+          pointerEvents: 'none',
+          userSelect: 'none',
+          position: 'fixed',
+          inset: 0,
+          overflow: 'hidden',
+        } : {}}>
+          <AuthProvider>
+            <NavProvider>
+              <AppContent />
+            </NavProvider>
+          </AuthProvider>
+        </div>
+      )}
+    </>
   )
 }

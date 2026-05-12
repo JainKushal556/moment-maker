@@ -360,7 +360,7 @@ export default function Footer() {
               <div className="fpo-col">
                 <div className="fpo-col-header"><i className="fas fa-clipboard-list col-icon"></i> TEMPLATES</div>
                 <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('categories'); }}>Browse Categories</a>
-                <a href="#">Popular Wishes</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); sessionStorage.setItem('explorerInitialSection', 'popular'); navigateTo('categories'); }}>Popular Wishes</a>
               </div>
               <div className="fpo-col">
                 <div className="fpo-col-header"><i className="fas fa-info-circle col-icon"></i> ABOUT US</div>

@@ -59,7 +59,34 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
     y.set((e.clientY - rect.top) / rect.height - 0.5);
   };
 
+  const touchStartPos = React.useRef({ x: 0, y: 0 });
+  const lastActionTime = React.useRef(0);
+
+  const handleTouchStart = (e) => {
+    touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
+
+  const handleTouchEnd = (e) => {
+    if (e.target.closest('button')) return; 
+    
+    const now = Date.now();
+    if (now - lastActionTime.current < 500) return; // Prevent double trigger
+    
+    const touchEndPos = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+    const distance = Math.hypot(touchEndPos.x - touchStartPos.current.x, touchEndPos.y - touchStartPos.current.y);
+    
+    if (distance < 10) {
+      lastActionTime.current = now;
+      const rect = e.currentTarget.getBoundingClientRect();
+      if (onAction) onAction('click', moment.id, rect);
+    }
+  };
+
   const handleCardClick = (e) => {
+    const now = Date.now();
+    if (now - lastActionTime.current < 500) return; // Prevent double trigger (ghost click)
+    lastActionTime.current = now;
+
     const rect = e.currentTarget.getBoundingClientRect();
     if (onAction) onAction('click', moment.id, rect);
   };
@@ -71,21 +98,24 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
       onMouseMove={handleMouseMove}
       onMouseLeave={() => { x.set(0); y.set(0); }}
       onClick={handleCardClick}
-      className="relative group w-full aspect-16/11 perspective-1000 mx-auto cursor-pointer"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="relative group w-full lg:max-w-[420px] aspect-16/11 perspective-1000 mx-auto cursor-pointer"
     >
       <div className="absolute inset-0 rounded-[2.5rem] bg-linear-to-r from-fuchsia-500/20 via-transparent to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-      <div className="relative h-full w-full overflow-hidden rounded-[2.5rem] bg-black border border-white/10 shadow-2xl flex flex-col">
-        <div className="relative h-full w-full overflow-hidden rounded-[2.5rem] bg-black">
+      <div className="relative h-full w-full overflow-hidden rounded-[2.5rem] bg-black border border-white/10 shadow-2xl flex flex-col" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'translateZ(0)' }}>
+        <div className="relative h-full w-full overflow-hidden rounded-[2.5rem] bg-black" style={{ isolation: 'isolate' }}>
           <img
             src={imageUrl}
             alt={moment.title}
-            className="w-full h-full object-cover transition-transform duration-2000 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-2000 group-hover:scale-110 scale-[1.02] transform-gpu"
+            style={{ transform: 'translateZ(0)' }}
             onError={(e) => {
               e.target.src = moment.category ? `/cards/${moment.category}.png` : "/cards/special.png"
             }}
           />
-          <div className="absolute inset-x-[-4px] bottom-[-4px] top-1/3 bg-linear-to-t from-black via-black/80 to-transparent z-10" />
+          <div className="absolute inset-x-[-2px] bottom-[-2px] top-1/3 bg-gradient-to-t from-black via-black/90 to-transparent z-10" style={{ transform: 'translateZ(0)' }} />
 
           <div
             className="absolute flex justify-between items-start z-50"
@@ -107,9 +137,9 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
             {isTemplate && (
               <button
                 onClick={(e) => { e.stopPropagation(); handleToggleFavorite(moment.id); }}
-                className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-black/60 transition-colors z-50"
+                className="w-8 h-8 rounded-full bg-black/30 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-black/50 transition-all z-50 shadow-md"
               >
-                <Heart size={14} className={isFavorite ? "fill-fuchsia-500 text-fuchsia-500" : "text-white/60"} />
+                <Heart size={14} className={isFavorite ? "fill-fuchsia-500 text-fuchsia-500" : "text-white/80"} />
               </button>
             )}
           </div>
@@ -118,20 +148,21 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
           {!isTemplate && (
             <>
               {/* TOP LEFT: Reactivate or Edit */}
+              {/* TOP LEFT: Reactivate or Edit */}
               <div className="md:hidden absolute z-50" style={{ top: '24px', left: '24px' }}>
                 {validity?.isExpired ? (
                   <button
                     onClick={(e) => { e.stopPropagation(); if (onAction) onAction('reactivate', moment.id); }}
-                    className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer shadow-lg"
+                    className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md text-white border border-white/40 flex items-center justify-center active:scale-95 cursor-pointer shadow-lg"
                   >
-                    <RotateCw size={16} strokeWidth={2.5} />
+                    <RotateCw size={20} strokeWidth={2.5} />
                   </button>
                 ) : (
                   <button
                     onClick={(e) => { e.stopPropagation(); if (onAction) onAction('enter', moment.id); }}
-                    className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer shadow-lg"
+                    className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md text-white border border-white/40 flex items-center justify-center active:scale-95 cursor-pointer shadow-lg"
                   >
-                    <Pencil size={16} strokeWidth={2.5} />
+                    <Pencil size={20} strokeWidth={2.5} />
                   </button>
                 )}
               </div>
@@ -141,9 +172,9 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
                 <div className="md:hidden absolute z-50" style={{ top: '24px', right: '24px' }}>
                   <button
                     onClick={(e) => { e.stopPropagation(); if (onAction) onAction('share', moment.id); }}
-                    className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md text-white/80 border border-white/10 flex items-center justify-center active:scale-95 cursor-pointer shadow-lg"
+                    className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md text-white border border-white/40 flex items-center justify-center active:scale-95 cursor-pointer shadow-lg"
                   >
-                    <Share2 size={16} />
+                    <Share2 size={20} />
                   </button>
                 </div>
               )}
@@ -152,9 +183,9 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
               <div className="md:hidden absolute z-50" style={{ bottom: '24px', right: '24px' }}>
                 <button
                   onClick={(e) => { e.stopPropagation(); if (onAction) onAction('delete', moment.id); }}
-                  className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-sm text-white/30 border border-white/5 flex items-center justify-center active:scale-95 cursor-pointer shadow-lg"
+                  className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md text-white/80 border border-white/40 flex items-center justify-center active:scale-95 cursor-pointer shadow-lg"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={20} />
                 </button>
               </div>
             </>
@@ -168,7 +199,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
           <div className="flex items-center justify-between gap-8">
             <div className="space-y-2 overflow-hidden flex-1 min-w-0 group-hover:opacity-0 transition-opacity duration-300">
               <div className="flex items-center gap-2">
-                <h3 className={`text-xl md:text-2xl font-black tracking-tight text-white group-hover:text-fuchsia-400 transition-colors duration-300 truncate`}>
+                <h3 className={`text-xl md:text-2xl font-black tracking-tight text-white group-hover:text-fuchsia-400 transition-colors duration-300 block truncate whitespace-nowrap`}>
                   {moment.title}
                 </h3>
                 {!isTemplate && moment.status && (
@@ -180,16 +211,16 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-3 opacity-80 truncate">
+              <div className="flex items-center gap-3 opacity-80 antialiased">
                 {!isTemplate && validity && (
                   <>
-                    <span className={`text-[10px] font-mono uppercase tracking-widest truncate ${validity.isExpired ? 'text-red-400' : 'text-fuchsia-400'}`}>
+                    <span className={`text-[10px] font-mono uppercase tracking-widest inline-block truncate whitespace-nowrap ${validity.isExpired ? 'text-red-400' : 'text-fuchsia-400'}`}>
                       {validity.timeText}
                     </span>
                     {moment.status === 'shared' && (
                       <>
                         <span className="w-1 h-1 rounded-full bg-white/20"></span>
-                        <span className="text-[10px] font-mono text-white/60 uppercase tracking-widest truncate">
+                        <span className="text-[10px] font-mono text-white/60 uppercase tracking-widest inline-block truncate whitespace-nowrap">
                           {validity.sessionsCount}/4 Views
                         </span>
                       </>
@@ -197,7 +228,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
                     <span className="w-1 h-1 rounded-full bg-white/20"></span>
                   </>
                 )}
-                <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest truncate">
+                <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest inline-block truncate whitespace-nowrap">
                   {moment.category?.replace(/-/g, ' ') || 'Moment Crafter Original'}
                 </span>
               </div>
