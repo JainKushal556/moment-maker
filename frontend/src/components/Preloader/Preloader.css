@@ -64,12 +64,13 @@
 
 .preloader-overlay .logo-box-wrapper {
   position: relative;
-  width: 6.7vw;
+  width: 11vw;
   height: 6.7vw;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 5;
+  overflow: hidden;
 }
 
 .preloader-overlay .white-box {
@@ -97,7 +98,7 @@
 
 /* PHASE 2: ARROW SLIDE (LOCAL) */
 .preloader-overlay .arrow-reveal-slide {
-  width: 6.1vw;
+  width: 16vw;
   height: auto;
   position: absolute;
   top: 50%;
@@ -116,14 +117,14 @@
   }
 
   100% {
-    left: 0.3vw;
+    left: 0.7vw;
     transform: translate(0, -50%);
   }
 }
 
 /* PHASE 3: GIANT MODE */
 .preloader-overlay .giant-arrow {
-  width: 6.1vw;
+  width: 11vw;
   height: auto;
   position: fixed;
   left: calc(50% - 7.8vw);
@@ -150,13 +151,13 @@
 
 @keyframes giant-slide-anim {
   0% {
-    /* Starts from far left */
-    transform: translate(-80%, -50%) scale(6);
+    /* Starts from further left */
+    transform: translate(-45vw, -50%) scale(6);
   }
 
   100% {
-    /* Ends with box center at 35% screen width: translate by -(box_width / 2) */
-    transform: translate(-19.5vw, -50%) scale(6);
+    /* Ends with box center matching the arrow center */
+    transform: translate(-33vw, -50%) scale(6);
   }
 }
 
@@ -353,7 +354,7 @@
 
 /* Arm: pushes the icon forward in Z so it orbits around center */
 .preloader-overlay .icon-orbit-arm {
-  transform: translateZ(15.6vw);
+  transform: translateZ(15.6vw) rotateY(180deg) scale(2);
   transform-style: preserve-3d;
 }
 
@@ -363,7 +364,7 @@
 }
 
 .preloader-overlay .docked-arrow-fixed {
-  width: 6.1vw;
+  width: 11vw;
   height: auto;
   position: absolute;
   top: 50%;

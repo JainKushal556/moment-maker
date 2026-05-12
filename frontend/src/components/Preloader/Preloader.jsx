@@ -29,11 +29,7 @@ const MMarkSVG = ({ className, mMarkRef }) => (
 );
 
 const OriginalArrowSVG = ({ className }) => (
-  <svg className={className} width="93" height="85" viewBox="0 0 93 85" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M85.0165 0.356445H7.41482C3.30112 0.356445 0 3.67002 0 7.74827V77.3843C0 81.4626 3.30112 84.7761 7.41482 84.7761H85.0673C89.1302 84.7761 92.4821 81.4626 92.4821 77.3843V7.74827C92.4314 3.67002 89.1302 0.356445 85.0165 0.356445Z" fill="transparent" />
-    <path d="M50.3294 68.1573H35.0934C34.5856 68.1573 34.1285 67.9534 33.773 67.5965L9.39549 43.127C9.14156 42.8212 9.14156 42.3114 9.39549 42.0055L33.773 17.5361C34.1285 17.1792 34.5856 16.9753 35.0934 16.9753H50.3294C50.7357 16.9753 50.9388 17.4851 50.6849 17.7909L26.5613 42.0055C26.2566 42.3114 26.2566 42.8212 26.5613 43.127L50.6849 67.3416C50.9896 67.6475 50.7865 68.1573 50.3294 68.1573Z" fill="white" />
-    <path d="M58.506 43.127L82.6296 67.3416C82.9343 67.6475 82.7311 68.1573 82.3248 68.1573H67.0889C66.581 68.1573 66.124 67.9534 65.7685 67.5965L41.391 43.0761C41.0862 42.7702 41.0862 42.2604 41.391 41.9546L65.7685 17.4851C66.124 17.1282 66.581 16.9243 67.0889 16.9243H82.3248C82.7311 16.9243 82.9343 17.4341 82.6296 17.74L58.506 41.9546C58.2013 42.3114 58.2013 42.8212 58.506 43.127Z" fill="white" />
-  </svg>
+  <img className={className} src="/arrow.svg" alt="arrow" />
 );
 
 // Integration changes from loader-reference/src/App.jsx:
@@ -327,7 +323,6 @@ export default function Preloader({ loadProgress = 0, onComplete, onOrbitStart }
           <div className="icon-orbit-pivot">
             <div className="icon-orbit-arm">
               <div className="logo-box-wrapper">
-                <div className="white-box icon-orbit-bg"></div>
                 <OriginalArrowSVG className="docked-arrow-fixed icon-orbit-svg" />
               </div>
             </div>
