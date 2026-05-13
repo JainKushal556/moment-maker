@@ -62,16 +62,7 @@
   gap: 0.78vw;
 }
 
-.preloader-overlay .logo-box-wrapper {
-  position: relative;
-  width: 11vw;
-  height: 6.7vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 5;
-  overflow: hidden;
-}
+
 
 .preloader-overlay .white-box {
   width: 100%;
@@ -354,7 +345,7 @@
 
 /* Arm: pushes the icon forward in Z so it orbits around center */
 .preloader-overlay .icon-orbit-arm {
-  transform: translateZ(15.6vw) rotateY(180deg) scale(2);
+  transform: translateZ(15.6vw) rotateY(180deg) scale(1.3);
   transform-style: preserve-3d;
 }
 
@@ -363,17 +354,55 @@
   background-color: #fff;
 }
 
+.preloader-overlay .logo-box-wrapper {
+  position: relative;
+  width: 9vw;
+  height: 6vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
 .preloader-overlay .docked-arrow-fixed {
-  width: 11vw;
-  height: auto;
+  width: 9vw;
+  height: 6vw;
   position: absolute;
   top: 50%;
-  left: 0.3vw;
-  transform: translateY(-50%);
-  color: var(--color-white);
-  mix-blend-mode: difference;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.6);
+  color: #fff;
   z-index: 20;
+  overflow: visible;
 }
+
+.preloader-overlay .icon-orbit-svg {
+  /* Additional scaling if needed specifically for orbit phase */
+  transform: translate(-50%, -50%) scale(1.6);
+}
+
+.preloader-overlay .logo-box-wrapper .white-box + .docked-arrow-fixed {
+  color: #000;
+}
+
+@media (max-width: 768px) {
+  .preloader-overlay .logo-box-wrapper {
+    width: 9vw;
+    height: 6vw;
+  }
+  .preloader-overlay .docked-arrow-fixed {
+    width: 9vw;
+    height: 6vw;
+  }
+  .preloader-overlay .icon-orbit-svg {
+    transform: translate(-50%, -50%) scale(2);
+  }
+  .preloader-overlay .icon-orbit-arm {
+    transform: translateZ(15.6vw) rotateY(180deg) scale(1.5);
+  }
+}
+
+
 
 /* --- COUNTER STYLES (From CodePen) --- */
 .preloader-overlay .counter {
