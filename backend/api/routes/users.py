@@ -14,7 +14,8 @@ def generate_referral_code(length=6):
     chars = string.ascii_uppercase + string.digits
     return ''.join(random.choice(chars) for _ in range(length))
 
-async def get_or_create_referral_code(transaction, user_id):
+@firestore.transactional
+def get_or_create_referral_code(transaction, user_id):
     """
     Transactional function to ensure a user has a unique referral code.
     Checks 'users' collection first, then 'referral_codes' for uniqueness.
@@ -75,7 +76,7 @@ async def initialize_user(payload: InitPayload, user: dict = Depends(get_current
     referral_reward = config.get("referral_reward", 50)
 
     @firestore.transactional
-    def process_initialization(transaction, user_ref, payload, uid, welcome_bonus, ref_signup_bonus, referral_reward):
+    def process_initialization(transaction, user_ref, payload, uid, email, display_name, welcome_bonus, ref_signup_bonus, referral_reward):
         # 1. Default setup (Normal signup)
         actual_signup_bonus = welcome_bonus
         referred_by = None
@@ -100,7 +101,7 @@ async def initialize_user(payload: InitPayload, user: dict = Depends(get_current
                     if referrer_doc.exists:
                         # Success! A valid referral occurred
                         is_referred = True
-                        actual_signup_bonus = ref_signup_bonus
+                        actual_signup_bonus = welcome_bonus + ref_signup_bonus
                         referred_by = referrer_uid
                         
                         # Credit Referrer
@@ -156,8 +157,12 @@ async def initialize_user(payload: InitPayload, user: dict = Depends(get_current
 
         return new_user_data
 
-    transaction = db.transaction()
-    user_data = process_initialization(transaction, user_ref, payload, uid, welcome_bonus, ref_signup_bonus, referral_reward)
+    try:
+        transaction = db.transaction()
+        user_data = process_initialization(transaction, user_ref, payload, uid, email, display_name, welcome_bonus, ref_signup_bonus, referral_reward)
+    except Exception as e:
+        print(f"Initialization Failed for {uid}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Initialization error: {str(e)}")
     
     # 4. Generate unique referral code for the new user (separate transaction)
     transaction_code = db.transaction()
@@ -251,6 +256,12 @@ async def get_my_profile(user: dict = Depends(get_current_user)):
     
     user_data = user_doc.to_dict()
     
+    # 2. Ensure referral code exists (Self-healing for legacy users)
+    if not user_data.get("referralCode"):
+        transaction_code = db.transaction()
+        my_code = get_or_create_referral_code(transaction_code, uid)
+        user_data["referralCode"] = my_code
+    
     # 2. Check for Daily Bonus (Automatic)
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     last_bonus_date = user_data.get("lastDailyBonusClaimed")
@@ -295,10 +306,6 @@ async def get_my_profile(user: dict = Depends(get_current_user)):
         transaction = db.transaction()
         user_data = process_daily_bonus(transaction, user_ref, today_str, daily_reward)
 
-    # 3. Fetch all template prices to help frontend show locks
-    templates_docs = db.collection("templates_info").stream()
-    template_prices = {doc.id: doc.to_dict().get("price", 100) for doc in templates_docs}
-    
     # 4. Fetch referrals list
     referrals_docs = user_ref.collection("referrals").stream()
     referrals_list = []
@@ -330,7 +337,6 @@ async def get_my_profile(user: dict = Depends(get_current_user)):
         "referralCode": user_data.get("referralCode", ""),
         "unlockedTemplates": user_data.get("unlockedTemplates", []),
         "referredBy": user_data.get("referredBy"),
-        "templatePrices": template_prices,
         "referrals": referrals_list,
         "claimedTotal": claimed_total,
         "pendingTotal": pending_total,

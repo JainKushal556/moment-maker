@@ -18,7 +18,7 @@ const getInitialCategory = () => {
 const GalleryExplorer = () => {
     const [selectedCategory] = useState(getInitialCategory())
     const [, navigateTo, , setSelectedTemplate, , setTemplateCustomization, , , , , setEditingMomentId] = useContext(ViewContext)
-    const { currentUser } = useAuth()
+    const { currentUser, openAuthModal } = useAuth()
     const { balance, unlockedTemplates, templatePrices, unlock } = useWallet()
     const containerRef = useRef(null)
     const headerRef = useRef(null)
@@ -203,6 +203,10 @@ const GalleryExplorer = () => {
                                     isUnlocked={unlockedTemplates?.includes(template.id)}
                                     price={templatePrices[template.id] || 0}
                                     onUnlock={async (id) => {
+                                        if (!currentUser) {
+                                            openAuthModal();
+                                            return;
+                                        }
                                         try {
                                             await unlock(id);
                                         } catch (err) {

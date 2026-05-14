@@ -444,7 +444,7 @@ export default function ReferalView() {
                       {[
                         { step: '01', title: 'Share your link', desc: 'Send your link to friends.', color: 'text-fuchsia-400 border-fuchsia-500/20' },
                         { step: '02', title: 'They sign up', desc: 'Your friend joins Moment Maker.', color: 'text-orange-400 border-orange-500/20' },
-                        { step: '03', title: 'You both earn', desc: 'You get 50 wishbits instantly.', color: 'text-pink-400 border-pink-500/20' }
+                        { step: '03', title: 'You both earn', desc: 'You get 50 wishbits, they get 30 — instantly.', color: 'text-pink-400 border-pink-500/20' }
                       ].map((s, idx) => (
                         <motion.div 
                           key={idx}

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getUserProfile, unlockTemplate } from '../services/api';
+import { getUserProfile, unlockTemplate, getAllTemplateStats } from '../services/api';
 import { useAuth } from './AuthContext';
 
 const WalletContext = createContext();
@@ -25,20 +25,29 @@ export const WalletProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
 
     const refreshWallet = useCallback(async () => {
-        if (!currentUser) return;
         setLoading(true);
         try {
-            const profile = await getUserProfile();
-            setBalance(profile.wishbits);
-            setReferralCode(profile.referralCode);
-            setReferrals(profile.referrals || []);
-            setClaimedTotal(profile.claimedTotal || 0);
-            setPendingTotal(profile.pendingTotal || 0);
-            setUnlockedTemplates(profile.unlockedTemplates || []);
-            setTemplatePrices(profile.templatePrices || {});
-            setTransactions(profile.transactions || []);
+            // 1. Fetch public template prices (FOR EVERYONE)
+            const stats = await getAllTemplateStats();
+            const prices = {};
+            Object.keys(stats).forEach(id => {
+                prices[id] = stats[id].price || 100;
+            });
+            setTemplatePrices(prices);
+
+            // 2. If logged in, fetch private profile data
+            if (currentUser) {
+                const profile = await getUserProfile();
+                setBalance(profile.wishbits);
+                setReferralCode(profile.referralCode);
+                setReferrals(profile.referrals || []);
+                setClaimedTotal(profile.claimedTotal || 0);
+                setPendingTotal(profile.pendingTotal || 0);
+                setUnlockedTemplates(profile.unlockedTemplates || []);
+                setTransactions(profile.transactions || []);
+            }
         } catch (error) {
-            console.error("Failed to fetch wallet data:", error);
+            console.error("Failed to fetch wallet/template data:", error);
         } finally {
             setLoading(false);
         }
@@ -46,7 +55,7 @@ export const WalletProvider = ({ children }) => {
 
     useEffect(() => {
         refreshWallet();
-    }, [refreshWallet]);
+    }, [refreshWallet, currentUser]); // Refresh when auth state changes
 
     const unlock = async (templateId) => {
         try {

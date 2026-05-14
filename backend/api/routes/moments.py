@@ -264,12 +264,23 @@ async def delete_moment(moment_id: str, user: dict = Depends(get_current_user)):
 
 @router.get("/templates/stats")
 async def get_all_template_stats():
-    """Fetch aggregated rating stats for all templates."""
-    docs = db.collection("template_stats").stream()
-    stats = {}
-    for doc in docs:
-        stats[doc.id] = doc.to_dict()
-    return stats
+    """Fetch aggregated rating stats and prices for all templates."""
+    # 1. Fetch Stats
+    stats_docs = db.collection("template_stats").stream()
+    data = {}
+    for doc in stats_docs:
+        data[doc.id] = doc.to_dict()
+    
+    # 2. Fetch Prices (Publicly available)
+    info_docs = db.collection("templates_info").stream()
+    for doc in info_docs:
+        info = doc.to_dict()
+        if doc.id in data:
+            data[doc.id]["price"] = info.get("price", 100)
+        else:
+            data[doc.id] = {"price": info.get("price", 100)}
+            
+    return data
 
 
 @router.get("/templates/{template_id}/rating")
