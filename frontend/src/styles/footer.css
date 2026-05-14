@@ -124,7 +124,7 @@
 /* ── TOP: brand + columns ── */
 .fpo-top {
     display: grid;
-    grid-template-columns: 1.1fr 3fr;
+    grid-template-columns: 1.8fr 3fr;
     gap: 2rem;
     align-items: start;
 }
@@ -138,10 +138,16 @@
 }
 .fpo-logo-tagline {
     display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
+    align-items: center;
+    gap: 1.5rem;
 }
-.footer-logo-link { display: inline-block; text-decoration: none; transition: opacity 0.2s; }
+.footer-logo-link { 
+    display: flex !important; 
+    align-items: center; 
+    gap: 1rem; 
+    text-decoration: none; 
+    transition: opacity 0.2s; 
+}
 .footer-logo-link:hover { opacity: 0.8; }
 .footer-logo-svg { width: 180px; height: auto; display: block; }
 .fpo-tagline {
@@ -389,7 +395,7 @@
     .footer-blob { width: 140px; height: 140px; }
     .footer-pill { font-size: 0.75rem; padding: 10px 18px; }
     .footer-playground-overlay { padding: 2rem 1.5rem; border-radius: 20px 20px 0 0; }
-    .fpo-logo-tagline { flex-direction: row; align-items: center; gap: 1rem; justify-content: center; text-align: left; }
+    .fpo-logo-tagline { flex-direction: row; align-items: center; gap: 0.5rem; justify-content: flex-start; text-align: left; }
     .fpo-logo-tagline .fpo-tagline { margin: 0; text-align: left; white-space: nowrap; }
     .fpo-nav-cols { grid-template-columns: repeat(2, 1fr); gap: 2rem 1rem; }
     .fpo-col { align-items: flex-start; text-align: left; }

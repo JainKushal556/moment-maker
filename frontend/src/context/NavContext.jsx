@@ -6,7 +6,7 @@ export const NavbarContext = createContext(null)
 export const NavbarColorContext = createContext(null)
 export const ViewContext = createContext(null)
 
-const SAFE_VIEWS_TO_RESTORE = ['landing', 'categories', 'gallery', 'moments', 'about', 'share', 'settings', 'copyright', 'preview']
+const SAFE_VIEWS_TO_RESTORE = ['landing', 'categories', 'gallery', 'moments', 'about', 'share', 'settings', 'copyright', 'preview', 'wallet', 'refer']
 const getInitialView = () => {
     const saved = sessionStorage.getItem('currentView')
     if (saved === 'editor') return 'moments'
@@ -31,7 +31,7 @@ export const NavProvider = ({ children }) => {
     const [selectedIntroId, setSelectedIntroId] = useState('glass-card')
 
     const { currentUser, openAuthModal, loading } = useAuth()
-    const PROTECTED_VIEWS = ['editor', 'moments', 'settings', 'share']
+    const PROTECTED_VIEWS = ['editor', 'moments', 'settings', 'share', 'wallet', 'refer']
 
     useEffect(() => {
         const isAuth = auth.currentUser && auth.currentUser.emailVerified

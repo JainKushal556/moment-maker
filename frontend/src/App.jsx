@@ -16,6 +16,7 @@ const FullScreenNav = lazy(() => import('./layout/FullScreenNav'))
 // Context
 import { NavProvider, ViewContext } from './context/NavContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { WalletProvider } from './context/WalletContext'
 
 // Auth
 import AuthModal from './features/auth/AuthModal'
@@ -35,6 +36,8 @@ const MyMomentsView = lazy(() => import('./features/moments/MyMomentsView'))
 const SettingsView = lazy(() => import('./features/settings/SettingsView'))
 const AboutUs = lazy(() => import('./features/about/AboutUs'))
 const CopyrightPage = lazy(() => import('./features/legal/CopyrightPage'))
+const ReferalView = lazy(() => import('./features/referral/ReferalView'))
+const WalletView = lazy(() => import('./features/wallet/WalletView'))
 
 gsap.registerPlugin(ScrollTrigger, Observer)
 
@@ -45,6 +48,26 @@ function AppContent() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
+    const path = window.location.pathname
+    
+    // Referral Tracking Logic (Supports /ref/CODE and ?ref=CODE)
+    let refCode = params.get('ref');
+    
+    if (!refCode && path.includes('/ref/')) {
+      refCode = path.split('/ref/')[1]?.split('/')[0]?.split('?')[0];
+    }
+
+    if (refCode) {
+      const cleanRef = refCode.trim().toUpperCase();
+      localStorage.setItem('pending_referral', cleanRef);
+      console.log('Referral Captured:', cleanRef);
+      // Clean the URL
+      const newUrl = window.location.pathname === '/' || path.startsWith('/ref/') 
+        ? '/' 
+        : window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+
     if (params.get('action') === 'login') {
       openAuthModal()
       window.history.replaceState({}, document.title, window.location.pathname)
@@ -89,10 +112,10 @@ function AppContent() {
     document.documentElement.style.overflow = ''
     document.body.style.touchAction = ''
 
-    if (window.lenis && currentView !== 'editor' && currentView !== 'moments' && currentView !== 'preview' && currentView !== 'settings') {
+    if (window.lenis && currentView !== 'editor' && currentView !== 'moments' && currentView !== 'preview' && currentView !== 'settings' && currentView !== 'wallet' && currentView !== 'refer') {
       window.lenis.start()
       window.lenis.scrollTo(0, { immediate: true, force: true })
-    } else if (currentView !== 'editor' && currentView !== 'moments' && currentView !== 'settings') {
+    } else if (currentView !== 'editor' && currentView !== 'moments' && currentView !== 'settings' && currentView !== 'wallet' && currentView !== 'refer') {
       window.scrollTo(0, 0)
     }
   }, [currentView])
@@ -147,15 +170,15 @@ function AppContent() {
       }
 
       window.dispatchEvent(new CustomEvent('momentNavToggle', {
-        detail: { visible: ['landing', 'about', 'categories', 'gallery', 'moments', 'settings'].includes(currentView) }
+        detail: { visible: ['landing', 'about', 'categories', 'gallery', 'moments', 'settings', 'wallet', 'refer'].includes(currentView) }
       }))
 
       prevViewRef.current = currentView
     }
 
-    if (window.lenis && currentView !== 'editor' && currentView !== 'moments' && currentView !== 'preview' && currentView !== 'settings') {
+    if (window.lenis && currentView !== 'editor' && currentView !== 'moments' && currentView !== 'preview' && currentView !== 'settings' && currentView !== 'wallet' && currentView !== 'refer') {
       window.lenis.scrollTo(0, { immediate: true, force: true })
-    } else if (currentView !== 'editor' && currentView !== 'moments' && currentView !== 'settings') {
+    } else if (currentView !== 'editor' && currentView !== 'moments' && currentView !== 'settings' && currentView !== 'wallet' && currentView !== 'refer') {
       window.scrollTo(0, 0)
     }
 
@@ -175,13 +198,13 @@ function AppContent() {
         />
       )}
 
-      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && (
+      {currentView !== 'editor' && currentView !== 'preview' && currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && currentView !== 'wallet' && currentView !== 'refer' && currentView !== 'gallery' && (
         <Suspense fallback={null}>
           <Navbar />
           <FullScreenNav requireAuth={openAuthModal} />
         </Suspense>
       )}
-      {currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && currentView !== 'about' && (
+      {currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && currentView !== 'wallet' && currentView !== 'refer' && currentView !== 'about' && (
         <DotGrid
           dotSize={5}
           gap={30}
@@ -194,7 +217,7 @@ function AppContent() {
           returnDuration={1.5}
         />
       )}
-      {currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && <NoiseOverlay />}
+      {currentView !== 'share' && currentView !== 'moments' && currentView !== 'settings' && currentView !== 'wallet' && currentView !== 'refer' && <NoiseOverlay />}
 
       {currentView === 'landing' && (
         <div className="relative z-10">
@@ -256,6 +279,22 @@ function AppContent() {
         <div className="relative z-20">
           <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#0a0a12]"></div>}>
             <SettingsView />
+          </Suspense>
+        </div>
+      )}
+      
+      {currentView === 'wallet' && (
+        <div className="relative z-20">
+          <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#0a0a12]"></div>}>
+            <WalletView />
+          </Suspense>
+        </div>
+      )}
+
+      {currentView === 'refer' && (
+        <div className="relative z-20">
+          <Suspense fallback={<div className="fixed inset-0 z-200 bg-[#0a0a12]"></div>}>
+            <ReferalView />
           </Suspense>
         </div>
       )}
@@ -417,9 +456,11 @@ export default function App() {
           overflow: 'hidden',
         } : {}}>
           <AuthProvider>
-            <NavProvider>
-              <AppContent />
-            </NavProvider>
+            <WalletProvider>
+              <NavProvider>
+                <AppContent />
+              </NavProvider>
+            </WalletProvider>
           </AuthProvider>
         </div>
       )}

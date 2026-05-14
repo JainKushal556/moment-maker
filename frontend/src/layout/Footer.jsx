@@ -1,5 +1,6 @@
 import { useEffect, useRef, useContext } from 'react'
 import { ViewContext } from '../context/NavContext'
+import logo from '../assets/logo.png'
 import Matter from 'matter-js'
 import '../styles/footer.css'
 
@@ -201,9 +202,21 @@ export default function Footer() {
         let clamped = false
         if (px < body.circleRadius || px < 0) { Body.setPosition(body, { x: body.circleRadius || 10, y: py }); Body.setVelocity(body, { x: Math.abs(body.velocity.x) * 0.5, y: body.velocity.y }); clamped = true }
         if (px > pW - (body.circleRadius || 0)) { Body.setPosition(body, { x: pW - (body.circleRadius || 10), y: py }); Body.setVelocity(body, { x: -Math.abs(body.velocity.x) * 0.5, y: body.velocity.y }); clamped = true }
-        if (py > floor + 50) { Body.setPosition(body, { x: px, y: floor - 10 }); Body.setVelocity(body, { x: body.velocity.x, y: -Math.abs(body.velocity.y) * 0.5 }); clamped = true }
         
-        if (clamped) { Body.setPosition(body, { x: px, y: py }); Body.setVelocity(body, { x: 0, y: 0 }) }
+        // Prevent items from going below the floor
+        if (py > floor) { 
+          Body.setPosition(body, { x: px, y: floor - (body.circleRadius || 20) }); 
+          Body.setVelocity(body, { x: body.velocity.x, y: -Math.abs(body.velocity.y) * 0.2 }); 
+          clamped = true 
+        }
+        
+        if (clamped) { 
+          // If significantly out of bounds, stop it completely
+          if (py > floor + 20) {
+            Body.setPosition(body, { x: px, y: floor - (body.circleRadius || 20) });
+            Body.setVelocity(body, { x: 0, y: 0 });
+          }
+        }
       }
     })
 
@@ -313,25 +326,45 @@ export default function Footer() {
 
         {/* Full Footer Overlay on Playground */}
         <div className="footer-playground-overlay">
-
-          {/* Top: Brand + Nav columns */}
+        {/* Top: Brand + Nav columns */}
           <div className="fpo-top">
             {/* Brand + Newsletter */}
             <div className="fpo-brand">
-              <div className="fpo-logo-tagline">
-                <a href="#landing-hero" className="footer-logo-link" aria-label="Moment Crafter Home" onClick={(e) => handleLandingShortcut(e, 'landing-hero')}>
-                  <svg className="footer-logo-svg" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
-                    <polygon points="16,2 18.5,11 28,11 20.5,16.5 23,26 16,21 9,26 11.5,16.5 4,11 13.5,11" fill="#ff69b4" />
-                    <line x1="16" y1="0" x2="16" y2="3" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
-                    <line x1="16" y1="27" x2="16" y2="30" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
-                    <line x1="30" y1="14" x2="33" y2="14" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
-                    <line x1="0" y1="14" x2="3" y2="14" stroke="#ff69b4" strokeWidth="1.8" strokeLinecap="round" />
-                    <text x="42" y="20" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="700" fontSize="14" fill="#fff" letterSpacing="0.5">MOMENT</text>
-                    <text x="42" y="36" fontFamily="'Inter','DM Sans',sans-serif" fontWeight="300" fontSize="10.5" fill="rgba(255,255,255,0.5)" letterSpacing="2.5">CRAFTER</text>
-                  </svg>
-                </a>
-                <p className="fpo-tagline">Craft memories,<br />not just messages.</p>
-              </div>
+                <div className="fpo-logo-tagline flex flex-row items-center gap-3 lg:gap-6 text-left">
+                  <a href="#landing-hero" className="footer-logo-link flex flex-row items-center gap-3 lg:gap-4" aria-label="Moment Crafter Home" onClick={(e) => handleLandingShortcut(e, 'landing-hero')}>
+                    {/* Rotating Logo for Footer */}
+                    <div className="relative h-16 w-16 lg:h-20 lg:w-20 rounded-full overflow-hidden p-[1.5px] shadow-[0_0_15px_rgba(217,70,239,0.2)]">
+                        {/* Rotating Gradient Layer */}
+                        <div className="absolute inset-[-100%] bg-gradient-to-br from-[#d946ef] via-[#f472b6] to-[#fb923c] animate-spin-slow"></div>
+                        
+                        {/* Inner Container to keep Logo static */}
+                        <div className="absolute inset-[1.5px] rounded-full bg-[#050508] flex items-center justify-center overflow-hidden z-10">
+                            <img 
+                                src={logo} 
+                                alt="Moment Maker Logo" 
+                                className="h-full w-full object-cover" 
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col items-start leading-[0.65]">
+                      <span className='text-white font-black text-lg lg:text-3xl uppercase tracking-tight'>MOMENT</span>
+                      <span 
+                        className='font-black text-lg lg:text-3xl uppercase tracking-tight'
+                        style={{ 
+                            WebkitTextStroke: '1px #FFD700', 
+                            WebkitTextStrokeWidth: '0.8px',
+                            color: 'transparent' 
+                        }}
+                      >CRAFTER</span>
+                    </div>
+                  </a>
+                  
+                  <div className="flex flex-col items-start leading-[0.9] border-l border-white/10 pl-3 lg:pl-10">
+                    <p className="fpo-tagline text-white/40 text-[10px] lg:text-base m-0 text-left">Craft memories,</p>
+                    <p className="fpo-tagline text-white/40 text-[10px] lg:text-base m-0 text-left">not just messages.</p>
+                  </div>
+                </div>
 
               {/* Newsletter */}
               <div className="footer-newsletter">

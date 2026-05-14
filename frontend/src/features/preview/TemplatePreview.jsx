@@ -2,6 +2,8 @@ import { useContext, useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ViewContext } from '../../context/NavContext'
 import { useAuth } from '../../context/AuthContext'
+import { useWallet } from '../../context/WalletContext'
+import WishbitIcon from '../../components/icons/WishbitIcon'
 import './template-preview.css'
 
 export default function TemplatePreview() {
@@ -20,6 +22,26 @@ export default function TemplatePreview() {
     const [isMobileFullPreview, setIsMobileFullPreview] = useState(false)
     const [refreshKey, setRefreshKey] = useState(0)
     const autoExitDone = useRef(false)
+    const { unlockedTemplates, templatePrices, unlock } = useWallet()
+    const price = templatePrices[selectedTemplate?.id] || 100
+    const isUnlockedGlobal = unlockedTemplates?.includes(selectedTemplate?.id)
+    const [isUnlocking, setIsUnlocking] = useState(false)
+
+    const handleGlobalUnlock = async () => {
+        if (!currentUser) {
+            openAuthModal()
+            return
+        }
+        setIsUnlocking(true)
+        try {
+            await unlock(selectedTemplate.id)
+        } catch (err) {
+            alert(err.message || "Failed to unlock template")
+        } finally {
+            setIsUnlocking(false)
+        }
+    }
+
     const isFavorite = favorites?.includes(selectedTemplate?.id)
 
     const handleRefresh = () => {
@@ -475,12 +497,19 @@ export default function TemplatePreview() {
                             </span>
                         </button>
                         <button
-                            className={`tp-pill-btn tp-pill-primary ${!hasSeenPreview ? 'tp-btn-locked' : ''}`}
-                            onClick={handleCustomize}
+                            className={`tp-pill-btn tp-pill-primary ${(!isUnlockedGlobal || !hasSeenPreview) ? 'tp-btn-locked' : ''}`}
+                            onClick={!isUnlockedGlobal ? handleGlobalUnlock : handleCustomize}
+                            disabled={isUnlocking}
                         >
-                            <span>{hasSeenPreview ? 'Customize View' : 'Explore to Unlock'}</span>
+                            <span>
+                                {!isUnlockedGlobal 
+                                    ? (price === 0 ? 'Claim for 0' : `Unlock for ${price}`)
+                                    : (hasSeenPreview ? 'Customize View' : 'Explore to Unlock')}
+                            </span>
                             <div className="tp-pill-arrow">
-                                {hasSeenPreview ? (
+                                {!isUnlockedGlobal ? (
+                                    <WishbitIcon size={28} className="drop-shadow-none" />
+                                ) : hasSeenPreview ? (
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                                         <polyline points="9 18 15 12 9 6" />
                                     </svg>

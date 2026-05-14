@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 load_dotenv()  # Load .env before any module reads os.getenv()
 
-from api.routes import moments, upload
+from api.routes import moments, upload, users
 
 app = FastAPI(title="Moment Crafter API", version="0.1.0")
 
@@ -19,6 +19,7 @@ app.add_middleware(
 # Register routers
 app.include_router(moments.router)
 app.include_router(upload.router)
+app.include_router(users.router)
 
 
 @app.get("/health")

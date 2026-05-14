@@ -1,8 +1,9 @@
-import React, { useState, useMemo, forwardRef, useContext, useEffect } from 'react';
+import React, { useState, useMemo, forwardRef, useContext, useEffect, useRef } from 'react';
 import {
-  Trash2, Sparkles, ArrowUpRight,
-  ChevronRight, Menu, LogOut, AlertTriangle, User, Settings
+  Trash2, Sparkles, ArrowUpRight, ChevronRight, Menu, LogOut, AlertTriangle, User, Settings,
+  Wallet, CreditCard, Gift, MoreVertical, Plus
 } from 'lucide-react';
+import WishbitIcon from '../../components/icons/WishbitIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ViewContext } from '../../context/NavContext';
 import { templates } from '../../data/templates';
@@ -12,11 +13,13 @@ import Footer from '../../layout/Footer';
 
 import MomentMagicCard from './MomentMagicCard';
 import { useAuth } from '../../context/AuthContext';
+import { useWallet } from '../../context/WalletContext';
 import { getMoments, getAllTemplateStats } from '../../services/api';
 
 export default function MyMomentsView() {
   const [currentView, navigateTo, , setSelectedTemplate, , setTemplateCustomization, transitionRef, sharedMomentId, setSharedMomentId, editingMomentId, setEditingMomentId, , setSelectedIntroId] = useContext(ViewContext);
   const { currentUser, logout, openAuthModal, loading, favorites } = useAuth();
+  const { balance, unlockedTemplates, templatePrices, unlock } = useWallet();
   const [moments, setMoments] = useState([]);
   const [filter, setFilter] = useState('all');
   const [deleteTarget, setDeleteTarget] = useState(null); // State for confirmation modal
@@ -24,13 +27,6 @@ export default function MyMomentsView() {
   const [templateStats, setTemplateStats] = useState({});
   const [unavailableTemplateName, setUnavailableTemplateName] = useState(null);
 
-  useEffect(() => {
-    if (showProfileMenu) {
-      const closeMenu = () => setShowProfileMenu(false);
-      window.addEventListener('click', closeMenu);
-      return () => window.removeEventListener('click', closeMenu);
-    }
-  }, [showProfileMenu]);
 
   useEffect(() => {
     if (currentUser) {
@@ -117,7 +113,7 @@ export default function MyMomentsView() {
     return moments.filter(m => m.status === filter);
   }, [moments, filter, favorites, templateStats]);
 
-  const handleAction = (type, id) => {
+  const handleAction = async (type, id) => {
     if (type === 'share') {
       const moment = moments.find(m => m.id === id);
       if (moment) {
@@ -177,7 +173,7 @@ export default function MyMomentsView() {
           delete newState[template.id];
           return newState;
         });
-        navigateTo('editor');
+        navigateTo('preview');
         return;
       }
 
@@ -204,7 +200,31 @@ export default function MyMomentsView() {
         navigateTo('editor');
       }
     }
+
+    if (type === 'unlock') {
+      try {
+        await unlock(id);
+      } catch (error) {
+        console.error("Unlock failed in MyMomentsView:", error);
+      }
+    }
   };
+
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+    if (showProfileMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showProfileMenu]);
 
   const handleLogout = async () => {
     try {
@@ -245,6 +265,17 @@ export default function MyMomentsView() {
           </div>
 
           <div className="flex items-center gap-2 md:gap-6">
+            {currentUser && (
+              <button 
+                onClick={() => navigateTo('wallet')}
+                className="flex items-center gap-0 py-1 transition-all select-none group active:scale-95"
+              >
+                <WishbitIcon size={32} className="drop-shadow-none group-hover:scale-110 transition-transform" />
+                <span className="text-base md:text-lg font-black tracking-tighter text-white">
+                  {balance.toLocaleString()}
+                </span>
+              </button>
+            )}
             <div className="relative">
               <button
                 onClick={(e) => {
@@ -262,20 +293,36 @@ export default function MyMomentsView() {
 
               <AnimatePresence>
                 {showProfileMenu && (
-                  <>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-[100] cursor-default bg-black/20 backdrop-blur-[2px]"
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      className="absolute right-0 mt-3 w-44 md:w-48 bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] z-[110] overflow-hidden"
-                    >
+                  <motion.div
+                    ref={menuRef}
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    className="absolute right-0 mt-3 w-44 md:w-48 bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] z-[110] overflow-hidden"
+                  >
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigateTo('wallet');
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+                      >
+                        <Wallet size={14} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Wallet</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigateTo('refer');
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+                      >
+                        <Gift size={14} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Refer & Earn</span>
+                      </button>
+
                       <button
                         onClick={() => {
                           setShowProfileMenu(false);
@@ -300,7 +347,6 @@ export default function MyMomentsView() {
                         <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Logout</span>
                       </button>
                     </motion.div>
-                  </>
                 )}
               </AnimatePresence>
             </div>
@@ -380,6 +426,9 @@ export default function MyMomentsView() {
                     <MomentMagicCard
                       moment={moment}
                       isTemplate={moment.isTemplate}
+                      isUnlocked={moment.isTemplate ? unlockedTemplates?.includes(moment.id) : true}
+                      price={moment.isTemplate ? (templatePrices[moment.id] || 0) : 0}
+                      onUnlock={(id) => handleAction('unlock', id)}
                       onAction={handleAction}
                     />
                   </motion.div>

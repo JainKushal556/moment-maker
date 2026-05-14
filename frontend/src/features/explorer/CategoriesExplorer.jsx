@@ -8,6 +8,7 @@ import MomentMagicCard from '../moments/MomentMagicCard'
 import { getAllTemplateStats } from '../../services/api'
 import { ChevronDown, Filter, Sparkles, LayoutGrid, TrendingUp } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useWallet } from '../../context/WalletContext'
 
 // Warm, cute icons
 const HeartIcon = ({ size = 24 }) => (
@@ -166,6 +167,7 @@ const categories = [
 
 const CategoriesExplorer = () => {
     const [, navigateTo, , setSelectedTemplate, , setTemplateCustomization, , , , , setEditingMomentId] = useContext(ViewContext)
+    const { unlockedTemplates, templatePrices, unlock } = useWallet()
     const [activeSection, setActiveSection] = useState('categories')
     const [popularFilter, setPopularFilter] = useState('all')
     const [templateStats, setTemplateStats] = useState({})
@@ -475,6 +477,15 @@ const CategoriesExplorer = () => {
                                                     vibe: template.tag || 'CINEMATIC'
                                                 }}
                                                 isTemplate={true}
+                                                isUnlocked={unlockedTemplates?.includes(template.id)}
+                                                price={templatePrices[template.id] || 0}
+                                                onUnlock={async (id) => {
+                                                    try {
+                                                        await unlock(id);
+                                                    } catch (error) {
+                                                        console.error("Unlock failed in Popular section:", error);
+                                                    }
+                                                }}
                                                 onAction={(type) => {
                                                     if (type === 'build' || type === 'click') {
                                                         handleTemplateClick(template.id);

@@ -12,6 +12,7 @@ const BigCta = lazy(() => import('./BigCta'))
 const FAQ = lazy(() => import('./FAQ'))
 const Footer = lazy(() => import('../../layout/Footer'))
 const SectionTransition = lazy(() => import('./SectionTransition'))
+import logo from '../../assets/logo.png'
 
 const LandingPage = () => {
     const transitionRef = useRef(null);
@@ -622,6 +623,25 @@ const LandingPage = () => {
 
     return (
         <>
+            {/* Prominent Fixed Logo on Landing Page */}
+            <div className='z-[101] fixed left-2 lg:left-4 top-3 lg:top-4 h-14 lg:h-24 flex items-center pointer-events-auto'>
+                <a href="/" className="flex items-center h-full group">
+                    <div className="relative h-full aspect-square rounded-full overflow-hidden p-[1.5px] group-hover:scale-105 transition-transform duration-500">
+                        {/* Rotating Gradient Layer */}
+                        <div className="absolute inset-[-100%] bg-gradient-to-br from-[#d946ef] via-[#f472b6] to-[#fb923c] animate-spin-slow"></div>
+                        
+                        {/* Inner Container to keep Logo static */}
+                        <div className="absolute inset-[1.5px] rounded-full bg-[#050508] flex items-center justify-center overflow-hidden z-10">
+                            <img 
+                                src={logo} 
+                                alt="Moment Maker Logo" 
+                                className="h-full w-full object-cover" 
+                            />
+                        </div>
+                    </div>
+                </a>
+            </div>
+
             {/* Global Scroll Indicator (Triple Chevron) */}
             <div className="global-scroll-indicator" id="globalScrollIndicator">
                 <span></span>
@@ -681,6 +701,8 @@ const LandingPage = () => {
                         transform: rotate(45deg) translate(10px, 10px);
                     }
                 }
+
+
             `}</style>
 
             <HeroSection />

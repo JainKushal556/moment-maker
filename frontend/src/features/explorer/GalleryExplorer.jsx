@@ -5,6 +5,9 @@ import Footer from '../../layout/Footer'
 import { FloatingHearts } from './CategoriesExplorer'
 import { templates } from '../../data/templates'
 import MomentMagicCard from '../moments/MomentMagicCard'
+import WishbitIcon from '../../components/icons/WishbitIcon'
+import { useAuth } from '../../context/AuthContext'
+import { useWallet } from '../../context/WalletContext'
 import { getAllTemplateStats } from '../../services/api'
 
 const getInitialCategory = () => {
@@ -15,6 +18,8 @@ const getInitialCategory = () => {
 const GalleryExplorer = () => {
     const [selectedCategory] = useState(getInitialCategory())
     const [, navigateTo, , setSelectedTemplate, , setTemplateCustomization, , , , , setEditingMomentId] = useContext(ViewContext)
+    const { currentUser } = useAuth()
+    const { balance, unlockedTemplates, templatePrices, unlock } = useWallet()
     const containerRef = useRef(null)
     const headerRef = useRef(null)
     const gridRef = useRef(null)
@@ -93,7 +98,7 @@ const GalleryExplorer = () => {
         >
             <FloatingHearts />
 
-            <div className="w-full h-12 flex items-center px-6 md:px-12 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
+            <div className="w-full h-12 flex items-center justify-between px-6 md:px-12 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
                 <button
                     onClick={handleBackToCategories}
                     className="group flex items-center gap-3 text-white/40 hover:text-white transition-colors"
@@ -105,6 +110,18 @@ const GalleryExplorer = () => {
                         BACK TO MOMENTS
                     </span>
                 </button>
+
+                {currentUser && (
+                    <button 
+                        onClick={() => navigateTo('wallet')}
+                        className="flex items-center gap-0 py-1 transition-all select-none group active:scale-95"
+                    >
+                        <WishbitIcon size={32} className="drop-shadow-none group-hover:scale-110 transition-transform" />
+                        <span className="text-base md:text-lg font-black tracking-tighter text-white">
+                            {balance.toLocaleString()}
+                        </span>
+                    </button>
+                )}
             </div>
 
             <div
@@ -183,6 +200,15 @@ const GalleryExplorer = () => {
                                         vibe: template.tag || 'CINEMATIC' // Fallback to CINEMATIC if tag doesn't match a vibe
                                     }}
                                     isTemplate={true}
+                                    isUnlocked={unlockedTemplates?.includes(template.id)}
+                                    price={templatePrices[template.id] || 0}
+                                    onUnlock={async (id) => {
+                                        try {
+                                            await unlock(id);
+                                        } catch (err) {
+                                            alert(err.message || "Failed to unlock template");
+                                        }
+                                    }}
                                     onAction={(type, id) => {
                                         if (type === 'build' || type === 'click') {
                                             handleTemplateClick(template);

@@ -29,48 +29,36 @@ const Navbar = () => {
     })
 
     return (
-        <div ref={navWrapperRef} className='z-100 fixed inset-x-0 top-0 pointer-events-none mix-blend-difference'>
+        <>
 
-            {/* Let's go Button */}
-            {!currentUser && currentView === 'landing' && (
-                <div className='absolute left-6 lg:left-12 top-0 h-12 flex items-center pointer-events-auto'>
+            <div ref={navWrapperRef} className='z-100 fixed inset-x-0 top-0 pointer-events-none mix-blend-difference'>
+
+                {/* Raw Text Menu Button */}
+                <div className='absolute right-6 lg:right-12 top-0 h-12 flex items-center pointer-events-auto'>
                     <button
                         type="button"
-                        onClick={() => openAuthModal()}
+                        aria-label="Open menu"
+                        id="nav-menu-button"
+                        onClick={() => setNavOpen(true)}
                         className='group h-full relative cursor-pointer flex items-center justify-center transition-all duration-300 ease-out'
                     >
-                        <span className="text-white font-inter leading-none tracking-[0.25em] uppercase text-sm lg:text-base font-bold opacity-90 group-hover:opacity-100 transition-opacity">
-                            Let's go
-                        </span>
+                        <div className='relative flex items-center justify-center gap-5 pointer-events-none'>
+                            <span className="text-white font-inter leading-none tracking-[0.25em] uppercase text-sm lg:text-base font-bold opacity-90 group-hover:opacity-100 transition-opacity">
+                                Menu
+                            </span>
+
+                            {/* Elegant 3-line hamburger - slightly larger */}
+                            <div className='flex flex-col items-end gap-[6px]'>
+                                <div className="w-6 h-[2.5px] bg-white transition-all duration-300 group-hover:w-8"></div>
+                                <div className="w-4 h-[2.5px] bg-white transition-all duration-300 group-hover:w-8"></div>
+                                <div className="w-5 h-[2.5px] bg-white transition-all duration-300 group-hover:w-8"></div>
+                            </div>
+                        </div>
                     </button>
                 </div>
-            )}
 
-            {/* Raw Text Menu Button */}
-            <div className='absolute right-6 lg:right-12 top-0 h-12 flex items-center pointer-events-auto'>
-                <button
-                    type="button"
-                    aria-label="Open menu"
-                    id="nav-menu-button"
-                    onClick={() => setNavOpen(true)}
-                    className='group h-full relative cursor-pointer flex items-center justify-center transition-all duration-300 ease-out'
-                >
-                    <div className='relative flex items-center justify-center gap-5 pointer-events-none'>
-                        <span className="text-white font-inter leading-none tracking-[0.25em] uppercase text-sm lg:text-base font-bold opacity-90 group-hover:opacity-100 transition-opacity">
-                            Menu
-                        </span>
-
-                        {/* Elegant 3-line hamburger - slightly larger */}
-                        <div className='flex flex-col items-end gap-[6px]'>
-                            <div className="w-6 h-[2.5px] bg-white transition-all duration-300 group-hover:w-8"></div>
-                            <div className="w-4 h-[2.5px] bg-white transition-all duration-300 group-hover:w-8"></div>
-                            <div className="w-5 h-[2.5px] bg-white transition-all duration-300 group-hover:w-8"></div>
-                        </div>
-                    </div>
-                </button>
             </div>
-
-        </div>
+        </>
     )
 }
 

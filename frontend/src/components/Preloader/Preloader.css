@@ -356,8 +356,8 @@
 
 .preloader-overlay .logo-box-wrapper {
   position: relative;
-  width: 9vw;
-  height: 6vw;
+  width: 9.9vw;
+  height: 6.5vw;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -365,8 +365,8 @@
 }
 
 .preloader-overlay .docked-arrow-fixed {
-  width: 9vw;
-  height: 6vw;
+  width: 9.9vw;
+  height: 6.5vw;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -387,12 +387,12 @@
 
 @media (max-width: 768px) {
   .preloader-overlay .logo-box-wrapper {
-    width: 9vw;
-    height: 6vw;
+    width: 10.5vw;
+    height: 6.8vw;
   }
   .preloader-overlay .docked-arrow-fixed {
-    width: 9vw;
-    height: 6vw;
+    width: 10.5vw;
+    height: 6.8vw;
   }
   .preloader-overlay .icon-orbit-svg {
     transform: translate(-50%, -50%) scale(2);

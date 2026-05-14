@@ -82,6 +82,23 @@ export const reactivateMoment = (id) =>
     apiFetch(`/moments/${id}/reactivate`, { method: 'POST' })
 // ─── Users API ────────────────────────────────────────────────
 
+/** Initialize authenticated user's profile with optional referral code */
+export const initializeUser = (referralCode = null) => 
+    apiFetch('/users/initialize', {
+        method: 'POST',
+        body: JSON.stringify({ referralCode })
+    })
+
+/** Unlock a premium template using Wishbits */
+export const unlockTemplate = (templateId) =>
+    apiFetch('/users/unlock', {
+        method: 'POST',
+        body: JSON.stringify({ templateId })
+    })
+
+/** Fetch authenticated user's Wishbit profile (wishbits, referralCode, etc) */
+export const getUserProfile = () => apiFetch('/users/me')
+
 /** Fetch user's favorite templates */
 export const getFavorites = () => apiFetch('/moments/favorites')
 

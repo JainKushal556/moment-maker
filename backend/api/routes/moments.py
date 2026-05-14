@@ -99,6 +99,23 @@ async def get_moment(moment_id: str, user: dict = Depends(get_current_user)):
 async def save_moment(payload: MomentPayload, user: dict = Depends(get_current_user)):
     """Save a new moment for the authenticated user."""
     uid = user["uid"]
+    
+    # Security: Ensure template is unlocked or free
+    user_ref = db.collection("users").document(uid)
+    user_doc = user_ref.get()
+    
+    if user_doc.exists:
+        unlocked = user_doc.to_dict().get("unlockedTemplates", [])
+        # Check if template price is 0 (free) or explicitly unlocked
+        template_ref = db.collection("templates_info").document(payload.templateId)
+        t_doc = template_ref.get()
+        price = 100
+        if t_doc.exists:
+            price = t_doc.to_dict().get("price", 100)
+        
+        if price > 0 and payload.templateId not in unlocked:
+            raise HTTPException(status_code=403, detail="Template is locked. Please unlock it using Wishbits first.")
+
     moment_id = str(uuid.uuid4())
     moment_data = {
         "uid": uid,

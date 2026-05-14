@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { getFavorites, toggleFavorite } from '../services/api'
+import { getFavorites, toggleFavorite, initializeUser } from '../services/api'
 import {
     onAuthStateChanged,
     signInWithPopup,
@@ -110,6 +110,11 @@ export const AuthProvider = ({ children }) => {
 
                 // 2. Sync with Firestore
                 try {
+                    // Initialize user profile (Signup bonus + Referral check)
+                    const pendingRef = localStorage.getItem('pending_referral')
+                    await initializeUser(pendingRef).catch(console.error)
+                    localStorage.removeItem('pending_referral')
+
                     const userRef = doc(db, 'users', user.uid)
                     let docSnap = await getDoc(userRef)
                     

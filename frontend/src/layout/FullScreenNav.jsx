@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import { useContext, useRef, useEffect, useState } from 'react'
 import { NavbarContext, ViewContext } from '../context/NavContext'
 import { useAuth } from '../context/AuthContext'
+import logo from '../assets/logo.png'
 
 // Cinematic image placeholders built to fit the Moment Crafter vibe
 const cinematicImgs = [
@@ -242,19 +243,36 @@ const FullScreenNav = ({ requireAuth }) => {
                 className='relative h-full w-full flex flex-col justify-center lg:justify-start overflow-hidden z-20'
             >
                 {/* Logo in top-left: Stylized 'Moment Crafter' */}
-                <div className='nav-logo opacity-0 absolute left-6 lg:left-6 top-[6vw] lg:top-[2.5%] -translate-y-1/2 z-[101] pointer-events-none flex flex-col items-start leading-[0.85]'>
-                    <span className='text-white font-black text-3xl sm:text-3xl lg:text-4xl uppercase tracking-tight'>
-                        Moment
-                    </span>
-                    <span 
-                        className='font-black text-3xl sm:text-3xl lg:text-4xl uppercase tracking-tight'
-                        style={{ 
-                            WebkitTextStroke: '1px #FFD700', 
-                            color: 'transparent' 
-                        }}
-                    >
-                        Crafter
-                    </span>
+                <div className='nav-logo opacity-0 absolute left-4 lg:left-4 top-[4vw] lg:top-[1.8%] -translate-y-1/2 z-[101] pointer-events-none flex items-center gap-4'>
+                    {/* Logo with rotating border */}
+                    <div className="relative h-20 lg:h-23 aspect-square rounded-full overflow-hidden p-[2px] shadow-[0_0_20px_rgba(217,70,239,0.3)]">
+                        {/* Rotating Gradient Layer */}
+                        <div className="absolute inset-[-100%] bg-gradient-to-br from-[#d946ef] via-[#f472b6] to-[#fb923c] animate-spin-slow"></div>
+                        
+                        {/* Inner Container to keep Logo static */}
+                        <div className="absolute inset-[2px] rounded-full bg-[#050508] flex items-center justify-center overflow-hidden z-10">
+                            <img 
+                                src={logo} 
+                                alt="Moment Maker Logo" 
+                                className="h-full w-full object-cover" 
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col items-start leading-[0.85]">
+                        <span className='text-white font-black text-3xl sm:text-3xl lg:text-4xl uppercase tracking-tight'>
+                            Moment
+                        </span>
+                        <span 
+                            className='font-black text-3xl sm:text-3xl lg:text-4xl uppercase tracking-tight'
+                            style={{ 
+                                WebkitTextStroke: '1px #FFD700', 
+                                color: 'transparent' 
+                            }}
+                        >
+                            Crafter
+                        </span>
+                    </div>
                 </div>
 
                 {/* Independent Close Button (Moved outside row to prevent opacity inheritance issues) */}

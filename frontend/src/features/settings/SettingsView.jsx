@@ -1,10 +1,11 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
-import { User, Settings, LogOut, Shield, Eye, EyeOff, Lock, CheckCircle2, XCircle } from 'lucide-react';
+import { User, Settings, LogOut, Shield, Eye, EyeOff, Lock, CheckCircle2, XCircle, Wallet, Gift } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ViewContext } from '../../context/NavContext';
 import { useAuth } from '../../context/AuthContext';
 import Footer from '../../layout/Footer';
 import PhotoUploadModal from './PhotoUploadModal';
+import WishbitIcon from '../../components/icons/WishbitIcon';
 
 export default function SettingsView() {
   const [currentView, navigateTo] = useContext(ViewContext);
@@ -157,11 +158,17 @@ export default function SettingsView() {
   };
 
   useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
     if (showProfileMenu) {
-      const closeMenu = () => setShowProfileMenu(false);
-      window.addEventListener('click', closeMenu);
-      return () => window.removeEventListener('click', closeMenu);
+      document.addEventListener('mousedown', handleClickOutside);
     }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [showProfileMenu]);
 
   const handleLogout = async () => {
@@ -235,6 +242,28 @@ export default function SettingsView() {
                       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       className="absolute right-0 mt-3 w-44 md:w-48 bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] z-[110] overflow-hidden"
                     >
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigateTo('wallet');
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+                      >
+                        <Wallet size={14} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Wallet</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigateTo('refer');
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+                      >
+                        <Gift size={14} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Refer & Earn</span>
+                      </button>
+
                       <button
                         onClick={() => setShowProfileMenu(false)}
                         className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"

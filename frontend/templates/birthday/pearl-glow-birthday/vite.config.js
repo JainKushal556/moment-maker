@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import react from '@vitejs/plugin-react-swc'
 import obfuscator from 'vite-plugin-javascript-obfuscator'
 
 export default defineConfig({

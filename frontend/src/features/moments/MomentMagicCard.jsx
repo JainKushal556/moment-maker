@@ -2,9 +2,10 @@ import React from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ArrowUpRight, Trash2, Sparkles, Heart, Share2, Pencil, RotateCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import WishbitIcon from '../../components/icons/WishbitIcon';
 
 
-const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
+const MomentMagicCard = ({ moment, onAction, isTemplate = false, isUnlocked = true, price = 100, onUnlock }) => {
   const { favorites, handleToggleFavorite } = useAuth()
   const isFavorite = isTemplate && favorites?.includes(moment.id)
 
@@ -117,32 +118,7 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
           />
           <div className="absolute inset-x-[-2px] bottom-[-2px] top-1/3 bg-gradient-to-t from-black via-black/90 to-transparent z-10" style={{ transform: 'translateZ(0)' }} />
 
-          <div
-            className="absolute flex justify-between items-start z-50"
-            style={{ top: '20px', left: '24px', right: '24px' }}
-          >
-            <div className="flex flex-col gap-2">
-              {moment.isPremium && (
-                <span className="text-[8px] font-black tracking-widest px-2 py-1 rounded bg-fuchsia-500 text-white w-fit uppercase">
-                  Premium
-                </span>
-              )}
-              {isTemplate && moment.averageRating > 0 && (
-                <span className="text-[10px] font-bold px-2 py-1 rounded bg-black/60 backdrop-blur-md text-white border border-white/10 w-fit flex items-center gap-1 shadow-lg">
-                  ⭐ {moment.averageRating.toFixed(1)}
-                </span>
-              )}
-            </div>
-
-            {isTemplate && (
-              <button
-                onClick={(e) => { e.stopPropagation(); handleToggleFavorite(moment.id); }}
-                className="w-8 h-8 rounded-full bg-black/30 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-black/50 transition-all z-50 shadow-md"
-              >
-                <Heart size={14} className={isFavorite ? "fill-fuchsia-500 text-fuchsia-500" : "text-white/80"} />
-              </button>
-            )}
-          </div>
+          {/* Buttons moved from here */}
 
           {/* Mobile View: Floating Action Buttons */}
           {!isTemplate && (
@@ -255,17 +231,32 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
               </>
             ) : (
               <>
-                <button
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    const rect = e.currentTarget.closest('.perspective-1000')?.getBoundingClientRect();
-                    if (onAction) onAction(isTemplate ? 'build' : 'enter', moment.id, rect); 
-                  }}
-                  className="rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] bg-white text-black hover:bg-fuchsia-600 hover:text-white shadow-2xl transition-all active:scale-95 cursor-pointer flex items-center gap-2 whitespace-nowrap"
-                  style={{ padding: '14px 32px' }}
-                >
-                  {isTemplate ? 'Build This' : moment.status === 'draft' ? 'Resume' : 'Edit'} <Pencil size={16} strokeWidth={3} />
-                </button>
+                {isTemplate && !isUnlocked ? (
+                  <button
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      if (onUnlock) onUnlock(moment.id); 
+                    }}
+                    className="rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] bg-fuchsia-500 text-white hover:bg-fuchsia-600 shadow-[0_0_30px_rgba(217,70,239,0.4)] transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
+                    style={{ height: '52px', padding: '0 28px' }}
+                  >
+                    {price === 0 ? 'Claim for 0' : `Unlock for ${price}`} 
+                    <WishbitIcon size={32} className="drop-shadow-none -ml-1" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      const rect = e.currentTarget.closest('.perspective-1000')?.getBoundingClientRect();
+                      if (onAction) onAction(isTemplate ? 'build' : 'enter', moment.id, rect); 
+                    }}
+                    className="rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] bg-white text-black hover:bg-fuchsia-600 hover:text-white shadow-2xl transition-all active:scale-95 cursor-pointer flex items-center gap-2 whitespace-nowrap"
+                    style={{ padding: '14px 32px' }}
+                  >
+                    {isTemplate ? 'Build This' : moment.status === 'draft' ? 'Resume' : 'Edit'} <Pencil size={16} strokeWidth={3} />
+                  </button>
+                )}
+                
                 {!isTemplate && moment.status === 'shared' && (
                   <button
                     onClick={(e) => { e.stopPropagation(); if (onAction) onAction('share', moment.id); }}
@@ -285,6 +276,45 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false }) => {
               </>
             )}
           </div>
+        </div>
+
+        {isTemplate && !isUnlocked && (
+          <div className="absolute inset-0 z-30 bg-black/40 backdrop-blur-[2px] flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity duration-300">
+             <div className="w-16 h-16 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-white/60 shadow-2xl">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+             </div>
+          </div>
+        )}
+
+        {/* Floating Buttons (Top) - Moved here to be above Lock Overlay */}
+        <div
+          className="absolute flex justify-between items-start z-[60]"
+          style={{ top: '20px', left: '24px', right: '24px' }}
+        >
+          <div className="flex flex-col gap-2">
+            {moment.isPremium && (
+              <span className="text-[8px] font-black tracking-widest px-2 py-1 rounded bg-fuchsia-500 text-white w-fit uppercase">
+                Premium
+              </span>
+            )}
+            {isTemplate && moment.averageRating > 0 && (
+              <span className="text-[10px] font-bold px-2 py-1 rounded bg-black/60 backdrop-blur-md text-white border border-white/10 w-fit flex items-center gap-1 shadow-lg">
+                ⭐ {moment.averageRating.toFixed(1)}
+              </span>
+            )}
+          </div>
+
+          {isTemplate && (
+            <button
+              onClick={(e) => { e.stopPropagation(); handleToggleFavorite(moment.id); }}
+              className="w-8 h-8 rounded-full bg-black/30 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-black/50 transition-all z-50 shadow-md"
+            >
+              <Heart size={14} className={isFavorite ? "fill-fuchsia-500 text-fuchsia-500" : "text-white/80"} />
+            </button>
+          )}
         </div>
       </div>
     </motion.div>
