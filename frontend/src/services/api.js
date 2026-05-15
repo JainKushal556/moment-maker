@@ -141,6 +141,12 @@ export const claimReferralReward = (friendUid) =>
         body: JSON.stringify({ friend_uid: friendUid })
     })
 
+export const getTransactionHistory = (limit = 5, lastId = null) => {
+    let url = `/users/me/transactions?limit=${limit}`;
+    if (lastId) url += `&last_id=${lastId}`;
+    return apiFetch(url);
+};
+
 // ─── Templates API ─────────────────────────────────────────────
 
 /** Fetch all aggregated template stats */

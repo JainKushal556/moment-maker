@@ -38,6 +38,7 @@ const AboutUs = lazy(() => import('./features/about/AboutUs'))
 const CopyrightPage = lazy(() => import('./features/legal/CopyrightPage'))
 const ReferalView = lazy(() => import('./features/referral/ReferalView'))
 const WalletView = lazy(() => import('./features/wallet/WalletView'))
+import LandingMusic from './features/landing/LandingMusic'
 
 gsap.registerPlugin(ScrollTrigger, Observer)
 
@@ -314,6 +315,8 @@ function AppContent() {
           </Suspense>
         </div>
       )}
+
+      {['landing', 'categories', 'about'].includes(currentView) && <LandingMusic />}
 
       {/* SVG Stroke Transition Overlay — always mounted */}
       <SvgTransition ref={transitionRef} />

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { getUserProfile, unlockTemplate, getAllTemplateStats, claimDailyReward, claimOneTimeReward, claimReferralReward } from '../services/api';
+import { getUserProfile, unlockTemplate, getAllTemplateStats, claimDailyReward, claimOneTimeReward, claimReferralReward, getTransactionHistory } from '../services/api';
 import { useAuth } from './AuthContext';
 
 const WalletContext = createContext();
@@ -20,6 +20,7 @@ export const WalletProvider = ({ children }) => {
     const [pendingTotal, setPendingTotal] = useState(0);
     const [referrals, setReferrals] = useState([]);
     const [transactions, setTransactions] = useState([]);
+    const [hasMoreTransactions, setHasMoreTransactions] = useState(false);
     const [unlockedTemplates, setUnlockedTemplates] = useState([]);
     const [templatePrices, setTemplatePrices] = useState({});
     const [streakInfo, setStreakInfo] = useState({ count: 0, claimedDays: [], pending: 0, lastClaim: null, dailyBonus: 5 });
@@ -71,6 +72,7 @@ export const WalletProvider = ({ children }) => {
                 setPendingTotal(profile.pendingTotal || 0);
                 setUnlockedTemplates(profile.unlockedTemplates || []);
                 setTransactions(profile.transactions || []);
+                setHasMoreTransactions(profile.transactions?.length === 5);
                 setIsReferred(profile.isReferred || false);
                 setHasSharedTemplate(profile.hasSharedTemplate || false);
                 setBonusAmounts({
@@ -208,6 +210,22 @@ export const WalletProvider = ({ children }) => {
         }
     };
 
+    const loadMoreTransactions = async () => {
+        if (!hasMoreTransactions || loading) return;
+        const lastTx = transactions[transactions.length - 1];
+        if (!lastTx) return;
+
+        try {
+            const res = await getTransactionHistory(5, lastTx.id);
+            if (res && res.transactions) {
+                setTransactions(prev => [...prev, ...res.transactions]);
+                setHasMoreTransactions(res.hasMore);
+            }
+        } catch (error) {
+            console.error("Failed to load more transactions:", error);
+        }
+    };
+
     const value = {
         balance,
         referralCode,
@@ -228,7 +246,9 @@ export const WalletProvider = ({ children }) => {
         claimOneTime,
         refreshWallet,
         unlock,
-        loading
+        loading,
+        loadMoreTransactions,
+        hasMoreTransactions
     };
 
     return (

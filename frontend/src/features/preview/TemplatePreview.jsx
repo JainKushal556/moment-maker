@@ -2,8 +2,9 @@ import { useContext, useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ViewContext } from '../../context/NavContext'
 import { useAuth } from '../../context/AuthContext'
-import { useWallet } from '../../context/WalletContext'
 import WishbitIcon from '../../components/icons/WishbitIcon'
+import CheckoutModal from '../../components/ui/CheckoutModal'
+import { useWallet } from '../../context/WalletContext'
 import './template-preview.css'
 
 export default function TemplatePreview() {
@@ -22,21 +23,31 @@ export default function TemplatePreview() {
     const [isMobileFullPreview, setIsMobileFullPreview] = useState(false)
     const [refreshKey, setRefreshKey] = useState(0)
     const autoExitDone = useRef(false)
-    const { unlockedTemplates, templatePrices, unlock } = useWallet()
+    const { balance, unlockedTemplates, templatePrices, unlock } = useWallet()
     const price = templatePrices[selectedTemplate?.id] ?? 100
     const isUnlockedGlobal = unlockedTemplates?.includes(selectedTemplate?.id)
     const [isUnlocking, setIsUnlocking] = useState(false)
+    const [checkoutTarget, setCheckoutTarget] = useState(null)
 
-    const handleGlobalUnlock = async () => {
+    const handleGlobalUnlock = () => {
         if (!currentUser) {
             openAuthModal()
             return
         }
+        setCheckoutTarget({
+            ...selectedTemplate,
+            price: price
+        })
+    }
+
+    const handleConfirmUnlock = async () => {
+        if (!checkoutTarget) return
         setIsUnlocking(true)
         try {
-            await unlock(selectedTemplate.id)
+            await unlock(checkoutTarget.id)
+            setCheckoutTarget(null)
         } catch (err) {
-            alert(err.message || "Failed to unlock template")
+            console.error("Unlock failed in TemplatePreview:", err)
         } finally {
             setIsUnlocking(false)
         }
@@ -589,6 +600,17 @@ export default function TemplatePreview() {
                     </div>
                 </div>
             )}
+
+            {/* Checkout Modal */}
+            <CheckoutModal 
+                isOpen={!!checkoutTarget}
+                onClose={() => setCheckoutTarget(null)}
+                template={checkoutTarget}
+                userBalance={balance}
+                isProcessing={isUnlocking}
+                onConfirm={handleConfirmUnlock}
+                onBuyWishbits={() => navigateTo('wallet')}
+            />
         </div>
     )
 }

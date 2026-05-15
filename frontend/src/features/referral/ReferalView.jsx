@@ -1,6 +1,6 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Gift, Copy, CheckCircle2, Wallet, Users, Trophy, Send, User, Settings, LogOut, Share2, ChevronRight, Loader2, Lock } from 'lucide-react';
+import { Gift, Copy, CheckCircle2, Wallet, Users, Trophy, Send, User, Settings, LogOut, Share2, ChevronRight, Loader2, Lock, LayoutGrid } from 'lucide-react';
 import WishbitIcon from '../../components/icons/WishbitIcon';
 import AnimatedBalance from '../../components/ui/AnimatedBalance';
 import { useAuth } from '../../context/AuthContext';
@@ -12,16 +12,19 @@ import Footer from '../../layout/Footer';
 export default function ReferalView() {
   const [currentView, navigateTo] = useContext(ViewContext);
   const { currentUser, logout } = useAuth();
-  const { balance, referrals, claimWishbits: claimWishbitsGlobal, claimedTotal, pendingTotal, referralCode, bonusAmounts, claiming } = useWallet();
+  const { balance, referrals, claimWishbits: claimWishbitsGlobal, claimedTotal, pendingTotal, referralCode, bonusAmounts, claiming, refreshWallet: refreshWalletGlobal } = useWallet();
   
   const [activeTab, setActiveTab] = useState('refer');
   const [copied, setCopied] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [toast, setToast] = useState(null);
 
   const referralLink = `${window.location.origin}/join?ref=${referralCode}`;
 
   const menuRef = useRef(null);
+
+  useEffect(() => {
+    refreshWalletGlobal();
+  }, [refreshWalletGlobal, activeTab]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -55,14 +58,7 @@ export default function ReferalView() {
   };
 
   const claimWishbits = async (id) => {
-    const res = await claimWishbitsGlobal(id);
-    if (res && res.success) {
-      setToast(`🎉 ${bonusAmounts?.referral || 50} Wishbits added to your Wallet!`);
-      setTimeout(() => setToast(null), 3000);
-    } else {
-      setToast(`❌ ${res?.message || 'Failed to claim reward'}`);
-      setTimeout(() => setToast(null), 3000);
-    }
+    await claimWishbitsGlobal(id);
   };
 
   return (
@@ -118,14 +114,33 @@ export default function ReferalView() {
 
               <AnimatePresence>
                 {showProfileMenu && (
-                  <motion.div
-                    ref={menuRef}
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => setShowProfileMenu(false)}
+                      className="fixed inset-0 z-[100] cursor-default bg-black/20 backdrop-blur-[2px]"
+                    />
+                    <motion.div
+                      ref={menuRef}
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                     className="absolute right-0 mt-3 w-44 md:w-48 bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] z-[110] overflow-hidden"
                   >
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigateTo('moments');
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+                      >
+                        <LayoutGrid size={14} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">My Moments</span>
+                      </button>
+
                       <button
                         onClick={() => {
                           setShowProfileMenu(false);
@@ -166,6 +181,7 @@ export default function ReferalView() {
                         <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Logout</span>
                       </button>
                     </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>
@@ -373,10 +389,16 @@ export default function ReferalView() {
         <div className="flex justify-end gap-8 mt-10 md:mt-0 mb-10">
             {['refer', 'rewards'].map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`pb-4 text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] relative transition-colors ${activeTab === tab ? 'text-white' : 'text-white/30 hover:text-white/60'}`}
+                className={`pb-1 text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] relative transition-colors ${activeTab === tab ? 'text-white' : 'text-white/30 hover:text-white/60'}`}
               >
                 {tab}
-                {activeTab === tab && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-fuchsia-500 shadow-[0_0_15px_#d946ef]" />}
+                {activeTab === tab && (
+                  <motion.div 
+                    layoutId="activeTab"
+                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-fuchsia-500 shadow-[0_0_15px_#d946ef]"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
               </button>
             ))}
         </div>
@@ -443,12 +465,15 @@ export default function ReferalView() {
             >
               {[
                 { label: 'Friends Invited', value: referrals?.length || 0, color: 'text-white' },
-                { label: 'Wishbits Earned', value: claimedTotal || 0, color: 'text-fuchsia-400' },
-                { label: 'Pending', value: pendingTotal || 0, color: (pendingTotal || 0) > 0 ? 'text-orange-400' : 'text-white/20' },
+                { label: 'Wishbits Earned', value: claimedTotal || 0, color: 'text-fuchsia-400', icon: true },
+                { label: 'Wishbits Pending', value: pendingTotal || 0, color: (pendingTotal || 0) > 0 ? 'text-orange-400' : 'text-white/20', icon: true },
               ].map((stat) => (
-                <div key={stat.label} className="p-5 md:p-6 rounded-2xl bg-white/3 border border-white/8 text-center">
-                  <p className={`text-2xl md:text-3xl font-black ${stat.color}`}>{stat.value}</p>
-                  <p className="text-[10px] md:text-[12px] font-bold uppercase tracking-widest text-white/30 mt-1">{stat.label}</p>
+                <div key={stat.label} className="p-5 md:p-6 rounded-2xl bg-white/3 border border-white/8 text-center group">
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <p className={`text-2xl md:text-3xl font-black ${stat.color}`}>{stat.value}</p>
+                    {stat.icon && <WishbitIcon size={28} className={`${stat.color} drop-shadow-[0_0_12px_currentColor]`} />}
+                  </div>
+                  <p className="text-[10px] md:text-[12px] font-bold uppercase tracking-widest text-white/30">{stat.label}</p>
                 </div>
               ))}
             </motion.div>
@@ -557,7 +582,7 @@ export default function ReferalView() {
                               : ref.friendClaimed ? 'text-fuchsia-400'
                               : 'text-white/20'
                             }`}>
-                              {ref.status === 'claimed' ? 'Completed' : ref.status === 'ghost' ? 'Invite' : 'Pending'}
+                              {ref.status === 'claimed' ? 'Claimed' : ref.status === 'ghost' ? 'Invite' : 'Pending'}
                             </p>
 
                             {ref.status === 'pending' && (
@@ -695,22 +720,6 @@ export default function ReferalView() {
           </div>
         )}
       </main>
-
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-10 left-1/2 -translate-x-1/2 px-6 py-3 bg-zinc-950 border border-white/10 rounded-full shadow-2xl flex items-center gap-3 z-[200]"
-          >
-            <div className="w-8 h-8 rounded-full bg-fuchsia-500 flex items-center justify-center text-white">
-              <WishbitIcon size={16} className="text-white" />
-            </div>
-            <span className="text-xs font-bold text-white tracking-tight">{toast}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <Footer />
     </div>

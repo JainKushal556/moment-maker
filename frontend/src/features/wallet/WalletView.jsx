@@ -4,7 +4,7 @@ import {
   Sparkles, Zap, Crown, CreditCard, History, 
   ArrowUpRight, Wallet, LogOut, Settings, Gift,
   ArrowLeft, ChevronRight, ChevronLeft, User, Users, ShoppingBag,
-  Check, Lock, X, ExternalLink, Copy, Info, Loader2
+  Check, Lock, X, ExternalLink, Copy, Info, Loader2, LayoutGrid
 } from 'lucide-react';
 import WishbitIcon from '../../components/icons/WishbitIcon';
 import AnimatedBalance from '../../components/ui/AnimatedBalance';
@@ -16,7 +16,7 @@ import Footer from '../../layout/Footer';
 export default function WalletView() {
   const [currentView, navigateTo] = useContext(ViewContext);
   const { currentUser, logout } = useAuth();
-  const { balance, transactions, streakInfo, claimDaily, claimedOneTime, isReferred, hasSharedTemplate, claimOneTime, bonusAmounts, claiming } = useWallet();
+  const { balance, transactions, streakInfo, claimDaily, claimedOneTime, isReferred, hasSharedTemplate, claimOneTime, bonusAmounts, claiming, refreshWallet, loadMoreTransactions, hasMoreTransactions, loading } = useWallet();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [activeSection, setActiveSection] = useState('quests');
@@ -24,9 +24,21 @@ export default function WalletView() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  const handlePageChange = async (newPage) => {
+    // If we are trying to go to a page that doesn't exist in local state yet
+    if (newPage > Math.ceil(transactions.length / itemsPerPage) && hasMoreTransactions) {
+      await loadMoreTransactions();
+    }
+    setCurrentPage(newPage);
+  };
+
   if (currentView !== 'wallet') return null;
 
   const menuRef = useRef(null);
+  
+  useEffect(() => {
+    refreshWallet();
+  }, [refreshWallet, activeSection]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -116,8 +128,16 @@ export default function WalletView() {
 
               <AnimatePresence>
                 {showProfileMenu && (
-                  <motion.div
-                    ref={menuRef}
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => setShowProfileMenu(false)}
+                      className="fixed inset-0 z-[100] cursor-default bg-black/20 backdrop-blur-[2px]"
+                    />
+                    <motion.div
+                      ref={menuRef}
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -127,12 +147,24 @@ export default function WalletView() {
                       <button
                         onClick={() => {
                           setShowProfileMenu(false);
-                          setActiveSection('quests');
+                          navigateTo('moments');
                         }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
                       >
-                        <Sparkles size={14} className="group-hover:scale-110 transition-transform" />
-                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Quests</span>
+                        <LayoutGrid size={14} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">My Moments</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          // Already in wallet, but we keep it for menu consistency
+                          setActiveSection('purchase'); 
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+                      >
+                        <Wallet size={14} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Wallet</span>
                       </button>
 
                       <button
@@ -167,6 +199,7 @@ export default function WalletView() {
                         <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Logout</span>
                       </button>
                     </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>
@@ -323,7 +356,7 @@ export default function WalletView() {
             <button
               key={section.id}
               onClick={() => setActiveSection(section.id)}
-              className={`text-[9px] md:text-[11px] font-black uppercase tracking-[0.25em] relative pt-4 pb-4 transition-all flex items-center gap-2 group shrink-0 ${
+              className={`text-[9px] md:text-[11px] font-black uppercase tracking-[0.25em] relative pt-1 pb-1 transition-all flex items-center gap-2 group shrink-0 ${
                 activeSection === section.id ? 'text-white' : 'text-white/30 hover:text-white/60'
               }`}
             >
@@ -774,27 +807,29 @@ export default function WalletView() {
                       </div>
 
                       {/* Pagination Controls */}
-                      {transactions?.length > itemsPerPage && (
+                      {(transactions?.length > itemsPerPage || hasMoreTransactions) && (
                         <div className="px-8 py-6 flex items-center justify-between border-t border-white/5 bg-white/[0.01]">
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">Page</span>
                             <span className="text-sm font-black text-white">{currentPage}</span>
-                            <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">of {Math.ceil((transactions?.length || 0) / itemsPerPage)}</span>
+                            {!hasMoreTransactions && (
+                               <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">of {Math.ceil((transactions?.length || 0) / itemsPerPage)}</span>
+                            )}
                           </div>
                           <div className="flex items-center gap-3">
                             <button
-                              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                              disabled={currentPage === 1}
+                              onClick={() => handlePageChange(currentPage - 1)}
+                              disabled={currentPage === 1 || loading}
                               className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white transition-all hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed border border-white/5"
                             >
-                              <ChevronLeft size={18} />
+                              {loading && currentPage > 1 ? <Loader2 size={16} className="animate-spin" /> : <ChevronLeft size={18} />}
                             </button>
                             <button
-                              onClick={() => setCurrentPage(prev => Math.min(Math.ceil((transactions?.length || 0) / itemsPerPage), prev + 1))}
-                              disabled={currentPage === Math.ceil((transactions?.length || 0) / itemsPerPage)}
+                              onClick={() => handlePageChange(currentPage + 1)}
+                              disabled={(!hasMoreTransactions && currentPage >= Math.ceil((transactions?.length || 0) / itemsPerPage)) || loading}
                               className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white transition-all hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed border border-white/5"
                             >
-                              <ChevronRight size={18} />
+                              {loading && currentPage >= Math.ceil((transactions?.length || 0) / itemsPerPage) ? <Loader2 size={16} className="animate-spin" /> : <ChevronRight size={18} />}
                             </button>
                           </div>
                         </div>

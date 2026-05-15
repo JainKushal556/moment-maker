@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
-import { User, Settings, LogOut, Shield, Eye, EyeOff, Lock, CheckCircle2, XCircle, Wallet, Gift } from 'lucide-react';
+import { User, Settings, LogOut, Shield, Eye, EyeOff, Lock, CheckCircle2, XCircle, Wallet, Gift, LayoutGrid } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ViewContext } from '../../context/NavContext';
 import { useAuth } from '../../context/AuthContext';
@@ -211,87 +211,95 @@ export default function SettingsView() {
           </div>
 
           <div className="flex items-center gap-2 md:gap-6">
-            <div className="relative">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowProfileMenu(!showProfileMenu);
-                }}
-                className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all active:scale-95 overflow-hidden"
-              >
-                {currentUser?.photoURL ? (
-                  <img src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <User size={18} />
-                )}
-              </button>
-
-              <AnimatePresence>
-                {showProfileMenu && (
-                  <>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-[100] cursor-default bg-black/20 backdrop-blur-[2px]"
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      className="absolute right-0 mt-3 w-44 md:w-48 bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] z-[110] overflow-hidden"
-                    >
-                      <button
-                        onClick={() => {
-                          setShowProfileMenu(false);
-                          navigateTo('wallet');
-                        }}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
-                      >
-                        <Wallet size={14} className="group-hover:scale-110 transition-transform" />
-                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Wallet</span>
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setShowProfileMenu(false);
-                          navigateTo('refer');
-                        }}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
-                      >
-                        <Gift size={14} className="group-hover:scale-110 transition-transform" />
-                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Refer & Earn</span>
-                      </button>
-
-                      <button
-                        onClick={() => setShowProfileMenu(false)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
-                      >
-                        <Settings size={14} className="group-hover:rotate-45 transition-transform duration-300" />
-                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Settings</span>
-                      </button>
-                      
-                      <div className="h-px bg-white/5 my-1 mx-2" />
-
-                      <button
-                        onClick={() => {
-                          setShowProfileMenu(false);
-                          handleLogout();
-                        }}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all text-left group"
-                      >
-                        <LogOut size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Logout</span>
-                      </button>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowProfileMenu(!showProfileMenu);
+              }}
+              className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all active:scale-95 overflow-hidden"
+            >
+              {currentUser?.photoURL ? (
+                <img src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <User size={18} />
+              )}
+            </button>
           </div>
         </div>
       </nav>
+
+      <AnimatePresence>
+        {showProfileMenu && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowProfileMenu(false)}
+              className="fixed inset-0 z-[100] cursor-default bg-black/5 backdrop-blur-[2px]"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              className="fixed right-6 md:right-12 mt-1 w-44 md:w-48 bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] z-[110] overflow-hidden"
+              style={{ top: '3.5rem' }}
+            >
+              <button
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  navigateTo('moments');
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+              >
+                <LayoutGrid size={14} className="group-hover:scale-110 transition-transform" />
+                <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">My Moments</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  navigateTo('wallet');
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+              >
+                <Wallet size={14} className="group-hover:scale-110 transition-transform" />
+                <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Wallet</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  navigateTo('refer');
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+              >
+                <Gift size={14} className="group-hover:scale-110 transition-transform" />
+                <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Refer & Earn</span>
+              </button>
+
+              <button
+                onClick={() => setShowProfileMenu(false)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+              >
+                <Settings size={14} className="group-hover:rotate-45 transition-transform duration-300" />
+                <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Settings</span>
+              </button>
+
+              <div className="h-px bg-white/5 my-1 mx-2" />
+
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-red-500/60 hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all text-left group"
+              >
+                <LogOut size={14} className="group-hover:translate-x-1 transition-transform" />
+                <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Logout</span>
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <main className="w-full max-w-[1600px] mx-auto px-6 md:px-12 pt-16 md:pt-24 pb-12 md:pb-24 relative z-10">

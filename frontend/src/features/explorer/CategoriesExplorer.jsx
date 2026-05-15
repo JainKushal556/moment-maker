@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useWallet } from '../../context/WalletContext'
 import { useAuth } from '../../context/AuthContext'
 import AnimatedBalance from '../../components/ui/AnimatedBalance'
+import CheckoutModal from '../../components/ui/CheckoutModal'
 
 // Warm, cute icons
 const HeartIcon = ({ size = 24 }) => (
@@ -175,6 +176,8 @@ const CategoriesExplorer = () => {
     const [popularFilter, setPopularFilter] = useState('all')
     const [templateStats, setTemplateStats] = useState({})
     const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false)
+    const [checkoutTarget, setCheckoutTarget] = useState(null)
+    const [isUnlocking, setIsUnlocking] = useState(false)
 
     useLayoutEffect(() => {
         document.body.style.overflow = ''
@@ -270,6 +273,19 @@ const CategoriesExplorer = () => {
         setSelectedTemplate(template)
         navigateTo('preview')
     }, [navigateTo, setEditingMomentId, setTemplateCustomization, setSelectedTemplate])
+
+    const handleConfirmUnlock = async () => {
+        if (!checkoutTarget) return
+        setIsUnlocking(true)
+        try {
+            await unlock(checkoutTarget.id)
+            setCheckoutTarget(null)
+        } catch (error) {
+            console.error("Purchase failed:", error)
+        } finally {
+            setIsUnlocking(false)
+        }
+    }
 
     const popularTemplates = useMemo(() => {
         return templates.filter(t => {
@@ -496,11 +512,13 @@ const CategoriesExplorer = () => {
                                                 isTemplate={true}
                                                 isUnlocked={unlockedTemplates?.includes(template.id)}
                                                 price={templatePrices[template.id] || 0}
-                                                onUnlock={async (id) => {
-                                                    try {
-                                                        await unlock(id);
-                                                    } catch (error) {
-                                                        console.error("Unlock failed in Popular section:", error);
+                                                onUnlock={(id) => {
+                                                    const t = templates.find(x => x.id === id);
+                                                    if (t) {
+                                                        setCheckoutTarget({
+                                                            ...t,
+                                                            price: templatePrices[id] || 0
+                                                        });
                                                     }
                                                 }}
                                                 onAction={(type) => {
@@ -526,6 +544,16 @@ const CategoriesExplorer = () => {
             </div>
             <div style={{ height: '160px' }} />
             <Footer />
+
+            <CheckoutModal 
+                isOpen={!!checkoutTarget}
+                onClose={() => setCheckoutTarget(null)}
+                template={checkoutTarget}
+                userBalance={balance}
+                isProcessing={isUnlocking}
+                onConfirm={handleConfirmUnlock}
+                onBuyWishbits={() => navigateTo('wallet')}
+            />
         </section>
     )
 }

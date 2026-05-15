@@ -1,7 +1,7 @@
 import React, { useState, useMemo, forwardRef, useContext, useEffect, useRef } from 'react';
 import {
   Trash2, Sparkles, ArrowUpRight, ChevronRight, Menu, LogOut, AlertTriangle, User, Settings,
-  Wallet, CreditCard, Gift, MoreVertical, Plus
+  Wallet, CreditCard, Gift, MoreVertical, Plus, LayoutGrid
 } from 'lucide-react';
 import AnimatedBalance from '../../components/ui/AnimatedBalance';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,18 +14,21 @@ import Footer from '../../layout/Footer';
 import MomentMagicCard from './MomentMagicCard';
 import { useAuth } from '../../context/AuthContext';
 import { useWallet } from '../../context/WalletContext';
+import CheckoutModal from '../../components/ui/CheckoutModal';
 import { getMoments, getAllTemplateStats } from '../../services/api';
 
 export default function MyMomentsView() {
   const [currentView, navigateTo, , setSelectedTemplate, , setTemplateCustomization, transitionRef, sharedMomentId, setSharedMomentId, editingMomentId, setEditingMomentId, , setSelectedIntroId] = useContext(ViewContext);
   const { currentUser, logout, openAuthModal, loading, favorites } = useAuth();
-  const { balance, unlockedTemplates, templatePrices, unlock } = useWallet();
+  const { balance, unlockedTemplates, templatePrices, unlock, refreshWallet } = useWallet();
   const [moments, setMoments] = useState([]);
   const [filter, setFilter] = useState('all');
   const [deleteTarget, setDeleteTarget] = useState(null); // State for confirmation modal
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [templateStats, setTemplateStats] = useState({});
   const [unavailableTemplateName, setUnavailableTemplateName] = useState(null);
+  const [checkoutTarget, setCheckoutTarget] = useState(null);
+  const [isUnlocking, setIsUnlocking] = useState(false);
 
 
   useEffect(() => {
@@ -202,15 +205,34 @@ export default function MyMomentsView() {
     }
 
     if (type === 'unlock') {
-      try {
-        await unlock(id);
-      } catch (error) {
-        console.error("Unlock failed in MyMomentsView:", error);
+      const t = templates.find(x => x.id === id);
+      if (t) {
+        setCheckoutTarget({
+          ...t,
+          price: templatePrices[id] || 0
+        });
       }
     }
   };
 
+  const handleConfirmUnlock = async () => {
+    if (!checkoutTarget) return;
+    setIsUnlocking(true);
+    try {
+      await unlock(checkoutTarget.id);
+      setCheckoutTarget(null);
+    } catch (error) {
+      console.error("Purchase failed in MyMomentsView:", error);
+    } finally {
+      setIsUnlocking(false);
+    }
+  };
+
   const menuRef = useRef(null);
+
+  useEffect(() => {
+    refreshWallet();
+  }, [refreshWallet, filter]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -293,14 +315,33 @@ export default function MyMomentsView() {
 
               <AnimatePresence>
                 {showProfileMenu && (
-                  <motion.div
-                    ref={menuRef}
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => setShowProfileMenu(false)}
+                      className="fixed inset-0 z-[100] cursor-default bg-black/20 backdrop-blur-[2px]"
+                    />
+                    <motion.div
+                      ref={menuRef}
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                     className="absolute right-0 mt-3 w-44 md:w-48 bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] z-[110] overflow-hidden"
                   >
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          navigateTo('moments');
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+                      >
+                        <LayoutGrid size={14} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">My Moments</span>
+                      </button>
+
                       <button
                         onClick={() => {
                           setShowProfileMenu(false);
@@ -347,6 +388,7 @@ export default function MyMomentsView() {
                         <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Logout</span>
                       </button>
                     </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>
@@ -377,7 +419,7 @@ export default function MyMomentsView() {
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em] relative pt-4 pb-1 transition-all ${filter === f ? 'text-white' : 'text-white/30 hover:text-white/60'
+                className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em] relative pt-1 pb-1 transition-all ${filter === f ? 'text-white' : 'text-white/30 hover:text-white/60'
                   }`}
               >
                 {f}
@@ -474,6 +516,16 @@ export default function MyMomentsView() {
       </main>
 
       <Footer />
+
+      <CheckoutModal 
+        isOpen={!!checkoutTarget}
+        onClose={() => setCheckoutTarget(null)}
+        template={checkoutTarget}
+        userBalance={balance}
+        isProcessing={isUnlocking}
+        onConfirm={handleConfirmUnlock}
+        onBuyWishbits={() => navigateTo('wallet')}
+      />
 
       {/* Delete Confirmation Modal */}
       <AnimatePresence>

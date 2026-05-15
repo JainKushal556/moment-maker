@@ -575,7 +575,7 @@ async def get_my_profile(user: dict = Depends(get_current_user)):
     referral_reward = config.get("referral_reward", 300)
 
     # 4. Fetch referrals list efficiently
-    referrals_docs = user_ref.collection("referrals").stream()
+    referrals_docs = user_ref.collection("referrals").order_by("timestamp", direction=firestore.Query.ASCENDING).stream()
     temp_referrals = []
     friend_uids = []
     
@@ -628,8 +628,8 @@ async def get_my_profile(user: dict = Depends(get_current_user)):
     is_referred = user_data.get("isReferred", False)
     user_data["claimedOneTime"] = claimed_one_time
 
-    # 5. Fetch transactions list
-    tx_docs = user_ref.collection("transactions").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(20).stream()
+    # 5. Fetch transactions list (Initial limited load)
+    tx_docs = user_ref.collection("transactions").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(5).get()
     tx_list = []
     for doc in tx_docs:
         tx_data = doc.to_dict()
@@ -665,5 +665,45 @@ async def get_my_profile(user: dict = Depends(get_current_user)):
             "transactions": tx_list,
             "pendingTotal": pending_total,
             "claimedTotal": claimed_total
+        }
+    }
+
+
+@router.get("/me/transactions")
+async def get_user_transactions(
+    limit: int = 5, 
+    last_id: str | None = None, 
+    user: dict = Depends(get_current_user)
+):
+    """
+    Fetch paginated transactions for the current user.
+    """
+    uid = user["uid"]
+    user_ref = db.collection("users").document(uid)
+    tx_ref = user_ref.collection("transactions").order_by("timestamp", direction=firestore.Query.DESCENDING)
+    
+    if last_id:
+        last_doc_ref = user_ref.collection("transactions").document(last_id).get()
+        if last_doc_ref.exists:
+            tx_ref = tx_ref.start_after(last_doc_ref)
+            
+    tx_docs = tx_ref.limit(limit).get()
+    
+    tx_list = []
+    for doc in tx_docs:
+        tx_data = doc.to_dict()
+        tx_data["id"] = doc.id
+        if "timestamp" in tx_data and tx_data["timestamp"]:
+            try:
+                tx_data["timestamp"] = tx_data["timestamp"].isoformat()
+            except Exception:
+                pass
+        tx_list.append(tx_data)
+        
+    return {
+        "success": True,
+        "data": {
+            "transactions": tx_list,
+            "hasMore": len(tx_list) == limit
         }
     }

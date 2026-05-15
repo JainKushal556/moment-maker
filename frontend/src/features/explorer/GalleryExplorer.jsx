@@ -6,11 +6,12 @@ import { FloatingHearts } from './CategoriesExplorer'
 import { templates } from '../../data/templates'
 import MomentMagicCard from '../moments/MomentMagicCard'
 import AnimatedBalance from '../../components/ui/AnimatedBalance'
+import CheckoutModal from '../../components/ui/CheckoutModal'
 import { useAuth } from '../../context/AuthContext'
 import { useWallet } from '../../context/WalletContext'
 import { getAllTemplateStats } from '../../services/api'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, Settings, LogOut, Wallet, Gift } from 'lucide-react'
+import { User, Settings, LogOut, Wallet, Gift, LayoutGrid } from 'lucide-react'
 
 const getInitialCategory = () => {
     const saved = sessionStorage.getItem('explorerSelectedCategory')
@@ -31,6 +32,8 @@ const GalleryExplorer = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false)
     const [templateStats, setTemplateStats] = useState({})
     const [showProfileMenu, setShowProfileMenu] = useState(false)
+    const [checkoutTarget, setCheckoutTarget] = useState(null)
+    const [isUnlocking, setIsUnlocking] = useState(false)
     const menuRef = useRef(null)
 
     useEffect(() => {
@@ -104,6 +107,19 @@ const GalleryExplorer = () => {
         navigateTo('preview')
     }
 
+    const handleConfirmUnlock = async () => {
+        if (!checkoutTarget) return
+        setIsUnlocking(true)
+        try {
+            await unlock(checkoutTarget.id)
+            setCheckoutTarget(null)
+        } catch (error) {
+            console.error("Purchase failed in GalleryExplorer:", error)
+        } finally {
+            setIsUnlocking(false)
+        }
+    }
+
     useEffect(() => {
         if (!selectedCategory) {
             navigateTo('categories', false)
@@ -169,6 +185,14 @@ const GalleryExplorer = () => {
 
                             <AnimatePresence>
                                 {showProfileMenu && (
+                                    <>
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        onClick={() => setShowProfileMenu(false)}
+                                        className="fixed inset-0 z-[100] cursor-default bg-black/20 backdrop-blur-[2px]"
+                                    />
                                     <motion.div
                                         ref={menuRef}
                                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -177,6 +201,17 @@ const GalleryExplorer = () => {
                                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                                         className="absolute right-0 mt-3 w-44 md:w-48 bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] z-[110] overflow-hidden"
                                     >
+                                        <button
+                                            onClick={() => {
+                                                setShowProfileMenu(false);
+                                                navigateTo('moments');
+                                            }}
+                                            className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+                                        >
+                                            <LayoutGrid size={14} className="group-hover:scale-110 transition-transform" />
+                                            <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">My Moments</span>
+                                        </button>
+
                                         <button
                                             onClick={() => {
                                                 setShowProfileMenu(false);
@@ -213,16 +248,14 @@ const GalleryExplorer = () => {
                                         <div className="h-px bg-white/5 my-1 mx-2" />
 
                                         <button
-                                            onClick={() => {
-                                                setShowProfileMenu(false);
-                                                handleLogout();
-                                            }}
-                                            className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all text-left group"
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-red-500/60 hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all text-left group"
                                         >
-                                            <LogOut size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                                            <LogOut size={14} className="group-hover:translate-x-1 transition-transform" />
                                             <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Logout</span>
                                         </button>
                                     </motion.div>
+                                    </>
                                 )}
                             </AnimatePresence>
                         </div>
@@ -308,15 +341,17 @@ const GalleryExplorer = () => {
                                     isTemplate={true}
                                     isUnlocked={unlockedTemplates?.includes(template.id)}
                                     price={templatePrices[template.id] || 0}
-                                    onUnlock={async (id) => {
+                                    onUnlock={(id) => {
                                         if (!currentUser) {
                                             openAuthModal();
                                             return;
                                         }
-                                        try {
-                                            await unlock(id);
-                                        } catch (err) {
-                                            alert(err.message || "Failed to unlock template");
+                                        const t = templates.find(x => x.id === id);
+                                        if (t) {
+                                            setCheckoutTarget({
+                                                ...t,
+                                                price: templatePrices[id] || 0
+                                            });
                                         }
                                     }}
                                     onAction={(type, id) => {
@@ -349,6 +384,16 @@ const GalleryExplorer = () => {
             </div>
             <div style={{ height: '160px' }} />
             <Footer />
+
+            <CheckoutModal 
+                isOpen={!!checkoutTarget}
+                onClose={() => setCheckoutTarget(null)}
+                template={checkoutTarget}
+                userBalance={balance}
+                isProcessing={isUnlocking}
+                onConfirm={handleConfirmUnlock}
+                onBuyWishbits={() => navigateTo('wallet')}
+            />
         </section>
     )
 }
