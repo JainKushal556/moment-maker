@@ -35,6 +35,7 @@ export const AuthProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null)
     const [unverifiedUser, setUnverifiedUser] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [isInitializing, setIsInitializing] = useState(false)
     const [authModalOpen, setAuthModalOpen] = useState(false)
     const [authCallback, setAuthCallback] = useState(null)
     const [favorites, setFavorites] = useState([])
@@ -103,17 +104,21 @@ export const AuthProvider = ({ children }) => {
                     return
                 }
 
+                setIsInitializing(true)
                 // 1. Set initial user from Auth immediately
                 setCurrentUser(mapUserObject(user))
                 setUnverifiedUser(null)
                 setLoading(false)
 
-                // 2. Sync with Firestore
+                // 2. Sync with Firestore & Initialize
                 try {
-                    // Initialize user profile (Signup bonus + Referral check)
                     const pendingRef = localStorage.getItem('pending_referral')
-                    await initializeUser(pendingRef).catch(console.error)
-                    localStorage.removeItem('pending_referral')
+                    if (pendingRef) {
+                        // Explicitly initialize with referral code if present
+                        await initializeUser(pendingRef)
+                        localStorage.removeItem('pending_referral')
+                    }
+                    // Note: If no pendingRef, /users/me in WalletContext will auto-initialize
 
                     const userRef = doc(db, 'users', user.uid)
                     let docSnap = await getDoc(userRef)
@@ -133,12 +138,15 @@ export const AuthProvider = ({ children }) => {
                     if (res && res.favorites) setFavorites(res.favorites)
                 } catch (e) {
                     console.error("Auth sync error:", e)
+                } finally {
+                    setIsInitializing(false)
                 }
             } else {
                 setFavorites([])
                 setCurrentUser(null)
                 setUnverifiedUser(null)
                 setLoading(false)
+                setIsInitializing(false)
             }
         })
         return unsubscribe
@@ -282,6 +290,7 @@ export const AuthProvider = ({ children }) => {
         currentUser,
         unverifiedUser,
         loading,
+        isInitializing,
         authModalOpen,
         openAuthModal,
         closeAuthModal,

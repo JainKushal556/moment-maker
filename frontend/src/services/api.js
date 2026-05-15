@@ -31,7 +31,11 @@ async function apiFetch(path, options = {}) {
         ...(options.headers || {}),
     }
 
-    const res = await fetch(`${BASE_URL}${path}`, { ...options, headers })
+    const res = await fetch(`${BASE_URL}${path}`, { 
+        ...options, 
+        headers,
+        cache: 'no-store'
+    })
 
     if (!res.ok) {
         const errorBody = await res.json().catch(() => ({}))
@@ -42,7 +46,17 @@ async function apiFetch(path, options = {}) {
     // 204 No Content — nothing to parse
     if (res.status === 204) return null
 
-    return res.json()
+    const data = await res.json();
+    
+    // If the response follows the {success, data, message} pattern
+    if (data && typeof data === 'object' && 'success' in data) {
+        if (!data.success) {
+            throw new Error(data.message || 'API operation failed');
+        }
+        return data.data; // Return the actual data payload
+    }
+
+    return data;
 }
 
 // ─── Moments API ────────────────────────────────────────────────
@@ -99,12 +113,33 @@ export const unlockTemplate = (templateId) =>
 /** Fetch authenticated user's Wishbit profile (wishbits, referralCode, etc) */
 export const getUserProfile = () => apiFetch('/users/me')
 
+/** Claim a specific daily login reward day */
+export const claimDailyReward = (day) =>
+    apiFetch('/users/daily-claim', { 
+        method: 'POST',
+        body: JSON.stringify({ day_to_claim: day })
+    })
+
+/** Claim a one-time reward (WELCOME_BONUS, REFERRAL_SIGNUP) */
+export const claimOneTimeReward = (rewardType) =>
+    apiFetch('/users/claim-one-time', {
+        method: 'POST',
+        body: JSON.stringify({ reward_type: rewardType })
+    })
+
 /** Fetch user's favorite templates */
 export const getFavorites = () => apiFetch('/moments/favorites')
 
 /** Toggle a template in user's favorites */
 export const toggleFavorite = (templateId) => 
     apiFetch(`/moments/favorites/${templateId}`, { method: 'POST' })
+
+/** Claim a specific referral reward from the referrals list */
+export const claimReferralReward = (friendUid) =>
+    apiFetch('/users/claim-referral', {
+        method: 'POST',
+        body: JSON.stringify({ friend_uid: friendUid })
+    })
 
 // ─── Templates API ─────────────────────────────────────────────
 

@@ -107,11 +107,18 @@ async def save_moment(payload: MomentPayload, user: dict = Depends(get_current_u
     if user_doc.exists:
         unlocked = user_doc.to_dict().get("unlockedTemplates", [])
         # Check if template price is 0 (free) or explicitly unlocked
+        # Fetch default price from config
+        config_ref = db.collection("app_config").document("wishbit_settings")
+        config = config_ref.get().to_dict() or {}
+        default_price = config.get("default_template_price", 100)
+        
         template_ref = db.collection("templates_info").document(payload.templateId)
         t_doc = template_ref.get()
-        price = 100
-        if t_doc.exists:
-            price = t_doc.to_dict().get("price", 100)
+        
+        if not t_doc.exists:
+            price = default_price
+        else:
+            price = t_doc.to_dict().get("price", default_price)
         
         if price > 0 and payload.templateId not in unlocked:
             raise HTTPException(status_code=403, detail="Template is locked. Please unlock it using Wishbits first.")
@@ -271,14 +278,19 @@ async def get_all_template_stats():
     for doc in stats_docs:
         data[doc.id] = doc.to_dict()
     
-    # 2. Fetch Prices (Publicly available)
+    # 2. Fetch Prices & Config (Publicly available)
+    config_ref = db.collection("app_config").document("wishbit_settings")
+    config = config_ref.get().to_dict() or {}
+    default_price = config.get("default_template_price", 100)
+
     info_docs = db.collection("templates_info").stream()
     for doc in info_docs:
         info = doc.to_dict()
+        price = info.get("price", default_price)
         if doc.id in data:
-            data[doc.id]["price"] = info.get("price", 100)
+            data[doc.id]["price"] = price
         else:
-            data[doc.id] = {"price": info.get("price", 100)}
+            data[doc.id] = {"price": price}
             
     return data
 

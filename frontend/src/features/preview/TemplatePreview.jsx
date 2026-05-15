@@ -23,7 +23,7 @@ export default function TemplatePreview() {
     const [refreshKey, setRefreshKey] = useState(0)
     const autoExitDone = useRef(false)
     const { unlockedTemplates, templatePrices, unlock } = useWallet()
-    const price = templatePrices[selectedTemplate?.id] || 100
+    const price = templatePrices[selectedTemplate?.id] ?? 100
     const isUnlockedGlobal = unlockedTemplates?.includes(selectedTemplate?.id)
     const [isUnlocking, setIsUnlocking] = useState(false)
 

@@ -1,7 +1,8 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Gift, Copy, CheckCircle2, Wallet, Users, Trophy, Send, Sparkles, User, Settings, LogOut, Share2, ChevronRight } from 'lucide-react';
+import { Gift, Copy, CheckCircle2, Wallet, Users, Trophy, Send, User, Settings, LogOut, Share2, ChevronRight, Loader2, Lock } from 'lucide-react';
 import WishbitIcon from '../../components/icons/WishbitIcon';
+import AnimatedBalance from '../../components/ui/AnimatedBalance';
 import { useAuth } from '../../context/AuthContext';
 import { ViewContext } from '../../context/NavContext';
 import { useWallet } from '../../context/WalletContext';
@@ -11,14 +12,14 @@ import Footer from '../../layout/Footer';
 export default function ReferalView() {
   const [currentView, navigateTo] = useContext(ViewContext);
   const { currentUser, logout } = useAuth();
-  const { balance, referrals, claimWishbits: claimWishbitsGlobal, claimedTotal, pendingTotal, referralCode } = useWallet();
+  const { balance, referrals, claimWishbits: claimWishbitsGlobal, claimedTotal, pendingTotal, referralCode, bonusAmounts, claiming } = useWallet();
   
   const [activeTab, setActiveTab] = useState('refer');
   const [copied, setCopied] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [toast, setToast] = useState(null);
 
-  const referralLink = `${window.location.origin}/ref/${referralCode}`;
+  const referralLink = `${window.location.origin}/join?ref=${referralCode}`;
 
   const menuRef = useRef(null);
 
@@ -53,10 +54,15 @@ export default function ReferalView() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const claimWishbits = (id) => {
-    claimWishbitsGlobal(id);
-    setToast('🎉 50 Wishbits added to your Wallet!');
-    setTimeout(() => setToast(null), 3000);
+  const claimWishbits = async (id) => {
+    const res = await claimWishbitsGlobal(id);
+    if (res && res.success) {
+      setToast(`🎉 ${bonusAmounts?.referral || 50} Wishbits added to your Wallet!`);
+      setTimeout(() => setToast(null), 3000);
+    } else {
+      setToast(`❌ ${res?.message || 'Failed to claim reward'}`);
+      setTimeout(() => setToast(null), 3000);
+    }
   };
 
   return (
@@ -78,7 +84,7 @@ export default function ReferalView() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:-translate-x-1 transition-transform">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              <span className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.3em] font-bold whitespace-nowrap">Back to Moments</span>
+              <span className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.3em] font-bold whitespace-nowrap">My Moments</span>
             </button>
           </div>
 
@@ -86,12 +92,12 @@ export default function ReferalView() {
             {currentUser && (
               <button 
                 onClick={() => navigateTo('wallet')}
-                className="flex items-center gap-0 py-1 transition-all select-none group active:scale-95"
+                className="active:scale-95 transition-transform"
               >
-                <WishbitIcon size={32} className="drop-shadow-none group-hover:scale-110 transition-transform" />
-                <span className="text-base md:text-lg font-black tracking-tighter text-white">
-                  {(balance || 0).toLocaleString()}
-                </span>
+                <AnimatedBalance 
+                  value={balance} 
+                  iconSize={32} 
+                />
               </button>
             )}
 
@@ -174,6 +180,32 @@ export default function ReferalView() {
               <span className="whitespace-nowrap">Refer & Earn</span><br />
               <span className="text-transparent bg-clip-text bg-linear-to-br from-fuchsia-500 via-pink-400 to-orange-400">Wishbits.</span>
             </h1>
+            
+            <p className="mt-8 text-sm md:text-lg text-white/50 max-w-xl font-medium leading-relaxed">
+              Share your link with friends. When they join, you both get wishbits.
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 md:gap-4 mt-8 max-w-xl">
+              <div className="flex items-center gap-3 px-4 py-3 md:px-6 md:py-4 rounded-2xl bg-fuchsia-500/[0.03] border border-fuchsia-500/10 backdrop-blur-sm">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-fuchsia-500/10 flex items-center justify-center text-fuchsia-400 shrink-0">
+                  <Gift size={18} className="md:w-5 md:h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[9px] md:text-[10px] font-bold text-white/40 uppercase tracking-widest truncate">You get</p>
+                  <p className="text-xs md:text-base font-black text-fuchsia-400 truncate">{bonusAmounts?.referral || 50} wishbits</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 px-4 py-3 md:px-6 md:py-4 rounded-2xl bg-pink-500/[0.03] border border-pink-500/10 backdrop-blur-sm">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-400 shrink-0">
+                  <Users size={18} className="md:w-5 md:h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[9px] md:text-[10px] font-bold text-white/40 uppercase tracking-widest truncate">They get</p>
+                  <p className="text-xs md:text-base font-black text-pink-400 truncate">{bonusAmounts?.refSignup || 30} wishbits</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="absolute top-[-20px] right-[10px] md:relative md:top-auto md:right-auto w-64 h-64 md:w-full md:max-w-[500px] md:h-[400px] pointer-events-none select-none shrink-0 md:mr-20 lg:mr-32">
@@ -352,117 +384,48 @@ export default function ReferalView() {
         {activeTab === 'refer' ? (
           <div className="space-y-6 md:space-y-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
-              <div className="lg:col-span-8">
-                <div className="h-full rounded-[2.5rem] bg-[#0d0d0f] border border-white/5 shadow-2xl overflow-hidden">
-                  <div className="p-6 md:p-10 flex flex-col h-full">
-                    <div className="flex items-center gap-3 mb-8">
-                      <div className="w-10 h-10 rounded-xl bg-fuchsia-500/10 flex items-center justify-center text-fuchsia-400">
-                        <Users size={20} />
-                      </div>
-                      <h2 className="text-xl font-bold text-white tracking-tight">Your Referral Summary</h2>
+              <div className="lg:col-span-12">
+                <div className="py-20 flex flex-col items-center text-center">
+                  {/* Redesigned Referral Section (Microsoft Rewards Style) */}
+                  <h3 className="text-3xl md:text-5xl font-black text-white mb-10 tracking-tight leading-tight max-w-xl">
+                    Refer your friends to <span className="text-transparent bg-clip-text bg-linear-to-br from-fuchsia-500 via-pink-400 to-orange-400">Moment Crafter</span>
+                  </h3>
+                  
+                  <div className="w-full max-w-3xl space-y-6">
+                    <div className="relative group">
+                      <input 
+                        readOnly 
+                        value={referralLink}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-5 text-sm md:text-base font-medium text-white/50 focus:outline-none transition-all group-hover:border-white/20"
+                      />
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-                      <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="p-7 rounded-[2rem] bg-fuchsia-500/[0.03] border border-fuchsia-500/10 hover:border-fuchsia-500/20 transition-all group relative overflow-hidden"
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <button 
+                        onClick={handleCopy}
+                        className={`flex items-center justify-center gap-3 px-8 py-5 rounded-xl text-sm md:text-base font-bold transition-all active:scale-95 ${
+                          copied ? 'bg-emerald-500 text-white' : 'bg-[#e0e7ff] text-black hover:bg-white'
+                        }`}
                       >
-                        <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-white/30 mb-5">You Earned</p>
-                        <div className="flex items-center gap-4">
-                          <span className="text-4xl md:text-5xl font-black text-white leading-none tracking-tighter">{claimedTotal || 0}</span>
-                          <div className="flex items-center gap-2">
-                            <WishbitIcon size={24} className="group-hover:scale-110 transition-transform" />
-                            <span className="text-sm font-bold text-fuchsia-400/80">Wishbits</span>
-                          </div>
-                        </div>
-                      </motion.div>
-                      <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="p-7 rounded-[2rem] bg-orange-500/[0.03] border border-orange-500/10 hover:border-orange-500/20 transition-all group relative overflow-hidden"
+                        {copied ? <CheckCircle2 size={20} /> : <Copy size={20} />}
+                        {copied ? 'Copied' : 'Copy link'}
+                      </button>
+                      
+                      <button 
+                        className="flex items-center justify-center gap-3 px-8 py-5 rounded-xl border-2 border-white/20 bg-transparent text-white text-sm md:text-base font-bold transition-all hover:bg-white/5 active:scale-95"
+                        onClick={() => {
+                          if (navigator.share) {
+                            navigator.share({
+                              title: 'Join Moment Maker',
+                              text: 'Create magical moments with me!',
+                              url: referralLink,
+                            });
+                          }
+                        }}
                       >
-                        <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-white/30 mb-5">Friends Joined</p>
-                        <div className="flex items-center gap-4">
-                          <span className="text-4xl md:text-5xl font-black text-white leading-none tracking-tighter">{referrals?.length || 0}</span>
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400">
-                              <Users size={12} />
-                            </div>
-                            <span className="text-sm font-bold text-orange-400/80">Friends</span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    </div>
-
-                    <div className="mt-auto space-y-4">
-                      <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-white/30">Your Referral Link</p>
-                      <div className="flex flex-col sm:flex-row items-stretch gap-3">
-                        <div className="flex-1 relative">
-                          <input 
-                            readOnly 
-                            value={referralLink}
-                            className="w-full bg-[#161618] border border-white/5 rounded-2xl px-5 py-4 text-xs font-mono text-white/50 focus:outline-none transition-all hover:border-white/10"
-                          />
-                        </div>
-                        <button 
-                          onClick={handleCopy}
-                          className="px-8 py-4 rounded-2xl bg-linear-to-r from-fuchsia-600 to-orange-500 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-lg shadow-fuchsia-500/20 hover:brightness-110 active:scale-95 transition-all"
-                        >
-                          {copied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
-                          {copied ? 'Copied!' : 'Copy Link'}
-                        </button>
-                      </div>
-
-                      <div className="pt-6">
-                        <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-white/20 mb-5">Share directly</p>
-                        <div className="flex flex-wrap gap-4 items-center">
-                          <button className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center transition-all hover:scale-110 active:scale-95 text-white hover:bg-white/5">
-                            <Share2 size={20} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lg:col-span-4">
-                <div className="h-full rounded-[2.5rem] bg-[#0d0d0f] border border-white/5 shadow-2xl">
-                  <div className="p-8 md:p-10 flex flex-col h-full">
-                    <div className="flex items-center gap-3 mb-10">
-                      <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400">
-                        <Sparkles size={20} />
-                      </div>
-                      <h2 className="text-xl font-bold text-white tracking-tight">How it works</h2>
-                    </div>
-
-                    <div className="relative space-y-12">
-                      <div className="absolute left-6 top-8 bottom-8 w-[1px] bg-white/5" />
-                      {[
-                        { step: '01', title: 'Share your link', desc: 'Send your link to friends.', color: 'text-fuchsia-400 border-fuchsia-500/20' },
-                        { step: '02', title: 'They sign up', desc: 'Your friend joins Moment Maker.', color: 'text-orange-400 border-orange-500/20' },
-                        { step: '03', title: 'You both earn', desc: 'You get 50 wishbits, they get 30 — instantly.', color: 'text-pink-400 border-pink-500/20' }
-                      ].map((s, idx) => (
-                        <motion.div 
-                          key={idx}
-                          initial={{ opacity: 0, x: 20 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: idx * 0.1 }}
-                          className="relative flex items-start gap-6 group"
-                        >
-                          <div className={`w-12 h-12 shrink-0 rounded-full border bg-[#161618] flex items-center justify-center text-xs font-black z-10 transition-transform group-hover:scale-110 ${s.color}`}>
-                            {s.step}
-                          </div>
-                          <div className="pt-1">
-                            <h3 className="text-sm font-black text-white mb-1 group-hover:text-fuchsia-400 transition-colors">{s.title}</h3>
-                            <p className="text-xs text-white/40 leading-relaxed max-w-[200px]">{s.desc}</p>
-                          </div>
-                        </motion.div>
-                      ))}
+                        <Share2 size={20} />
+                        Share
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -470,74 +433,12 @@ export default function ReferalView() {
             </div>
           </div>
         ) : (
-          <div className="space-y-10">
-            <div>
-              <p className="text-[10px] font-mono font-bold uppercase tracking-[0.4em] text-white/30 mb-8">Your Referral Journey</p>
-
-              <div className="overflow-x-auto pb-4 -mx-6 px-6">
-                <div className="flex items-start gap-0 min-w-max">
-                  {[
-                    ...(referrals || []),
-                    { id: 'ghost', name: null, initial: '+', date: null, status: 'ghost' },
-                  ].map((ref, i, arr) => (
-                    <div key={ref.id} className="flex items-start">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="flex flex-col items-center gap-3 w-36 md:w-44"
-                        onClick={ref.status === 'ghost' ? () => setActiveTab('refer') : undefined}
-                        style={ref.status === 'ghost' ? { cursor: 'pointer' } : {}}
-                      >
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-black border-2 shrink-0 ${
-                          ref.status === 'claimed'  ? 'bg-fuchsia-500/20 border-fuchsia-500/60 text-fuchsia-300'
-                          : ref.status === 'pending' ? 'bg-orange-500/10 border-orange-500/30 text-orange-400'
-                          : 'bg-white/5 border-dashed border-white/20 text-white/30'
-                        }`}>
-                          {ref.initial || '+'}
-                        </div>
-
-                        <div className={`p-4 rounded-2xl border text-center transition-all w-full ${
-                          ref.status === 'claimed'  ? 'bg-fuchsia-500/[0.03] border-fuchsia-500/10'
-                          : ref.status === 'pending' ? 'bg-orange-500/[0.03] border-orange-500/10'
-                          : 'bg-white/[0.02] border-dashed border-white/10 opacity-60'
-                        }`}>
-                          <p className="text-[10px] font-black text-white mb-1 truncate px-2">{ref.name || 'Invite a friend'}</p>
-                          <p className="text-[8px] font-mono text-white/30 uppercase tracking-wider">
-                            {ref.status === 'ghost' ? 'earn 50 wishbits' : ref.date || 'Pending...'}
-                          </p>
-
-                          {ref.status === 'pending' && (
-                            <div className="mt-3">
-                              <button
-                                onClick={() => claimWishbits(ref.id)}
-                                className="px-4 py-2 bg-fuchsia-500 hover:bg-fuchsia-400 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(217,70,239,0.5)]"
-                              >
-                                Claim
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-
-                      {i < arr.length - 1 && (
-                        <div className="flex items-center mt-6 shrink-0">
-                          <div className={`w-8 md:w-12 h-[2px] ${
-                            ref.status === 'claimed' ? 'bg-linear-to-r from-fuchsia-500/40 to-fuchsia-500/20'
-                            : 'bg-white/10'
-                          }`} />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
+          /* REWARDS TAB CONTENT */
+          <div className="space-y-12">
+            {/* 1. STATS CARDS (Now at top) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45 }}
               className="grid grid-cols-3 gap-4"
             >
               {[
@@ -547,66 +448,247 @@ export default function ReferalView() {
               ].map((stat) => (
                 <div key={stat.label} className="p-5 md:p-6 rounded-2xl bg-white/3 border border-white/8 text-center">
                   <p className={`text-2xl md:text-3xl font-black ${stat.color}`}>{stat.value}</p>
-                  <p className="text-[8px] md:text-[9px] font-bold uppercase tracking-widest text-white/30 mt-1">{stat.label}</p>
+                  <p className="text-[10px] md:text-[12px] font-bold uppercase tracking-widest text-white/30 mt-1">{stat.label}</p>
                 </div>
               ))}
             </motion.div>
 
-            {/* MILESTONE REWARDS - Now inside Rewards Tab */}
-            <div className="mt-12 w-full rounded-[2.5rem] bg-[#0d0d0f] border border-white/5 shadow-2xl p-8 md:p-12">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12">
+                    {/* 2. REFERRAL JOURNEY (Friends List) */}
+            <div className="space-y-8 bg-transparent">
+              <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-400">
-                    <Trophy size={20} />
+                  <div className="w-10 h-10 rounded-xl bg-fuchsia-500/10 flex items-center justify-center text-fuchsia-400 border border-fuchsia-500/20 shadow-[0_0_20px_rgba(217,70,239,0.1)]">
+                    <Users size={20} />
                   </div>
-                  <h2 className="text-xl font-bold text-white tracking-tight">Referral Rewards</h2>
+                  <div>
+                    <h2 className="text-sm font-black text-white tracking-[0.2em] uppercase">Referral Journey</h2>
+                    <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mt-0.5">Track your progress and rewards</p>
+                  </div>
                 </div>
-                <button className="flex items-center gap-2 text-white/30 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest group">
-                  View all rewards
-                  <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                </button>
+              </div>
+              
+              <div className="relative group/journey bg-transparent">
+                <div className="flex overflow-x-auto py-12 gap-10 no-scrollbar snap-x scroll-px-4 bg-transparent">
+                  {[
+                    ...(referrals || []),
+                    { id: 'ghost', displayName: 'Invite Friend', initial: '+', status: 'ghost' }
+                  ].map((ref, i, arr) => (
+                    <div key={ref.id} className="flex snap-start first:pl-4 last:pr-4">
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.1, type: "spring", stiffness: 300, damping: 20 }}
+                        className="flex flex-col items-center gap-5 min-w-[120px] group/item"
+                        onClick={ref.status === 'ghost' ? () => setActiveTab('refer') : undefined}
+                        style={ref.status === 'ghost' ? { cursor: 'pointer' } : {}}
+                      >
+                        {/* Avatar Container */}
+                        <div className="relative group/avatar">
+                          {/* Outer Glow for Claimable/Claimed */}
+                          <div className={`absolute inset-0 blur-2xl rounded-full transition-all duration-500 scale-125 ${
+                            ref.status === 'claimed' ? 'bg-fuchsia-500/10 opacity-100' : 
+                            ref.friendClaimed ? 'bg-fuchsia-500/20 opacity-100 animate-pulse' : 
+                            'opacity-0'
+                          }`} />
+
+                          <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full border-2 transition-all duration-500 relative z-10 p-1 backdrop-blur-xl shadow-2xl flex items-center justify-center ${
+                            ref.status === 'claimed' 
+                              ? 'bg-white/5 border-fuchsia-500/60 shadow-[0_0_30px_rgba(217,70,239,0.3)]' 
+                              : ref.status === 'ghost'
+                              ? 'bg-zinc-950/40 border-dashed border-white/10 text-white/20 hover:border-fuchsia-500/40 hover:bg-fuchsia-500/5'
+                              : 'bg-white/5 border-white/10 group-hover/item:border-white/20'
+                          }`}>
+                            <div className={`w-full h-full rounded-full flex items-center justify-center transition-colors duration-300 ${
+                              ref.status === 'claimed' 
+                                ? 'bg-linear-to-br from-fuchsia-500/30 to-transparent text-fuchsia-400' 
+                                : ref.status === 'ghost'
+                                ? 'bg-transparent text-white/20 group-hover/item:text-fuchsia-400'
+                                : 'bg-linear-to-br from-white/5 to-transparent text-white/20 group-hover/item:from-white/10'
+                            }`}>
+                              {ref.status === 'ghost' ? (
+                                <span className="text-3xl font-light">+</span>
+                              ) : (
+                                <User size={32} className="md:w-10 md:h-10" />
+                              )}
+                            </div>
+
+                            {/* Badge */}
+                            {ref.status === 'claimed' && (
+                              <div className="absolute -top-1 -right-1 w-7 h-7 bg-emerald-500 rounded-full border-4 border-[#050505] flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+                                <CheckCircle2 size={12} className="text-white" strokeWidth={4} />
+                              </div>
+                            )}
+                            
+                            {ref.friendClaimed && ref.status !== 'claimed' && (
+                              <div className="absolute -top-1 -right-1 w-7 h-7 bg-fuchsia-500 rounded-full border-4 border-[#050505] flex items-center justify-center shadow-[0_0_15px_rgba(217,70,239,0.4)] animate-bounce">
+                                <Gift size={12} className="text-white" strokeWidth={3} />
+                              </div>
+                            )}
+
+                            {/* Connection Line (Increased width to bridge gap between cards) */}
+                            {i < arr.length - 1 && (
+                              <div className="absolute top-1/2 left-full w-20 md:w-24 h-[1px] -translate-y-1/2 z-[-1] pointer-events-none">
+                                <div className={`w-full h-full relative ${
+                                  ref.status === 'claimed' ? 'bg-fuchsia-500/30' : 'bg-white/5'
+                                }`}>
+                                  {ref.status === 'claimed' && (
+                                    <motion.div 
+                                      initial={{ x: -20, opacity: 0 }}
+                                      animate={{ x: 20, opacity: 1 }}
+                                      transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                                      className="absolute top-0 left-0 w-4 h-full bg-linear-to-r from-transparent via-fuchsia-400 to-transparent blur-[1px]"
+                                    />
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="text-center space-y-1">
+                          <p className="text-[11px] font-black text-white/80 tracking-tight group-hover/item:text-white transition-colors truncate max-w-[100px] mx-auto">
+                            {ref.displayName}
+                          </p>
+                          
+                          <div className="flex flex-col items-center gap-3">
+                            <p className={`text-[9px] font-black uppercase tracking-[0.15em] ${
+                              ref.status === 'claimed' ? 'text-emerald-400' 
+                              : ref.status === 'ghost' ? 'text-white/30 group-hover/item:text-fuchsia-400'
+                              : ref.friendClaimed ? 'text-fuchsia-400'
+                              : 'text-white/20'
+                            }`}>
+                              {ref.status === 'claimed' ? 'Completed' : ref.status === 'ghost' ? 'Invite' : 'Pending'}
+                            </p>
+
+                            {ref.status === 'pending' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!claiming[ref.id] && ref.friendClaimed) claimWishbits(ref.id);
+                                }}
+                                disabled={claiming[ref.id] || !ref.friendClaimed}
+                                className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-1.5 min-w-[80px] justify-center ${
+                                  !ref.friendClaimed
+                                  ? 'bg-white/5 text-white/20 border border-white/5 cursor-not-allowed'
+                                  : claiming[ref.id]
+                                  ? 'bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30 cursor-wait'
+                                  : 'bg-fuchsia-500 text-white hover:bg-fuchsia-400 hover:scale-105 active:scale-95 shadow-[0_5px_15px_rgba(217,70,239,0.3)]'
+                                }`}
+                              >
+                                {claiming[ref.id] ? (
+                                  <Loader2 size={10} className="animate-spin" />
+                                ) : !ref.friendClaimed ? (
+                                  <><Lock size={10} /> Locked</>
+                                ) : (
+                                  'Claim'
+                                )}
+                              </button>
+                            )}
+
+                            {!ref.friendClaimed && ref.status === 'pending' && (
+                              <p className="text-[8px] font-bold text-fuchsia-400/40 uppercase tracking-tight leading-tight">
+                                Waiting for friend
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 3. REFERRAL BONUSES (Milestones) */}
+            <div className="w-full pt-4">
+              <div className="flex items-center gap-3 mb-12">
+                <div className="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-400">
+                  <Trophy size={24} />
+                </div>
+                <h2 className="text-xl font-bold text-white tracking-tight">Referral Bonuses</h2>
               </div>
 
-              <div className="relative pt-10 pb-8 px-4 md:px-10">
-                <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-white/5 -translate-y-1/2" />
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(((referrals?.length || 0) / 50) * 100, 100)}%` }}
-                  className="absolute top-1/2 left-0 h-[2px] bg-linear-to-r from-fuchsia-600 via-pink-500 to-orange-400 -translate-y-1/2 shadow-[0_0_20px_#d946ef]"
-                />
-                <div className="relative flex justify-between">
-                  {[
-                    { count: 1, label: 'First Friend', reward: '50 Wishbits', color: 'fuchsia' },
-                    { count: 5, label: '5 Friends', reward: '250 Wishbits', color: 'orange' },
-                    { count: 10, label: '10 Friends', reward: '600 Wishbits', color: 'pink' },
-                    { count: 25, label: '25 Friends', reward: '1,750 Wishbits', color: 'red' },
-                    { count: 50, label: '50 Friends', reward: '4,000 Wishbits', color: 'fuchsia' },
-                  ].map((m, idx) => {
-                    const isReached = (referrals?.length || 0) >= m.count;
-                    const colorClasses = {
-                      fuchsia: isReached ? 'border-fuchsia-500/60 text-fuchsia-400' : 'border-white/5 text-white/10',
-                      orange: isReached ? 'border-orange-500/60 text-orange-400' : 'border-white/5 text-white/10',
-                      pink: isReached ? 'border-pink-500/60 text-pink-400' : 'border-white/5 text-white/10',
-                      red: isReached ? 'border-red-500/60 text-red-400' : 'border-white/5 text-white/10',
-                    };
-                    return (
-                      <div key={idx} className="flex flex-col items-center gap-4 relative group">
-                        <div className={`absolute -top-12 whitespace-nowrap text-[9px] font-black uppercase tracking-widest transition-all ${isReached ? 'text-white' : 'text-white/20'}`}>
-                          {m.label}
+              <div className="relative pt-16 pb-12 overflow-x-auto no-scrollbar">
+                <div className="relative min-w-[600px] md:min-w-full lg:max-w-5xl lg:mx-auto px-4 md:px-10">
+                  <div className="absolute top-1/2 left-4 right-4 md:left-10 md:right-10 h-[2px] bg-white/5 -translate-y-1/2" />
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(((referrals?.length || 0) / 50) * 100, 100)}%` }}
+                    className="absolute top-1/2 left-4 md:left-10 h-[2px] bg-linear-to-r from-fuchsia-600 via-pink-500 to-orange-400 -translate-y-1/2 shadow-[0_0_20px_#d946ef] origin-left"
+                    style={{ maxWidth: 'calc(100% - 2rem)' }}
+                  />
+                  <div className="relative flex justify-between">
+                    {[
+                      { count: 1, label: 'First Friend', reward: '50 Wishbits', color: 'fuchsia' },
+                      { count: 5, label: '5 Friends', reward: '250 Wishbits', color: 'orange' },
+                      { count: 10, label: '10 Friends', reward: '600 Wishbits', color: 'pink' },
+                      { count: 25, label: '25 Friends', reward: '1,750 Wishbits', color: 'red' },
+                      { count: 50, label: '50 Friends', reward: '4,000 Wishbits', color: 'fuchsia' },
+                    ].map((m, idx) => {
+                      const isReached = (referrals?.length || 0) >= m.count;
+                      const colorClasses = {
+                        fuchsia: isReached 
+                          ? 'border-fuchsia-500/60 text-fuchsia-400 shadow-[0_0_20px_rgba(217,70,239,0.4)]' 
+                          : 'border-fuchsia-500/20 text-fuchsia-500/40 group-hover:border-fuchsia-500/40 group-hover:text-fuchsia-400 group-hover:shadow-[0_0_15px_rgba(217,70,239,0.15)]',
+                        orange: isReached 
+                          ? 'border-orange-500/60 text-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.4)]' 
+                          : 'border-orange-500/20 text-orange-500/40 group-hover:border-orange-500/40 group-hover:text-orange-400 group-hover:shadow-[0_0_15px_rgba(249,115,22,0.15)]',
+                        pink: isReached 
+                          ? 'border-pink-500/60 text-pink-400 shadow-[0_0_20px_rgba(236,72,153,0.4)]' 
+                          : 'border-pink-500/20 text-pink-500/40 group-hover:border-pink-500/40 group-hover:text-pink-400 group-hover:shadow-[0_0_15px_rgba(236,72,153,0.15)]',
+                        red: isReached 
+                          ? 'border-red-500/60 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.4)]' 
+                          : 'border-red-500/20 text-red-500/40 group-hover:border-red-500/40 group-hover:text-red-400 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.15)]',
+                      };
+                      return (
+                        <div key={idx} className="flex flex-col items-center gap-4 relative group">
+                          <div className={`absolute -top-12 whitespace-nowrap text-[11px] font-black uppercase tracking-widest transition-all ${isReached ? 'text-white' : 'text-white/40 group-hover:text-white/70'}`}>
+                            {m.label}
+                          </div>
+                          
+                          {/* Glow Background Effect */}
+                          {isReached ? (
+                            <motion.div 
+                              initial={{ scale: 0.8, opacity: 0 }}
+                              animate={{ scale: 1.4, opacity: [0.1, 0.3, 0.1] }}
+                              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                              className={`absolute inset-0 rounded-full blur-xl -z-10 ${
+                                m.color === 'fuchsia' ? 'bg-fuchsia-500' : 
+                                m.color === 'orange' ? 'bg-orange-500' :
+                                m.color === 'pink' ? 'bg-pink-500' : 'bg-red-500'
+                              }`}
+                            />
+                          ) : (
+                            /* Subtle Hover Glow for Unreached */
+                            <div className={`absolute inset-0 rounded-full blur-lg opacity-0 group-hover:opacity-10 transition-opacity -z-10 ${
+                              m.color === 'fuchsia' ? 'bg-fuchsia-500' : 
+                              m.color === 'orange' ? 'bg-orange-500' :
+                              m.color === 'pink' ? 'bg-pink-500' : 'bg-red-500'
+                            }`} />
+                          )}
+  
+                          <div className={`w-20 h-20 rounded-full border-2 bg-zinc-950/50 backdrop-blur-sm flex items-center justify-center transition-all z-10 ${
+                            isReached 
+                              ? `${colorClasses[m.color]} scale-110` 
+                              : `${colorClasses[m.color]}`
+                          }`}>
+                            <Gift 
+                              size={34} 
+                              className={`transition-all ${
+                                isReached 
+                                  ? 'animate-bounce drop-shadow-[0_0_10px_currentColor]' 
+                                  : 'drop-shadow-[0_0_5px_currentColor] group-hover:scale-110'
+                              }`} 
+                            />
+                          </div>
+                          <div className={`absolute -bottom-10 whitespace-nowrap text-[12px] font-black transition-all flex items-center gap-1 ${isReached ? 'text-pink-400' : 'text-white/10'}`}>
+                            {m.reward.split(' ')[0]}
+                            <WishbitIcon size={24} className={isReached ? 'opacity-100' : 'opacity-20'} />
+                          </div>
                         </div>
-                        <div className={`w-12 h-12 rounded-full border-2 bg-zinc-950 flex items-center justify-center transition-all z-10 ${
-                          isReached 
-                            ? `${colorClasses[m.color]} shadow-[0_0_20px_rgba(217,70,239,0.3)] scale-110` 
-                            : 'border-white/5 text-white/10 group-hover:border-white/20'
-                        }`}>
-                          <Gift size={20} className={isReached ? 'animate-bounce' : ''} />
-                        </div>
-                        <div className={`absolute -bottom-10 whitespace-nowrap text-[9px] font-bold transition-all ${isReached ? 'text-pink-400' : 'text-white/10'}`}>
-                          {m.reward}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -622,8 +704,8 @@ export default function ReferalView() {
             exit={{ opacity: 0, y: 50 }}
             className="fixed bottom-10 left-1/2 -translate-x-1/2 px-6 py-3 bg-zinc-950 border border-white/10 rounded-full shadow-2xl flex items-center gap-3 z-[200]"
           >
-            <div className="w-6 h-6 rounded-full bg-fuchsia-500 flex items-center justify-center text-white">
-              <Sparkles size={12} />
+            <div className="w-8 h-8 rounded-full bg-fuchsia-500 flex items-center justify-center text-white">
+              <WishbitIcon size={16} className="text-white" />
             </div>
             <span className="text-xs font-bold text-white tracking-tight">{toast}</span>
           </motion.div>

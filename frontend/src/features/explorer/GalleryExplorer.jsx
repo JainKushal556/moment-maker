@@ -5,10 +5,12 @@ import Footer from '../../layout/Footer'
 import { FloatingHearts } from './CategoriesExplorer'
 import { templates } from '../../data/templates'
 import MomentMagicCard from '../moments/MomentMagicCard'
-import WishbitIcon from '../../components/icons/WishbitIcon'
+import AnimatedBalance from '../../components/ui/AnimatedBalance'
 import { useAuth } from '../../context/AuthContext'
 import { useWallet } from '../../context/WalletContext'
 import { getAllTemplateStats } from '../../services/api'
+import { motion, AnimatePresence } from 'framer-motion'
+import { User, Settings, LogOut, Wallet, Gift } from 'lucide-react'
 
 const getInitialCategory = () => {
     const saved = sessionStorage.getItem('explorerSelectedCategory')
@@ -18,7 +20,7 @@ const getInitialCategory = () => {
 const GalleryExplorer = () => {
     const [selectedCategory] = useState(getInitialCategory())
     const [, navigateTo, , setSelectedTemplate, , setTemplateCustomization, , , , , setEditingMomentId] = useContext(ViewContext)
-    const { currentUser, openAuthModal } = useAuth()
+    const { currentUser, logout, openAuthModal } = useAuth()
     const { balance, unlockedTemplates, templatePrices, unlock } = useWallet()
     const containerRef = useRef(null)
     const headerRef = useRef(null)
@@ -28,6 +30,31 @@ const GalleryExplorer = () => {
     const [searchQuery, setSearchQuery] = useState('')
     const [isSearchOpen, setIsSearchOpen] = useState(false)
     const [templateStats, setTemplateStats] = useState({})
+    const [showProfileMenu, setShowProfileMenu] = useState(false)
+    const menuRef = useRef(null)
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setShowProfileMenu(false)
+            }
+        }
+        if (showProfileMenu) {
+            document.addEventListener('mousedown', handleClickOutside)
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [showProfileMenu])
+
+    const handleLogout = async () => {
+        try {
+            await logout()
+            navigateTo('landing')
+        } catch (error) {
+            console.error("Logout failed:", error)
+        }
+    }
 
     useEffect(() => {
         window.dispatchEvent(new CustomEvent('momentNavToggle', {
@@ -111,17 +138,96 @@ const GalleryExplorer = () => {
                     </span>
                 </button>
 
-                {currentUser && (
-                    <button 
-                        onClick={() => navigateTo('wallet')}
-                        className="flex items-center gap-0 py-1 transition-all select-none group active:scale-95"
-                    >
-                        <WishbitIcon size={32} className="drop-shadow-none group-hover:scale-110 transition-transform" />
-                        <span className="text-base md:text-lg font-black tracking-tighter text-white">
-                            {balance.toLocaleString()}
-                        </span>
-                    </button>
-                )}
+                <div className="flex items-center gap-3 md:gap-6">
+                    {currentUser && (
+                        <button 
+                            onClick={() => navigateTo('wallet')}
+                            className="active:scale-95 transition-transform"
+                        >
+                            <AnimatedBalance 
+                                value={balance} 
+                                iconSize={32} 
+                            />
+                        </button>
+                    )}
+
+                    {currentUser && (
+                        <div className="relative">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowProfileMenu(!showProfileMenu);
+                                }}
+                                className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all active:scale-95 overflow-hidden"
+                            >
+                                {currentUser?.photoURL ? (
+                                    <img src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    <User size={18} />
+                                )}
+                            </button>
+
+                            <AnimatePresence>
+                                {showProfileMenu && (
+                                    <motion.div
+                                        ref={menuRef}
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                                        className="absolute right-0 mt-3 w-44 md:w-48 bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] z-[110] overflow-hidden"
+                                    >
+                                        <button
+                                            onClick={() => {
+                                                setShowProfileMenu(false);
+                                                navigateTo('wallet');
+                                            }}
+                                            className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+                                        >
+                                            <Wallet size={14} className="group-hover:scale-110 transition-transform" />
+                                            <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Wallet</span>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setShowProfileMenu(false);
+                                                navigateTo('refer');
+                                            }}
+                                            className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+                                        >
+                                            <Gift size={14} className="group-hover:scale-110 transition-transform" />
+                                            <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Refer & Earn</span>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setShowProfileMenu(false);
+                                                navigateTo('settings');
+                                            }}
+                                            className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
+                                        >
+                                            <Settings size={14} className="group-hover:rotate-45 transition-transform duration-300" />
+                                            <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Settings</span>
+                                        </button>
+
+                                        <div className="h-px bg-white/5 my-1 mx-2" />
+
+                                        <button
+                                            onClick={() => {
+                                                setShowProfileMenu(false);
+                                                handleLogout();
+                                            }}
+                                            className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all text-left group"
+                                        >
+                                            <LogOut size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                                            <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Logout</span>
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div

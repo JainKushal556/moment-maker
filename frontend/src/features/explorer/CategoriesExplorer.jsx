@@ -9,6 +9,8 @@ import { getAllTemplateStats } from '../../services/api'
 import { ChevronDown, Filter, Sparkles, LayoutGrid, TrendingUp } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useWallet } from '../../context/WalletContext'
+import { useAuth } from '../../context/AuthContext'
+import AnimatedBalance from '../../components/ui/AnimatedBalance'
 
 // Warm, cute icons
 const HeartIcon = ({ size = 24 }) => (
@@ -167,7 +169,8 @@ const categories = [
 
 const CategoriesExplorer = () => {
     const [, navigateTo, , setSelectedTemplate, , setTemplateCustomization, , , , , setEditingMomentId] = useContext(ViewContext)
-    const { unlockedTemplates, templatePrices, unlock } = useWallet()
+    const { balance, unlockedTemplates, templatePrices, unlock } = useWallet()
+    const { currentUser } = useAuth()
     const [activeSection, setActiveSection] = useState('categories')
     const [popularFilter, setPopularFilter] = useState('all')
     const [templateStats, setTemplateStats] = useState({})
@@ -294,7 +297,7 @@ const CategoriesExplorer = () => {
         >
             <FloatingHearts />
 
-            <div className="w-full h-12 flex items-center px-6 md:px-12 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-100">
+            <div className="w-full h-12 flex items-center justify-between px-6 md:px-12 border-b border-white/5 bg-black/20 backdrop-blur-md fixed top-0 left-0 right-0 z-100">
                 <button
                     onClick={handleReturnHome}
                     className="group flex items-center gap-3 text-white/40 hover:text-white transition-colors"
@@ -306,6 +309,20 @@ const CategoriesExplorer = () => {
                         RETURN HOME
                     </span>
                 </button>
+
+                <div className="flex items-center gap-4 pr-30 md:pr-48">
+                    {currentUser && (
+                        <button 
+                            onClick={() => navigateTo('wallet')}
+                            className="active:scale-95 transition-transform"
+                        >
+                            <AnimatedBalance 
+                                value={balance} 
+                                iconSize={32} 
+                            />
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div

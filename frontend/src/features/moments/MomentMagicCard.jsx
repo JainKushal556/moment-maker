@@ -279,12 +279,27 @@ const MomentMagicCard = ({ moment, onAction, isTemplate = false, isUnlocked = tr
         </div>
 
         {isTemplate && !isUnlocked && (
-          <div className="absolute inset-0 z-30 bg-black/40 backdrop-blur-[2px] flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity duration-300">
-             <div className="w-16 h-16 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-white/60 shadow-2xl">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
+          <div className="absolute inset-0 z-30 bg-black/40 backdrop-blur-[2px] flex items-center justify-center pointer-events-auto md:pointer-events-none md:group-hover:opacity-0 transition-opacity duration-300">
+             <div className="flex flex-col items-center gap-5">
+                <div className="w-16 h-16 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-white/60 shadow-2xl">
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                   </svg>
+                </div>
+                
+                {/* Mobile Unlock Button */}
+                <button
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    if (onUnlock) onUnlock(moment.id); 
+                  }}
+                  className="md:hidden rounded-xl text-[9px] font-black uppercase tracking-[0.2em] bg-fuchsia-500 text-white shadow-[0_0_20px_rgba(217,70,239,0.3)] transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
+                  style={{ height: '38px', padding: '0 16px' }}
+                >
+                  {price === 0 ? 'Claim for 0' : `Unlock for ${price}`} 
+                  <WishbitIcon size={20} className="drop-shadow-none" />
+                </button>
              </div>
           </div>
         )}

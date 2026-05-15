@@ -1,7 +1,7 @@
 import random
 import string
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from pydantic import BaseModel
 from firebase_admin import firestore
 from core.security import get_current_user
@@ -66,14 +66,14 @@ async def initialize_user(payload: InitPayload, user: dict = Depends(get_current
     # Fetch rewards from config
     config_ref = db.collection("app_config").document("wishbit_settings")
     config = config_ref.get().to_dict() or {
-        "welcome_bonus": 10,
-        "ref_signup_bonus": 20,
-        "referral_reward": 50
+        "welcome_bonus": 500,
+        "ref_signup_bonus": 200,
+        "referral_reward": 300
     }
     
-    welcome_bonus = config.get("welcome_bonus", 10)
-    ref_signup_bonus = config.get("ref_signup_bonus", 20)
-    referral_reward = config.get("referral_reward", 50)
+    welcome_bonus = config.get("welcome_bonus", 500)
+    ref_signup_bonus = config.get("ref_signup_bonus", 200)
+    referral_reward = config.get("referral_reward", 300)
 
     @firestore.transactional
     def process_initialization(transaction, user_ref, payload, uid, email, display_name, welcome_bonus, ref_signup_bonus, referral_reward):
@@ -104,75 +104,61 @@ async def initialize_user(payload: InitPayload, user: dict = Depends(get_current
                         actual_signup_bonus = welcome_bonus + ref_signup_bonus
                         referred_by = referrer_uid
                         
-                        # Credit Referrer
-                        current_bits = referrer_doc.to_dict().get("wishbits", 0)
-                        transaction.update(referrer_ref, {"wishbits": current_bits + referral_reward})
-                        
-                        # Add to referrer's referrals sub-collection
+                        # Add to referrer's referrals sub-collection as PENDING
                         referral_entry_ref = referrer_ref.collection("referrals").document(uid)
                         transaction.set(referral_entry_ref, {
                             "uid": uid,
                             "displayName": display_name or "New Friend",
-                            "status": "claimed",
+                            "status": "pending",
                             "wishbits": referral_reward,
-                            "date": datetime.now(timezone.utc).strftime("%d %b %Y")
-                        })
-
-                        # Log Transaction for Referrer
-                        ref_tx_ref = referrer_ref.collection("transactions").document()
-                        transaction.set(ref_tx_ref, {
-                            "type": "credit",
-                            "amount": referral_reward,
-                            "label": f"Referral Reward: {display_name or 'New Friend'}",
-                            "date": datetime.now(timezone.utc).strftime("%d %b %Y"),
                             "timestamp": firestore.SERVER_TIMESTAMP
                         })
 
-        # 3. Create new user data
+        # 3. Create new user data (Initial Balance is 0, rewards must be claimed)
         new_user_data = {
             "uid": uid,
             "email": email,
             "displayName": display_name,
-            "wishbits": actual_signup_bonus,
+            "wishbits": 0, # Starts at 0
             "unlockedTemplates": [],
             "referredBy": referred_by,
             "initialized": True,
+            "isReferred": is_referred, # Store for claiming logic
+            "claimedOneTime": [], # List of claimed IDs
             "createdAt": firestore.SERVER_TIMESTAMP
         }
         
         # Save new user data
         transaction.set(user_ref, new_user_data, merge=True)
 
-        # 4. Log Transaction for New User
-        user_tx_ref = user_ref.collection("transactions").document()
-        tx_label = "Referral Bonus ✨" if is_referred else "Welcome Bonus ✨"
-        
-        transaction.set(user_tx_ref, {
-            "type": "credit",
-            "amount": actual_signup_bonus,
-            "label": tx_label,
-            "date": datetime.now(timezone.utc).strftime("%d %b %Y"),
-            "timestamp": firestore.SERVER_TIMESTAMP
-        })
-
-        return new_user_data
+        # Return clean data
+        return {
+            "uid": uid,
+            "wishbits": 0,
+            "streakCount": 1,
+            "claimedDays": [],
+            "unlockedTemplates": [],
+            "claimedOneTime": [],
+            "isReferred": is_referred
+        }
 
     try:
-        transaction = db.transaction()
-        user_data = process_initialization(transaction, user_ref, payload, uid, email, display_name, welcome_bonus, ref_signup_bonus, referral_reward)
+        # 1. Process main initialization (Signup bonus, referral link)
+        data = process_initialization(db.transaction(), user_ref, payload, uid, email, display_name, welcome_bonus, ref_signup_bonus, referral_reward)
+        
+        # 2. Generate/Get unique referral code for the new user
+        my_code = get_or_create_referral_code(db.transaction(), uid)
+        data["referralCode"] = my_code
+        
+        return {
+            "success": True,
+            "message": "User initialized successfully",
+            "data": data
+        }
     except Exception as e:
         print(f"Initialization Failed for {uid}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Initialization error: {str(e)}")
-    
-    # 4. Generate unique referral code for the new user (separate transaction)
-    transaction_code = db.transaction()
-    my_code = get_or_create_referral_code(transaction_code, uid)
-    
-    return {
-        "status": "success",
-        "wishbits": user_data["wishbits"],
-        "referralCode": my_code
-    }
+        if isinstance(e, HTTPException): raise e
+        raise HTTPException(status_code=500, detail="Failed to initialize user")
 
 class UnlockPayload(BaseModel):
     templateId: str
@@ -188,15 +174,17 @@ async def unlock_template(payload: UnlockPayload, user: dict = Depends(get_curre
     user_ref = db.collection("users").document(uid)
     template_ref = db.collection("templates_info").document(t_id)
     
-    # 1. Check if template exists and get price
+    # 1. Get default price from config
+    config_ref = db.collection("app_config").document("wishbit_settings")
+    config = config_ref.get().to_dict() or {}
+    default_price = config.get("default_template_price", 100)
+    
+    # 2. Check if template exists and get specific price
     t_doc = template_ref.get()
     if not t_doc.exists:
-        # If not in DB, use default price from config
-        config_ref = db.collection("app_config").document("wishbit_settings")
-        config = config_ref.get().to_dict() or {"default_template_price": 100}
-        price = config.get("default_template_price", 100)
+        price = default_price
     else:
-        price = t_doc.to_dict().get("price", 100)
+        price = t_doc.to_dict().get("price", default_price)
 
     @firestore.transactional
     def process_unlock(transaction, user_ref, t_id, price, uid):
@@ -224,104 +212,421 @@ async def unlock_template(payload: UnlockPayload, user: dict = Depends(get_curre
             "unlockedTemplates": unlocked
         })
         
-        # Log Transaction
+        # Log Transaction (Universal Schema)
         tx_ref = user_ref.collection("transactions").document()
+        txn_id = tx_ref.id
+        description = f"Unlocked premium template: {t_id.replace('-', ' ').title()}"
+        
         transaction.set(tx_ref, {
-            "type": "debit",
+            "txnId": txn_id,
+            "type": "DEBIT",
+            "category": "TEMPLATE_PURCHASE",
             "amount": price,
-            "label": f"Unlocked Template: {t_id.replace('-', ' ').title()}",
-            "date": datetime.now(timezone.utc).strftime("%d %b %Y"),
+            "paymentId": None,
+            "description": description,
+            "status": "COMPLETED",
+            "metadata": {
+                "templateId": t_id,
+                "price": price
+            },
             "timestamp": firestore.SERVER_TIMESTAMP
         })
         
-        return {"status": "success", "new_balance": new_bits}
+        return {"new_balance": new_bits, "templateId": t_id}
 
-    transaction = db.transaction()
-    return process_unlock(transaction, user_ref, t_id, price, uid)
+    try:
+        result = process_unlock(db.transaction(), user_ref, t_id, price, uid)
+        if result.get("status") == "already_unlocked":
+            return {"success": False, "message": "Template already unlocked"}
+            
+        return {
+            "success": True,
+            "message": "Template unlocked successfully",
+            "data": result
+        }
+    except Exception as e:
+        if isinstance(e, HTTPException): raise e
+        print(f"Unlock error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to unlock template")
+
+@router.post("/daily-claim")
+async def claim_daily_reward(day_to_claim: int = Body(..., embed=True), user: dict = Depends(get_current_user)):
+    """
+    Manually claim a specific day's reward from the streak.
+    - Day 2, 5: Only claimable if streakCount > day (i.e., from next day onwards).
+    - Prevents double-claiming the same day in the same streak.
+    """
+    uid = user["uid"]
+    user_ref = db.collection("users").document(uid)
+    config_ref = db.collection("app_config").document("wishbit_settings")
+    
+    @firestore.transactional
+    def process_claim(transaction, user_ref, config_ref, day):
+        u_doc = user_ref.get(transaction=transaction)
+        if not u_doc.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+            
+        u_data = u_doc.to_dict()
+        config = config_ref.get(transaction=transaction).to_dict() or {"daily_bonus": 5}
+        base_reward = config.get("daily_bonus", 5)
+        
+        today = datetime.now(timezone.utc).date()
+        today_str = today.strftime("%Y-%m-%d")
+        
+        last_login_date_str = u_data.get("lastLoginDate")
+        streak = u_data.get("streakCount", 0)
+        claimed_days = u_data.get("claimedDays", [])
+        current_bits = u_data.get("wishbits", 0)
+
+        # 1. Validation for the specific day
+        if day < 1 or day > 7:
+            raise HTTPException(status_code=400, detail="Invalid day.")
+        
+        if day > streak:
+            raise HTTPException(status_code=400, detail="Day not reached yet. Please login on that day first.")
+            
+        if day in claimed_days:
+            raise HTTPException(status_code=400, detail="Day already claimed.")
+            
+        # 2. Deferred Rule (Day 2 and 5)
+        if day in [2, 5] and streak == day:
+             raise HTTPException(status_code=400, detail=f"Day {day} reward is pending. Claim it on Day {day+1}!")
+
+        # 3. Calculate Reward
+        reward = base_reward * 2 if day == 7 else base_reward
+        
+        # 4. Update State
+        claimed_days.append(day)
+        new_bits = current_bits + reward
+        
+        updates = {
+            "claimedDays": claimed_days,
+            "wishbits": new_bits
+        }
+        
+        # 5. Log Transaction (Universal Schema)
+        tx_ref = user_ref.collection("transactions").document()
+        txn_id = tx_ref.id
+        description = f"Daily login reward for day {day}"
+        if day == 7:
+            description = "Final 7-day streak completion bonus"
+            
+        transaction.set(tx_ref, {
+            "txnId": txn_id,
+            "type": "CREDIT",
+            "category": "STREAK_REWARD",
+            "amount": reward,
+            "paymentId": None,
+            "description": description,
+            "status": "COMPLETED",
+            "metadata": {
+                "day": day,
+                "streakCount": streak
+            },
+            "timestamp": firestore.SERVER_TIMESTAMP
+        })
+        
+        transaction.update(user_ref, updates)
+        return {"new_balance": new_bits, "streak": streak, "claimedDays": claimed_days}
+
+    try:
+        # Execute the transactional function
+        result = process_claim(db.transaction(), user_ref, config_ref, day_to_claim)
+        return {
+            "success": True,
+            "message": "Daily reward claimed successfully",
+            "data": result
+        }
+    except Exception as e:
+        if isinstance(e, HTTPException): raise e
+        print(f"Claim execution error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@router.post("/claim-one-time")
+async def claim_one_time_reward(reward_type: str = Body(..., embed=True), user: dict = Depends(get_current_user)):
+    """
+    Claim a one-time reward (WELCOME_BONUS or REFERRAL_SIGNUP).
+    """
+    uid = user["uid"]
+    user_ref = db.collection("users").document(uid)
+    
+    config_ref = db.collection("app_config").document("wishbit_settings")
+    config = config_ref.get().to_dict() or {"welcome_bonus": 10, "ref_signup_bonus": 20}
+    
+    @firestore.transactional
+    def process_one_time_claim(transaction, user_ref, reward_type):
+        u_doc = user_ref.get(transaction=transaction)
+        if not u_doc.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+            
+        u_data = u_doc.to_dict()
+        claimed = u_data.get("claimedOneTime", [])
+        
+        if reward_type in claimed:
+            raise HTTPException(status_code=400, detail="Reward already claimed.")
+            
+        # Eligibility Checks
+        amount = 0
+        description = ""
+        category = reward_type
+        
+        if reward_type == "WELCOME_BONUS":
+            amount = config.get("welcome_bonus", 10)
+            description = "Welcome bonus for joining"
+        elif reward_type == "REFERRAL_SIGNUP":
+            if not u_data.get("isReferred"):
+                raise HTTPException(status_code=400, detail="Not eligible for referral bonus.")
+            
+            # SECURITY RULE: Must have shared at least one template
+            shared_moments = db.collection("moments").where(filter=firestore.FieldFilter("uid", "==", uid)).where(filter=firestore.FieldFilter("status", "==", "shared")).limit(1).get()
+            if not shared_moments:
+                raise HTTPException(status_code=400, detail="You must create and share at least one template to unlock this bonus.")
+                
+            amount = config.get("ref_signup_bonus", 20)
+            description = "Referral signup bonus"
+        else:
+            raise HTTPException(status_code=400, detail="Invalid reward type.")
+            
+        # Update State
+        current_bits = u_data.get("wishbits", 0)
+        new_bits = current_bits + amount
+        claimed.append(reward_type)
+        
+        transaction.update(user_ref, {
+            "wishbits": new_bits,
+            "claimedOneTime": claimed
+        })
+        
+        # Log Transaction
+        tx_ref = user_ref.collection("transactions").document()
+        transaction.set(tx_ref, {
+            "txnId": tx_ref.id,
+            "type": "CREDIT",
+            "category": category,
+            "amount": amount,
+            "paymentId": None,
+            "description": description,
+            "status": "COMPLETED",
+            "timestamp": firestore.SERVER_TIMESTAMP
+        })
+        
+        return {"new_balance": new_bits, "claimedOneTime": claimed}
+
+    try:
+        result = process_one_time_claim(db.transaction(), user_ref, reward_type)
+        return {
+            "success": True,
+            "message": f"{reward_type} claimed successfully",
+            "data": result
+        }
+    except Exception as e:
+        if isinstance(e, HTTPException): raise e
+        print(f"One-time claim error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to claim reward")
+
+
+@router.post("/claim-referral")
+async def claim_referral_reward(friend_uid: str = Body(..., embed=True), user: dict = Depends(get_current_user)):
+    """
+    Manually claim a pending referral reward from the 'referrals' sub-collection.
+    """
+    uid = user["uid"]
+    # Fetch rewards from config
+    config_ref = db.collection("app_config").document("wishbit_settings")
+    config = config_ref.get().to_dict() or {}
+    referral_reward = config.get("referral_reward", 300)
+
+    user_ref = db.collection("users").document(uid)
+    friend_ref = user_ref.collection("referrals").document(friend_uid)
+    
+    @firestore.transactional
+    def process_claim(transaction, user_ref, friend_ref, referral_reward):
+        friend_doc = friend_ref.get(transaction=transaction)
+        if not friend_doc.exists:
+            raise HTTPException(status_code=404, detail="Referral record not found.")
+            
+        friend_data = friend_doc.to_dict()
+        if friend_data.get("status") != "pending":
+            raise HTTPException(status_code=400, detail="Referral reward already claimed or not pending.")
+            
+        # SECURITY RULE: Referrer can only claim if friend has claimed their signup bonus
+        friend_uid = friend_data.get("uid")
+        actual_friend_doc = db.collection("users").document(friend_uid).get(transaction=transaction)
+        if not actual_friend_doc.exists:
+            raise HTTPException(status_code=404, detail="Friend user record not found")
+            
+        friend_user_data = actual_friend_doc.to_dict()
+        friend_claimed = friend_user_data.get("claimedOneTime", [])
+        if "REFERRAL_SIGNUP" not in friend_claimed:
+            raise HTTPException(status_code=400, detail="You can only claim this reward after your friend has claimed their signup bonus.")
+
+        reward_amount = friend_data.get("wishbits", referral_reward)
+        
+        # 1. Update Referrer's balance
+        user_doc = user_ref.get(transaction=transaction)
+        current_bits = user_doc.to_dict().get("wishbits", 0)
+        new_bits = current_bits + reward_amount
+        
+        transaction.update(user_ref, {"wishbits": new_bits})
+        
+        # 2. Mark referral as claimed
+        transaction.update(friend_ref, {"status": "claimed"})
+        
+        # 3. Log Transaction
+        tx_ref = user_ref.collection("transactions").document()
+        transaction.set(tx_ref, {
+            "txnId": tx_ref.id,
+            "type": "CREDIT",
+            "category": "REFERRAL_REWARD",
+            "amount": reward_amount,
+            "paymentId": None,
+            "description": f"Claimed referral reward for {friend_data.get('displayName', 'a friend')}",
+            "status": "COMPLETED",
+            "metadata": {
+                "referredUid": friend_uid,
+                "referredName": friend_data.get("displayName")
+            },
+            "timestamp": firestore.SERVER_TIMESTAMP
+        })
+        
+        return {"new_balance": new_bits}
+
+    try:
+        result = process_claim(db.transaction(), user_ref, friend_ref, referral_reward)
+        return {
+            "success": True,
+            "message": "Referral reward claimed successfully",
+            "data": result
+        }
+    except Exception as e:
+        if isinstance(e, HTTPException): raise e
+        print(f"Referral claim error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to claim referral reward")
+
 
 @router.get("/me")
 async def get_my_profile(user: dict = Depends(get_current_user)):
     """
     Fetch the authenticated user's Wishbit profile.
-    Automatically grants a daily check-in bonus if it's a new day.
+    Updated: Now only records 'lastLoginDate' if it's a new day, but doesn't grant bonus automatically.
     """
     uid = user["uid"]
     user_ref = db.collection("users").document(uid)
     
-    # 1. Fetch Config and User Data
+    # 1. Fetch User Data
     user_doc = user_ref.get()
     if not user_doc.exists:
-        # Auto-initialize if first time hitting /me (safe fallback)
-        return await initialize_user(InitPayload(referralCode=None), user)
+        # Initialize if not exists, then re-fetch to get full object
+        await initialize_user(InitPayload(referralCode=None), user)
+        user_doc = user_ref.get()
     
     user_data = user_doc.to_dict()
     
-    # 2. Ensure referral code exists (Self-healing for legacy users)
+    # 2. Self-healing for referral codes
     if not user_data.get("referralCode"):
         transaction_code = db.transaction()
         my_code = get_or_create_referral_code(transaction_code, uid)
         user_data["referralCode"] = my_code
     
-    # 2. Check for Daily Bonus (Automatic)
-    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    last_bonus_date = user_data.get("lastDailyBonusClaimed")
+    # 3. Handle 'lastLoginDate' and Streak Reset (Passive Check)
+    today = datetime.now(timezone.utc).date()
+    today_str = today.strftime("%Y-%m-%d")
+    last_login_date_str = user_data.get("lastLoginDate")
+    streak = user_data.get("streakCount", 0)
     
-    if last_bonus_date != today_str:
-        # Fetch Daily Reward Amount from Config
-        config_ref = db.collection("app_config").document("wishbit_settings")
-        config = config_ref.get().to_dict() or {"daily_bonus": 5}
-        daily_reward = config.get("daily_bonus", 5)
+    if last_login_date_str != today_str:
+        if last_login_date_str:
+            last_login = datetime.strptime(last_login_date_str, "%Y-%m-%d").date()
+            diff = (today - last_login).days
+            
+            if diff == 1:
+                # Consecutive day! Increment streak
+                if streak >= 7:
+                    streak = 1
+                    user_data["claimedDays"] = []
+                else:
+                    streak += 1
+            elif diff > 1:
+                # Streak broken! Reset
+                streak = 1
+                user_data["claimedDays"] = []
+        else:
+            # First time ever
+            streak = 1
+            user_data["claimedDays"] = []
+        
+        # Update Database with new login state
+        user_ref.update({
+            "streakCount": streak,
+            "lastLoginDate": today_str,
+            "claimedDays": user_data.get("claimedDays", [])
+        })
+        user_data["streakCount"] = streak
+        user_data["lastLoginDate"] = today_str
 
-        @firestore.transactional
-        def process_daily_bonus(transaction, user_ref, today_str, daily_reward):
-            u_doc = user_ref.get(transaction=transaction)
-            u_data = u_doc.to_dict()
-            
-            # Double check inside transaction
-            if u_data.get("lastDailyBonusClaimed") == today_str:
-                return u_data
-            
-            current_bits = u_data.get("wishbits", 0)
-            new_bits = current_bits + daily_reward
-            
-            transaction.update(user_ref, {
-                "wishbits": new_bits,
-                "lastDailyBonusClaimed": today_str
-            })
-            
-            # Log Transaction
-            tx_ref = user_ref.collection("transactions").document()
-            transaction.set(tx_ref, {
-                "type": "credit",
-                "amount": daily_reward,
-                "label": "Daily Reward 🎁",
-                "date": datetime.now(timezone.utc).strftime("%d %b %Y"),
-                "timestamp": firestore.SERVER_TIMESTAMP
-            })
-            
-            u_data["wishbits"] = new_bits
-            u_data["lastDailyBonusClaimed"] = today_str
-            return u_data
+    # Fetch Config for UI display
+    config_ref = db.collection("app_config").document("wishbit_settings")
+    config = config_ref.get().to_dict() or {}
+    daily_bonus = config.get("daily_bonus", 5)
+    welcome_bonus = config.get("welcome_bonus", 500)
+    ref_signup_bonus = config.get("ref_signup_bonus", 200)
+    referral_reward = config.get("referral_reward", 300)
 
-        transaction = db.transaction()
-        user_data = process_daily_bonus(transaction, user_ref, today_str, daily_reward)
-
-    # 4. Fetch referrals list
+    # 4. Fetch referrals list efficiently
     referrals_docs = user_ref.collection("referrals").stream()
-    referrals_list = []
-    claimed_total = 0
-    pending_total = 0
+    temp_referrals = []
+    friend_uids = []
     
     for doc in referrals_docs:
         ref_data = doc.to_dict()
         ref_data["id"] = doc.id
         ref_data["initial"] = ref_data.get("displayName", "?")[0].upper()
+        temp_referrals.append(ref_data)
+        if ref_data.get("uid"):
+            friend_uids.append(ref_data.get("uid"))
+
+    # Batch fetch all friend documents
+    friend_docs_dict = {}
+    if friend_uids:
+        friend_refs = [db.collection("users").document(uid) for uid in friend_uids]
+        # Firestore get_all returns documents in order of refs
+        actual_docs = db.get_all(friend_refs)
+        for doc in actual_docs:
+            if doc.exists:
+                friend_docs_dict[doc.id] = doc.to_dict()
+
+    # Finalize referral list with claim status
+    referrals_list = []
+    claimed_total = 0
+    pending_total = 0
+    
+    for ref_data in temp_referrals:
+        f_uid = ref_data.get("uid")
+        f_data = friend_docs_dict.get(f_uid, {})
+        f_claimed_list = f_data.get("claimedOneTime", [])
+        
+        # Merge profile info
+        ref_data["displayName"] = f_data.get("displayName") or ref_data.get("displayName", "New Friend")
+        ref_data["photoURL"] = f_data.get("photoURL")
+        ref_data["friendClaimed"] = "REFERRAL_SIGNUP" in f_claimed_list
+        
+        # Calculate initial
+        name = ref_data["displayName"]
+        ref_data["initial"] = name[0].upper() if name else "F"
+        
         referrals_list.append(ref_data)
         
         if ref_data.get("status") == "claimed":
-            claimed_total += ref_data.get("wishbits", 0)
+            claimed_total += ref_data.get("wishbits", referral_reward)
         else:
-            pending_total += ref_data.get("wishbits", 0)
+            pending_total += ref_data.get("wishbits", referral_reward)
+
+    # 4. Final state for response
+    claimed_one_time = user_data.get("claimedOneTime", [])
+    is_referred = user_data.get("isReferred", False)
+    user_data["claimedOneTime"] = claimed_one_time
 
     # 5. Fetch transactions list
     tx_docs = user_ref.collection("transactions").order_by("timestamp", direction=firestore.Query.DESCENDING).limit(20).stream()
@@ -329,16 +634,36 @@ async def get_my_profile(user: dict = Depends(get_current_user)):
     for doc in tx_docs:
         tx_data = doc.to_dict()
         tx_data["id"] = doc.id
-        if "timestamp" in tx_data: del tx_data["timestamp"]
+        
+        # Convert Firestore timestamp to ISO string for frontend localization
+        if "timestamp" in tx_data and tx_data["timestamp"]:
+            try:
+                tx_data["timestamp"] = tx_data["timestamp"].isoformat()
+            except Exception:
+                pass
+        
         tx_list.append(tx_data)
 
     return {
-        "wishbits": user_data.get("wishbits", 0),
-        "referralCode": user_data.get("referralCode", ""),
-        "unlockedTemplates": user_data.get("unlockedTemplates", []),
-        "referredBy": user_data.get("referredBy"),
-        "referrals": referrals_list,
-        "claimedTotal": claimed_total,
-        "pendingTotal": pending_total,
-        "transactions": tx_list
+        "success": True,
+        "message": "Profile fetched successfully",
+        "data": {
+            "wishbits": user_data.get("wishbits", 0),
+            "streakCount": user_data.get("streakCount", 0),
+            "claimedDays": user_data.get("claimedDays", []),
+            "dailyBonus": daily_bonus,
+            "welcomeBonus": welcome_bonus,
+            "refSignupBonus": ref_signup_bonus,
+            "referralBonus": referral_reward,
+            "referralCode": user_data.get("referralCode", ""),
+            "unlockedTemplates": user_data.get("unlockedTemplates", []),
+            "referredBy": user_data.get("referredBy"),
+            "isReferred": user_data.get("isReferred", False),
+            "claimedOneTime": user_data.get("claimedOneTime", []),
+            "hasSharedTemplate": db.collection("moments").where(filter=firestore.FieldFilter("uid", "==", uid)).where(filter=firestore.FieldFilter("status", "==", "shared")).limit(1).get() != [],
+            "referrals": referrals_list,
+            "transactions": tx_list,
+            "pendingTotal": pending_total,
+            "claimedTotal": claimed_total
+        }
     }

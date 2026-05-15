@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, Zap, Crown, CreditCard, History, 
   ArrowUpRight, Wallet, LogOut, Settings, Gift,
-  ArrowLeft, ChevronRight, User, ShoppingBag
+  ArrowLeft, ChevronRight, ChevronLeft, User, Users, ShoppingBag,
+  Check, Lock, X, ExternalLink, Copy, Info, Loader2
 } from 'lucide-react';
 import WishbitIcon from '../../components/icons/WishbitIcon';
+import AnimatedBalance from '../../components/ui/AnimatedBalance';
 import { useAuth } from '../../context/AuthContext';
 import { ViewContext } from '../../context/NavContext';
 import { useWallet } from '../../context/WalletContext';
@@ -14,10 +16,13 @@ import Footer from '../../layout/Footer';
 export default function WalletView() {
   const [currentView, navigateTo] = useContext(ViewContext);
   const { currentUser, logout } = useAuth();
-  const { balance, transactions } = useWallet();
+  const { balance, transactions, streakInfo, claimDaily, claimedOneTime, isReferred, hasSharedTemplate, claimOneTime, bonusAmounts, claiming } = useWallet();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const [activeSection, setActiveSection] = useState('balance');
+  const [activeSection, setActiveSection] = useState('quests');
+  const [selectedTx, setSelectedTx] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   if (currentView !== 'wallet') return null;
 
@@ -47,13 +52,13 @@ export default function WalletView() {
   };
 
   const wishbitPacks = [
-    { id: 1, amount: 500, price: '₹99', label: 'Starter Wishbit', icon: <Sparkles className="text-blue-400" />, popular: false },
-    { id: 2, amount: 2000, price: '₹299', label: 'Pro Wishbit', icon: <Zap className="text-sun-gold" />, popular: true },
-    { id: 3, amount: 5000, price: '₹599', label: 'Wishbit Master', icon: <Crown className="text-fuchsia-500" />, popular: false },
+    { id: 1, amount: 25, price: '₹699', originalPrice: '₹999', discount: '30% OFF', label: 'Starter Wishbit', popular: false, color: 'fuchsia' },
+    { id: 2, amount: 50, price: '₹1299', originalPrice: '₹1999', discount: '35% OFF', label: 'Pro Wishbit', popular: true, color: 'orange' },
+    { id: 3, amount: 100, price: '₹2499', originalPrice: '₹3999', discount: '40% OFF', label: 'Wishbit Master', popular: false, color: 'blue' },
   ];
 
   const sections = [
-    { id: 'balance', label: 'Balance', icon: <Wallet size={16} /> },
+    { id: 'quests', label: 'Quests', icon: <Sparkles size={16} /> },
     { id: 'history', label: 'History', icon: <History size={16} /> },
     { id: 'buy', label: 'Buy Wishbit', icon: <ShoppingBag size={16} /> },
   ];
@@ -80,17 +85,18 @@ export default function WalletView() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:-translate-x-1 transition-transform">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              <span className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.3em] font-bold whitespace-nowrap">Back to Moments</span>
+              <span className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.3em] font-bold whitespace-nowrap">My Moments</span>
             </button>
           </div>
 
           <div className="flex items-center gap-3 md:gap-6">
             {/* CLEAN COIN BALANCE DISPLAY */}
-            <div className="flex items-center gap-0 py-1 transition-all select-none group active:scale-95">
-              <WishbitIcon size={36} className="drop-shadow-none" />
-              <span className="text-base md:text-xl font-black tracking-tighter text-white">
-                {balance.toLocaleString()}
-              </span>
+            <div className="active:scale-95 transition-transform">
+              <AnimatedBalance 
+                value={balance} 
+                iconSize={36} 
+                textClassName="text-base md:text-xl"
+              />
             </div>
 
             <div className="relative">
@@ -116,17 +122,17 @@ export default function WalletView() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    className="absolute right-0 mt-3 w-44 md:w-48 bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] z-[110] overflow-hidden"
+                    className="absolute right-0 mt-3 w-44 md:w-48 bg-zinc-950/90 backdrop-blur-2xl border border-white/10 rounded-xl p-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] z-[110] overflow-hidden"
                   >
                       <button
                         onClick={() => {
                           setShowProfileMenu(false);
-                          setActiveSection('balance');
+                          setActiveSection('quests');
                         }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all text-left group"
                       >
-                        <Wallet size={14} className="group-hover:scale-110 transition-transform" />
-                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Wallet</span>
+                        <Sparkles size={14} className="group-hover:scale-110 transition-transform" />
+                        <span className="text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest">Quests</span>
                       </button>
 
                       <button
@@ -173,7 +179,7 @@ export default function WalletView() {
           <div className="relative w-full md:max-w-2xl z-10">
             <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-none text-white relative text-left">
               My<br />
-              <span className="text-transparent bg-clip-text bg-linear-to-br from-fuchsia-500 via-pink-400 to-orange-400">Wishbit.</span>
+              <span className="text-transparent bg-clip-text bg-linear-to-br from-fuchsia-500 via-pink-400 to-orange-400">Wishbits.</span>
             </h1>
             <p className="mt-8 text-sm md:text-base text-white/40 w-full md:max-w-xl font-medium leading-relaxed md:leading-loose mx-0 relative text-left">
               Get wishbits to unlock premium cinematic templates, high-quality exports, and exclusive emotional storytelling assets.
@@ -312,12 +318,12 @@ export default function WalletView() {
         </header>
 
         {/* Premium Section Navigation - Matching MyMomentsView style */}
-        <div className="mb-12 flex flex-wrap justify-center md:justify-end gap-8 md:gap-12 w-full">
+        <div className="mb-12 flex flex-nowrap items-center justify-center md:justify-end gap-6 md:gap-12 w-full overflow-x-auto no-scrollbar pb-2">
           {sections.map((section) => (
             <button
               key={section.id}
               onClick={() => setActiveSection(section.id)}
-              className={`text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em] relative pt-4 pb-4 transition-all flex items-center gap-2 group ${
+              className={`text-[9px] md:text-[11px] font-black uppercase tracking-[0.25em] relative pt-4 pb-4 transition-all flex items-center gap-2 group shrink-0 ${
                 activeSection === section.id ? 'text-white' : 'text-white/30 hover:text-white/60'
               }`}
             >
@@ -337,9 +343,9 @@ export default function WalletView() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-16">
           <div className="lg:col-span-12">
             <AnimatePresence mode="wait">
-              {activeSection === 'balance' && (
+              {activeSection === 'quests' && (
                 <motion.div
-                  key="balance"
+                  key="quests"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
@@ -347,104 +353,331 @@ export default function WalletView() {
                   className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-16"
                 >
                   <div className="lg:col-span-8 space-y-12">
-                    {/* Current Balance Card */}
-                    <div className="relative p-[1px] rounded-[3rem] bg-linear-to-br from-white/10 to-transparent overflow-hidden">
+                    {/* Current Balance Card - Slimmer for Quest view */}
+                    <div className="relative p-[1px] rounded-2xl bg-linear-to-br from-white/10 to-transparent overflow-hidden">
                       <div className="relative group">
-                        <div className="absolute -inset-1 bg-linear-to-r from-fuchsia-600/20 to-orange-600/20 rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition duration-500"></div>
-                        <div className="relative bg-[#0D0D0D]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-8 md:p-12 overflow-hidden">
-                          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                            <div>
-                              <span className="text-[10px] md:text-xs font-bold tracking-[0.2em] text-white/30 uppercase mb-4 block">
+                        <div className="absolute -inset-1 bg-linear-to-r from-fuchsia-600/20 to-orange-600/20 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition duration-500"></div>
+                        <div className="relative bg-[#0D0D0D]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-4 md:p-6 overflow-hidden">
+                          <div className="relative z-10 flex flex-row items-center justify-between gap-4 md:gap-6">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[8px] md:text-xs font-bold tracking-[0.2em] text-white/30 uppercase block">
                                 Available Wishbits
                               </span>
-                              <div className="flex items-center gap-4 group">
-                                <div>
-                                  <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-white">
-                                    {balance.toLocaleString()}
-                                  </h2>
-                                </div>
-
-                                {/* Small Gem Cluster next to balance - Larger Size */}
-                                <div className="relative w-24 h-24 md:w-28 md:h-28 shrink-0">
-                                  <motion.div 
-                                    animate={{ y: [0, -8, 0], rotate: [0, 5, 0] }}
-                                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                                    className="absolute inset-0 z-30"
-                                  >
-                                    <WishbitIcon size={96} className="md:w-24 md:h-24 drop-shadow-[0_0_30px_rgba(217,70,239,0.5)]" />
-                                  </motion.div>
-                                  <motion.div 
-                                    animate={{ y: [0, 8, 0], rotate: [0, -10, 0] }}
-                                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                                    className="absolute top-1/4 -left-3 z-20 opacity-80"
-                                  >
-                                    <WishbitIcon size={64} className="md:w-16 md:h-16" />
-                                  </motion.div>
-                                  <motion.div 
-                                    animate={{ y: [0, -5, 0], rotate: [0, 15, 0] }}
-                                    transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                                    className="absolute bottom-1/4 -right-2 z-10 opacity-60"
-                                  >
-                                    <WishbitIcon size={48} className="md:w-12 md:h-12" />
-                                  </motion.div>
-                                </div>
-                              </div>
+                                <AnimatedBalance 
+                                  value={balance} 
+                                  iconSize={48} 
+                                  textClassName="text-3xl md:text-6xl"
+                                />
                             </div>
-                            <div className="flex flex-wrap gap-3">
-                              <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 flex items-center gap-2">
-                                <Zap className="w-3 h-3 text-fuchsia-400" />
-                                <span className="text-[10px] font-bold tracking-wider text-white/60 uppercase">Instant Delivery</span>
-                              </div>
+                            <div className="flex justify-end md:justify-start shrink-0">
+                              <button 
+                                onClick={() => setActiveSection('buy')}
+                                className="px-5 py-2.5 md:px-6 md:py-3 rounded-full bg-white text-black text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-500 hover:text-white transition-all active:scale-95 shadow-lg shadow-white/5 flex items-center gap-2"
+                              >
+                                Buy More <WishbitIcon size={16} className="scale-[1.6] origin-center ml-1" />
+                              </button>
                             </div>
-                          </div>
-                          <div className="absolute top-1/2 right-[-5%] -translate-y-1/2 opacity-[0.03] pointer-events-none">
-                            <WishbitIcon size={300} />
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Quick Stats/Info in Balance Section */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <div className="p-8 rounded-3xl bg-white/5 border border-white/5 space-y-4">
-                          <div className="w-10 h-10 rounded-xl bg-fuchsia-500/10 flex items-center justify-center text-fuchsia-400">
-                             <Sparkles size={20} />
-                          </div>
-                          <h4 className="text-lg font-black text-white">Unlock Templates</h4>
-                          <p className="text-sm text-white/40 leading-relaxed">Use your Wishbits to unlock over 100+ premium cinematic templates for your moments.</p>
-                       </div>
-                       <div className="p-8 rounded-3xl bg-white/5 border border-white/5 space-y-4">
-                          <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400">
-                             <CreditCard size={20} />
-                          </div>
-                          <h4 className="text-lg font-black text-white">Easy Top-up</h4>
-                          <p className="text-sm text-white/40 leading-relaxed">Need more? You can top up your Wishbits anytime through our secure payment gateway.</p>
-                       </div>
+                    {/* Starter Quests */}
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-xl md:text-2xl font-black text-white tracking-tight flex items-center gap-3">
+                                <Gift className="text-fuchsia-400" size={24} />
+                                Starter Quests
+                            </h3>
+                            <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">One-time Rewards</span>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Welcome Bonus Card */}
+                            <div className={`p-5 rounded-2xl border transition-all duration-500 flex items-center justify-between group relative overflow-hidden ${
+                                claimedOneTime.includes('WELCOME_BONUS') 
+                                ? 'bg-emerald-500/5 border-emerald-500/20' 
+                                : 'bg-white/5 border-white/10 hover:border-white/20'
+                            }`}>
+                                <div className="flex items-center gap-4 relative z-10">
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                                        claimedOneTime.includes('WELCOME_BONUS') ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/5 text-white/40'
+                                    }`}>
+                                        <Sparkles size={20} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Join Bonus</p>
+                                        <h4 className="text-sm font-black text-white">Welcome Gift</h4>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 relative z-10">
+                                    <div className="text-right">
+                                        <span className={`text-base font-black flex items-center gap-2 justify-end ${
+                                            claimedOneTime.includes('WELCOME_BONUS') ? 'text-emerald-400' : 'text-white'
+                                        }`}>
+                                            +{bonusAmounts.welcome} <WishbitIcon size={16} />
+                                        </span>
+                                    </div>
+                                    <button 
+                                        onClick={() => !claimedOneTime.includes('WELCOME_BONUS') && !claiming['WELCOME_BONUS'] && claimOneTime('WELCOME_BONUS')}
+                                        disabled={claimedOneTime.includes('WELCOME_BONUS') || claiming['WELCOME_BONUS']}
+                                        className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                                            claimedOneTime.includes('WELCOME_BONUS')
+                                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                            : claiming['WELCOME_BONUS']
+                                            ? 'bg-white/5 text-white/20 cursor-wait'
+                                            : 'bg-white text-black hover:bg-fuchsia-500 hover:text-white shadow-lg'
+                                        }`}
+                                    >
+                                        {claimedOneTime.includes('WELCOME_BONUS') ? <Check size={14} /> : 
+                                         claiming['WELCOME_BONUS'] ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}><Loader2 size={14} /></motion.div> : 
+                                         'Claim'}
+                                    </button>
+                                </div>
+                                {claimedOneTime.includes('WELCOME_BONUS') && (
+                                    <div className="absolute inset-0 bg-radial from-emerald-500/5 to-transparent opacity-60" />
+                                )}
+                            </div>
+
+                            {/* Referral Bonus Card */}
+                            {isReferred && (
+                                <div className={`p-5 rounded-2xl border transition-all duration-500 flex items-center justify-between group relative overflow-hidden ${
+                                    claimedOneTime.includes('REFERRAL_SIGNUP') 
+                                    ? 'bg-emerald-500/5 border-emerald-500/20' 
+                                    : 'bg-white/5 border-white/10 hover:border-white/20'
+                                }`}>
+                                    <div className="flex items-center gap-4 relative z-10">
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                                            claimedOneTime.includes('REFERRAL_SIGNUP') ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/5 text-white/40'
+                                        }`}>
+                                            <Users size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Referral Link</p>
+                                            <h4 className="text-sm font-black text-white">Friend's Invite</h4>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4 relative z-10">
+                                        <div className="text-right">
+                                            <span className={`text-base font-black flex items-center gap-2 justify-end ${
+                                                claimedOneTime.includes('REFERRAL_SIGNUP') ? 'text-emerald-400' : 'text-white'
+                                            }`}>
+                                                +{bonusAmounts.refSignup} <WishbitIcon size={16} />
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <button 
+                                                onClick={() => !claimedOneTime.includes('REFERRAL_SIGNUP') && !claiming['REFERRAL_SIGNUP'] && hasSharedTemplate && claimOneTime('REFERRAL_SIGNUP')}
+                                                disabled={claimedOneTime.includes('REFERRAL_SIGNUP') || claiming['REFERRAL_SIGNUP'] || !hasSharedTemplate}
+                                                className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                                                    claimedOneTime.includes('REFERRAL_SIGNUP')
+                                                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                                    : !hasSharedTemplate
+                                                    ? 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
+                                                    : claiming['REFERRAL_SIGNUP']
+                                                    ? 'bg-white/5 text-white/20 cursor-wait'
+                                                    : 'bg-white text-black hover:bg-fuchsia-500 hover:text-white shadow-lg'
+                                                }`}
+                                            >
+                                                {claimedOneTime.includes('REFERRAL_SIGNUP') ? <Check size={14} /> : 
+                                                 !hasSharedTemplate ? <div className="flex items-center gap-2"><Lock size={10} /> Locked</div> :
+                                                 claiming['REFERRAL_SIGNUP'] ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}><Loader2 size={14} /></motion.div> : 
+                                                 'Claim'}
+                                            </button>
+                                            {!hasSharedTemplate && !claimedOneTime.includes('REFERRAL_SIGNUP') && (
+                                                <p className="text-[8px] font-bold text-fuchsia-400/60 uppercase tracking-tighter">Share a template to unlock</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {claimedOneTime.includes('REFERRAL_SIGNUP') && (
+                                        <div className="absolute inset-0 bg-radial from-emerald-500/5 to-transparent opacity-60" />
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
+
+                    {/* Daily Streak Section */}
+                    <div className="space-y-8">
+                        <div className="flex flex-row items-center justify-between gap-4">
+                            <div>
+                                <h3 className="text-lg md:text-2xl font-black text-white tracking-tight flex items-center gap-2 md:gap-3">
+                                    <Zap className="text-sun-gold w-5 h-5 md:w-6 md:h-6" size={24} />
+                                    7-Day Login Streak
+                                </h3>
+                                <p className="text-[9px] md:text-[11px] text-white/40 font-medium mt-1">Don't miss a day to get the 2x Day 7 bonus!</p>
+                            </div>
+                            <div className="bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl p-2.5 md:px-6 md:py-4 backdrop-blur-sm">
+                                <div className="flex flex-col items-end md:items-start gap-0.5 md:gap-1">
+                                    <p className="text-[7px] md:text-[10px] font-bold text-white/40 uppercase tracking-widest">Daily streak</p>
+                                    <div className="flex items-center gap-1.5 md:gap-3">
+                                        <div className="relative">
+                                            <Zap size={18} className="md:w-7 md:h-7 text-orange-500 fill-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.4)]" />
+                                            <div className="absolute inset-0 bg-orange-600 blur-xl opacity-20" />
+                                        </div>
+                                        <h4 className="text-xl md:text-4xl font-black text-white tracking-tighter">
+                                            {streakInfo.count} <span className="text-xs md:text-2xl text-white/60 tracking-tighter">day</span>
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex overflow-x-auto pb-4 no-scrollbar gap-3 md:grid md:grid-cols-7">
+                            {[1, 2, 3, 4, 5, 6, 7].map((day) => {
+                                const today = new Date().toISOString().split('T')[0];
+                                const isClaimedToday = streakInfo.lastClaim === today;
+                                
+                                // Color Map for each day
+                                const dayColors = {
+                                    1: 'from-blue-500/20',
+                                    2: 'from-indigo-500/20',
+                                    3: 'from-fuchsia-500/20',
+                                    4: 'from-pink-500/20',
+                                    5: 'from-rose-500/20',
+                                    6: 'from-orange-500/20',
+                                    7: 'from-sun-gold/20'
+                                };
+
+                                const dayBorderColors = {
+                                    1: 'border-blue-500/20',
+                                    2: 'border-indigo-500/20',
+                                    3: 'border-fuchsia-500/20',
+                                    4: 'border-pink-500/20',
+                                    5: 'border-rose-500/20',
+                                    6: 'border-orange-500/20',
+                                    7: 'border-sun-gold/30'
+                                };
+
+                                const isClaimed = streakInfo.claimedDays.includes(day);
+                                const isReached = day <= streakInfo.count;
+                                
+                                // Determine state
+                                const isCompleted = isClaimed;
+                                const isCurrent = isReached && !isClaimed;
+                                const isLocked = !isReached;
+                                
+                                // Special rule for Day 2 and 5 (Deferred)
+                                const isDeferred = [2, 5].includes(day);
+                                const isBonusDay = day === 7;
+                                const canClaimToday = !isDeferred || streakInfo.count > day;
+
+                                return (
+                                    <div 
+                                        key={day}
+                                        className={`relative p-3 md:p-5 rounded-2xl border transition-all duration-500 flex flex-col items-center justify-center gap-2 md:gap-3 group overflow-hidden shrink-0 w-28 md:w-auto ${
+                                            isCompleted ? 'bg-emerald-500/5 border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.1)]' :
+                                            isCurrent && canClaimToday ? 'bg-white/10 border-fuchsia-500/50 shadow-[0_0_40px_rgba(217,70,239,0.15)]' :
+                                            isCurrent && !canClaimToday ? 'bg-orange-500/5 border-orange-500/30' :
+                                            `bg-white/[0.03] ${dayBorderColors[day]}`
+                                        }`}
+                                    >
+                                        {/* Background Aura Effects */}
+                                        <div className={`absolute inset-0 bg-radial ${dayColors[day]} to-transparent opacity-30`} />
+                                        
+                                        {isCompleted && (
+                                            <div className="absolute inset-0 bg-radial from-emerald-500/10 to-transparent opacity-60" />
+                                        )}
+                                        {isCurrent && canClaimToday && (
+                                            <div className="absolute inset-0 bg-radial from-fuchsia-500/20 to-transparent animate-pulse opacity-60" />
+                                        )}
+                                        {isCurrent && !canClaimToday && (
+                                            <div className="absolute inset-0 bg-radial from-orange-500/10 to-transparent opacity-40" />
+                                        )}
+
+                                        <span className={`text-[8px] md:text-[9px] font-black uppercase tracking-widest relative z-10 ${
+                                            isCompleted ? 'text-emerald-400' :
+                                            isCurrent && canClaimToday ? 'text-fuchsia-400 animate-pulse' : 
+                                            isCurrent && !canClaimToday ? 'text-orange-400' :
+                                            'text-white/30'
+                                        }`}>Day {day}</span>
+                                        
+                                        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-500 relative z-10 ${
+                                            isCompleted ? 'text-emerald-400 bg-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.3)]' :
+                                            isCurrent && canClaimToday ? 'text-fuchsia-400 bg-fuchsia-500/20 shadow-[0_0_20px_rgba(217,70,239,0.4)]' :
+                                            isCurrent && !canClaimToday ? 'text-orange-400 bg-orange-500/10' :
+                                            'text-white/5 bg-white/5 border border-white/5'
+                                        } ${isCurrent && canClaimToday ? 'scale-110' : ''}`}>
+                                            {isCompleted ? <Check size={20} className="md:w-6 md:h-6" strokeWidth={3} /> :
+                                             isCurrent && !canClaimToday ? <Lock size={18} className="animate-pulse" /> :
+                                             isBonusDay ? <Crown size={20} className={isCurrent && canClaimToday ? 'text-sun-gold animate-bounce' : 'text-sun-gold/20'} /> :
+                                             <WishbitIcon size={24} className={isCurrent && canClaimToday ? 'drop-shadow-[0_0_15px_rgba(217,70,239,0.6)]' : 'opacity-[0.15]'} />}
+                                        </div>
+
+                                        <div className="flex items-center gap-1.5 md:gap-2 relative z-10">
+                                            <span className={`text-sm md:text-base font-black tracking-tighter ${
+                                                isCompleted ? 'text-emerald-400' :
+                                                isCurrent && canClaimToday ? 'text-white' : 
+                                                'text-white/20'
+                                            }`}>
+                                                {isBonusDay ? (streakInfo.dailyBonus * 2) : streakInfo.dailyBonus}
+                                            </span>
+                                            <WishbitIcon size={14} className={isCompleted ? 'drop-shadow-[0_0_5px_rgba(52,211,153,0.5)]' : isCurrent && canClaimToday ? 'drop-shadow-[0_0_8px_rgba(217,70,239,0.5)]' : 'opacity-[0.2]'} />
+                                        </div>
+
+                                        {isCurrent && (
+                                            <motion.button
+                                                whileHover={{ scale: canClaimToday && !claiming[`daily-${day}`] ? 1.05 : 1 }}
+                                                whileTap={{ scale: canClaimToday && !claiming[`daily-${day}`] ? 0.95 : 1 }}
+                                                onClick={() => canClaimToday && !claiming[`daily-${day}`] && claimDaily(day)}
+                                                disabled={!canClaimToday || claiming[`daily-${day}`]}
+                                                className={`w-full py-2 md:py-2.5 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all relative z-10 ${
+                                                    !canClaimToday 
+                                                    ? 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5' 
+                                                    : claiming[`daily-${day}`]
+                                                    ? 'bg-white/10 text-white/40 cursor-wait'
+                                                    : 'bg-white text-black hover:bg-fuchsia-500 hover:text-white shadow-xl shadow-fuchsia-500/20'
+                                                }`}
+                                            >
+                                                {claiming[`daily-${day}`] ? (
+                                                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="flex justify-center">
+                                                        <Loader2 size={12} />
+                                                    </motion.div>
+                                                ) : !canClaimToday ? 'Pending' : 'Claim'}
+                                            </motion.button>
+                                        )}
+
+                                        {isCurrent && !canClaimToday && (
+                                            <p className="absolute bottom-1.5 md:bottom-2 left-0 right-0 text-center text-[7px] font-black text-fuchsia-400/60 uppercase tracking-[0.1em] z-10">
+                                                Locked
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
                   </div>
 
                   <div className="lg:col-span-4">
-                    <div className="p-8 rounded-[2.5rem] bg-linear-to-br from-fuchsia-600/10 to-transparent border border-white/10 space-y-8">
-                      <div className="space-y-4">
+                    <div className="p-8 rounded-2xl bg-linear-to-br from-fuchsia-600/10 to-transparent border border-white/10 space-y-8">
+                      <div className="space-y-6">
                         <h4 className="text-lg font-black tracking-tight text-white flex items-center gap-3">
-                          <Sparkles className="text-fuchsia-400" size={24} />
-                          Why get Wishbits?
+                          <Crown className="text-sun-gold" size={24} />
+                          Pro Tips
                         </h4>
-                        <div className="space-y-4 pt-4">
+                        <div className="space-y-5">
                           {[
-                            "Unlock 100+ cinematic templates",
-                            "Ultra-HD premium video exports",
-                            "Priority processing speed",
-                            "Custom background music access",
-                            "Commercial usage rights"
-                          ].map((item, i) => (
-                            <div key={i} className="flex items-start gap-3">
-                              <div className="w-5 h-5 rounded-full bg-fuchsia-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                                <WishbitIcon size={12} />
-                              </div>
-                              <p className="text-[11px] text-white/50 leading-relaxed font-medium">{item}</p>
+                            { title: "Daily Login", desc: "Keep your streak alive to get 2x bonus every 7 days." },
+                            { title: "Refer Friends", desc: "Get 500 Wishbits for every friend who joins." },
+                            { title: "Limited Events", desc: "Watch out for golden quests that give 100+ bits." }
+                          ].map((tip, i) => (
+                            <div key={i} className="space-y-1.5">
+                              <p className="text-[11px] font-black text-white/80 uppercase tracking-wider">{tip.title}</p>
+                              <p className="text-[11px] text-white/40 leading-relaxed font-medium">{tip.desc}</p>
                             </div>
                           ))}
+                        </div>
+                        
+                        <div className="pt-4">
+                          <button 
+                            onClick={() => navigateTo('refer')}
+                            className="w-full py-4 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20 text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-400 hover:bg-fuchsia-500 hover:text-white transition-all group"
+                          >
+                            Invite Friends
+                            <ArrowUpRight size={14} className="inline ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -463,73 +696,111 @@ export default function WalletView() {
                 >
                   {/* Premium History Header */}
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
-                    <div className="flex items-center gap-5">
-                      <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-fuchsia-400 shadow-inner">
-                        <History size={28} />
+                    <div className="flex items-center gap-4 md:gap-5">
+                      <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-fuchsia-400 shadow-inner">
+                        <History size={24} className="md:w-7 md:h-7" />
                       </div>
                       <div>
-                        <h3 className="text-2xl font-black text-white tracking-tight">Transaction History</h3>
-                        <p className="text-sm text-white/30 font-medium">Your recent wishbit activity</p>
+                        <h3 className="text-lg md:text-2xl font-black text-white tracking-tight">Transaction History</h3>
+                        <p className="text-[10px] md:text-sm text-white/30 font-medium uppercase tracking-widest">Recent activity</p>
                       </div>
                     </div>
-                    
-                    <button className="px-6 py-3 rounded-full border border-fuchsia-500/20 text-fuchsia-400 text-[11px] font-black uppercase tracking-widest hover:bg-fuchsia-500/10 transition-all flex items-center gap-3 group active:scale-95">
-                      View All Transactions
-                      <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                    </button>
                   </div>
 
-                  {/* List of Transactions */}
-                  <div className="space-y-4">
-                    {transactions.map((tx) => (
-                      <div 
-                        key={tx.id} 
-                        className="flex items-center justify-between p-6 md:p-7 rounded-[2.5rem] bg-[#0A0A0A]/60 backdrop-blur-md border border-white/5 hover:border-white/10 transition-all group"
-                      >
-                        <div className="flex items-center gap-5">
-                          {/* Icon mapping based on transaction type/label */}
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
-                            tx.type === 'credit' 
-                              ? 'bg-green-500/10 text-green-400 border border-green-500/10' 
-                              : 'bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/10'
-                          }`}>
-                            {tx.label.toLowerCase().includes('purchased') ? <CreditCard size={20} /> : 
-                             tx.label.toLowerCase().includes('reward') ? <Gift size={20} /> : 
-                             <ShoppingBag size={20} />}
-                          </div>
-                          <div>
-                            <p className="text-base font-bold text-white group-hover:text-fuchsia-400 transition-colors tracking-tight">{tx.label}</p>
-                            <p className="text-[11px] font-bold text-white/20 uppercase tracking-[0.2em] mt-1">{tx.date}</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-8 md:gap-16">
-                          {/* Amount with Sign */}
-                          <div className="flex items-center gap-2.5">
-                            <span className={`text-xl font-black ${tx.type === 'credit' ? 'text-green-400' : 'text-white'}`}>
-                              {tx.type === 'credit' ? '+' : '-'}{tx.amount}
-                            </span>
-                            <WishbitIcon size={32} className="drop-shadow-none" />
-                          </div>
-
-                          {/* Status Badge */}
-                          <div className="hidden sm:block min-w-[100px] text-right">
-                            <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                              tx.type === 'credit' 
-                                ? 'bg-green-500/10 text-green-500 border border-green-500/10' 
-                                : 'bg-fuchsia-500/10 text-fuchsia-500 border border-fuchsia-500/10'
-                            }`}>
-                              {tx.type === 'credit' ? 'Received' : 'Spent'}
-                            </span>
-                          </div>
-                        </div>
+                    {/* Modern Banking-style Transaction Table */}
+                    <div className="w-full bg-[#050505] rounded-3xl border border-white/5 overflow-hidden">
+                      {/* Table Header - Visible on Desktop */}
+                      <div className="hidden md:grid grid-cols-12 gap-4 px-8 py-5 border-b border-white/5 bg-white/[0.02]">
+                        <div className="col-span-9 text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Transaction</div>
+                        <div className="col-span-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/20 text-right">Wishbits</div>
                       </div>
-                    ))}
-                  </div>
 
-                  <div className="pt-8 text-center">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/10">That's all for now ✨</p>
-                  </div>
+                      <div className="divide-y divide-white/5">
+                        {(transactions || [])
+                          .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                          .map((tx) => (
+                          <div 
+                            key={tx.id} 
+                            className="flex items-center justify-between gap-3 px-4 py-3 md:px-8 md:py-6 hover:bg-white/[0.03] transition-all group cursor-pointer w-full"
+                            onClick={() => setSelectedTx(tx)}
+                          >
+                            {/* Transaction Detail */}
+                            <div 
+                              className="flex items-center gap-3 md:gap-5 group/row min-w-0"
+                            >
+                              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                                tx.type === 'CREDIT' 
+                                  ? 'bg-green-500/10 text-green-400' 
+                                  : 'bg-fuchsia-500/10 text-fuchsia-400'
+                              }`}>
+                                {tx.category === 'TEMPLATE_PURCHASE' ? <ShoppingBag size={18} className="md:w-5 md:h-5" /> : 
+                                 tx.category === 'REFERRAL_REWARD' ? <Gift size={18} className="md:w-5 md:h-5" /> : 
+                                 tx.category === 'STREAK_REWARD' ? <Crown size={18} className="md:w-5 md:h-5" /> :
+                                 <CreditCard size={18} className="md:w-5 md:h-5" />}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p className="text-xs md:text-base font-bold text-white group-hover/row:text-fuchsia-400 transition-colors tracking-tight truncate capitalize">
+                                    {(tx.category?.replace(/_/g, ' ') || '').toLowerCase()}
+                                  </p>
+                                  <ChevronRight size={10} className="hidden md:block text-fuchsia-500/40 group-hover/row:translate-x-1 transition-transform" />
+                                </div>
+                                <p className="text-[8px] md:text-[10px] font-bold text-white/20 uppercase tracking-[0.15em] mt-0.5 md:mt-1">
+                                  {tx.timestamp ? (
+                                    new Date(tx.timestamp).toLocaleString('en-GB', {
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                      hour12: true
+                                    }).replace(',', ' •').toUpperCase()
+                                  ) : tx.date}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Amount Only */}
+                            <div className="shrink-0">
+                              <div className="flex items-center gap-2 md:gap-4">
+                                <span className={`text-sm md:text-xl font-black ${tx.type === 'CREDIT' ? 'text-green-400' : 'text-white'}`}>
+                                  {tx.type === 'CREDIT' ? '+' : '-'}{tx.amount}
+                                </span>
+                                <WishbitIcon size={16} className="md:w-5 md:h-5 opacity-80" />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Pagination Controls */}
+                      {transactions?.length > itemsPerPage && (
+                        <div className="px-8 py-6 flex items-center justify-between border-t border-white/5 bg-white/[0.01]">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">Page</span>
+                            <span className="text-sm font-black text-white">{currentPage}</span>
+                            <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">of {Math.ceil((transactions?.length || 0) / itemsPerPage)}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                              disabled={currentPage === 1}
+                              className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white transition-all hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed border border-white/5"
+                            >
+                              <ChevronLeft size={18} />
+                            </button>
+                            <button
+                              onClick={() => setCurrentPage(prev => Math.min(Math.ceil((transactions?.length || 0) / itemsPerPage), prev + 1))}
+                              disabled={currentPage === Math.ceil((transactions?.length || 0) / itemsPerPage)}
+                              className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white transition-all hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed border border-white/5"
+                            >
+                              <ChevronRight size={18} />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                 </motion.div>
               )}
 
@@ -548,48 +819,52 @@ export default function WalletView() {
                         <h3 className="text-2xl font-black text-white">Select Wishbit Pack</h3>
                         <p className="text-white/40 text-sm mt-1">Choose the best plan to power your creativity.</p>
                       </div>
-                      <div className="flex items-center gap-3 px-5 py-3 bg-white/5 rounded-2xl border border-white/10">
-                        <WishbitIcon size={20} />
-                        <div>
-                          <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Current Balance</p>
-                          <p className="text-sm font-black text-white">{balance.toLocaleString()}</p>
-                        </div>
-                      </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                       {wishbitPacks.map((pack) => (
                         <motion.div
                           key={pack.id}
                           whileHover={{ y: -8, scale: 1.02 }}
-                          className={`relative p-[1px] rounded-[2.5rem] ${pack.popular ? 'bg-linear-to-b from-fuchsia-500 to-orange-500' : 'bg-white/10'} transition-all group shadow-2xl shadow-black/50`}
+                          className="relative p-[1px] rounded-2xl md:rounded-[32px] bg-linear-to-b from-fuchsia-500/40 to-orange-500/40 transition-all group shadow-2xl shadow-black/50"
                         >
-                          {pack.popular && (
-                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-linear-to-r from-fuchsia-500 to-orange-500 text-[8px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full z-20 shadow-xl shadow-fuchsia-500/20">
-                              Recommended
-                            </div>
-                          )}
-                          <div className="h-full bg-[#0D0D0D] p-8 md:p-10 rounded-[calc(2.5rem-1px)] flex flex-col items-center text-center relative overflow-hidden">
-                            <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 blur-[60px] rounded-full opacity-10 pointer-events-none ${pack.popular ? 'bg-fuchsia-500' : 'bg-white/20'}`} />
+                          <div className="h-full bg-[#0D0D0D] p-3 md:p-8 rounded-[15px] md:rounded-[31px] flex flex-col relative overflow-hidden">
+                            {/* Visual Aura */}
+                            <div className={`absolute top-0 right-0 w-24 md:w-32 h-24 md:h-32 blur-[40px] md:blur-[60px] rounded-full opacity-10 pointer-events-none bg-${pack.color}-500`} />
                             
-                            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-8 relative z-10 group-hover:bg-white/10 transition-all group-hover:scale-110">
-                              <WishbitIcon size={32} />
+                            <div className="flex items-center justify-center gap-2 md:gap-6 mb-6 md:mb-10 mt-2 md:mt-4">
+                              <span className="text-3xl md:text-7xl font-black text-white tracking-tighter">{pack.amount}</span>
+                              <div className="relative scale-75 md:scale-100">
+                                <WishbitIcon size={40} className="md:w-[64px] md:h-[64px] drop-shadow-[0_0_20px_rgba(217,70,239,0.3)] relative z-10" />
+                                <div className="absolute -top-3 -right-3 rotate-12 opacity-60">
+                                  <WishbitIcon size={16} />
+                                </div>
+                                <div className="absolute -bottom-1 -left-3 -rotate-12 opacity-60">
+                                  <WishbitIcon size={16} />
+                                </div>
+                              </div>
                             </div>
-                            <h4 className="text-xs font-bold text-white/30 uppercase tracking-[0.3em] mb-2 relative z-10">{pack.label}</h4>
-                            <div className="flex items-baseline gap-2 mb-8 relative z-10">
-                              <span className="text-4xl md:text-5xl font-black text-white tracking-tighter">{pack.amount}</span>
-                              <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Wishbits</span>
+
+                            {/* Price Bar */}
+                            <div className="mt-auto bg-white/[0.03] border border-white/5 rounded-xl md:rounded-2xl p-2.5 md:p-4 flex flex-row items-center justify-between gap-2 group-hover:bg-white/[0.06] transition-colors">
+                              <div className="flex flex-col gap-0.5 md:gap-3">
+                                <span className="text-sm md:text-xl font-black text-fuchsia-400">{pack.price}</span>
+                                <span className="text-[8px] md:text-xs font-bold text-white/20 line-through tracking-tight">{pack.originalPrice}</span>
+                              </div>
+                              <div className="px-2 py-1 md:px-3 md:py-1.5 rounded-lg md:rounded-xl border border-fuchsia-500/50 text-fuchsia-400 text-[7px] md:text-[9px] font-black uppercase tracking-wider w-fit shrink-0">
+                                {pack.discount}
+                              </div>
                             </div>
-                            <button className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all relative z-10 shadow-lg ${pack.popular ? 'bg-white text-black hover:bg-fuchsia-500 hover:text-white hover:scale-[1.02]' : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white'}`}>
-                              Buy for {pack.price}
-                            </button>
+                            
+                            {/* Overlay Click Area */}
+                            <button className="absolute inset-0 z-20 cursor-pointer" aria-label={`Buy ${pack.amount} Wishbits`} />
                           </div>
                         </motion.div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="p-10 rounded-[3rem] bg-linear-to-br from-white/5 to-transparent border border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
+                  <div className="p-10 rounded-2xl bg-linear-to-br from-white/5 to-transparent border border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
                     <div className="space-y-2 text-center md:text-left">
                       <h4 className="text-xl font-black text-white">Have a coupon code?</h4>
                       <p className="text-white/40 text-sm">Enter your code to get extra wishbits or discounts.</p>
@@ -611,6 +886,106 @@ export default function WalletView() {
       </main>
 
       <Footer />
+
+      {/* Transaction Detail Modal */}
+      <AnimatePresence>
+        {selectedTx && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedTx(null)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-sm bg-[#0D0D0D] border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-4 border-b border-white/5">
+                <div className="flex items-center gap-3">
+                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      selectedTx.type === 'CREDIT' ? 'bg-green-500/10 text-green-400' : 'bg-fuchsia-500/10 text-fuchsia-400'
+                    }`}>
+                      {selectedTx.category === 'TEMPLATE_PURCHASE' ? <ShoppingBag size={16} /> : 
+                       selectedTx.category === 'REFERRAL_REWARD' ? <Gift size={16} /> : 
+                       selectedTx.category === 'STREAK_REWARD' ? <Crown size={16} /> :
+                       <CreditCard size={16} />}
+                   </div>
+                   <div>
+                     <h4 className="text-sm font-black text-white tracking-tight capitalize">
+                       {(selectedTx.category?.replace(/_/g, ' ') || '').toLowerCase()}
+                     </h4>
+                     <p className="text-[8px] font-bold text-white/20 uppercase tracking-[0.2em]">Transaction Details</p>
+                   </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedTx(null)}
+                  className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 space-y-6">
+                <div className="text-center py-2">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className={`text-3xl font-black tracking-tighter ${selectedTx.type === 'CREDIT' ? 'text-green-400' : 'text-white'}`}>
+                      {selectedTx.type === 'CREDIT' ? '+' : '-'}{selectedTx.amount}
+                    </span>
+                    <WishbitIcon size={28} className="drop-shadow-[0_0_15px_rgba(217,70,239,0.3)]" />
+                  </div>
+                </div>
+
+                {/* Details Grid */}
+                <div className="grid grid-cols-2 gap-y-4 gap-x-6 border-t border-white/5 pt-6">
+                  <div className="space-y-0.5">
+                    <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Status</p>
+                    <div className="flex items-center gap-1.5">
+                       <div className="w-1 h-1 rounded-full bg-green-500" />
+                       <p className="text-xs font-bold text-green-400">Success</p>
+                    </div>
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Date & Time</p>
+                    <p className="text-xs font-bold text-white/80">
+                      {selectedTx.timestamp ? (
+                         new Date(selectedTx.timestamp).toLocaleString('en-GB', {
+                           day: '2-digit',
+                           month: 'short',
+                           year: 'numeric',
+                           hour: '2-digit',
+                           minute: '2-digit',
+                           hour12: true
+                         }).replace(',', ' •')
+                      ) : selectedTx.date}
+                    </p>
+                  </div>
+                  <div className="col-span-2 space-y-0.5">
+                    <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Reference ID</p>
+                    <div className="flex items-center justify-between group/id">
+                      <p className="text-[10px] font-mono font-medium text-white/60 break-all">{selectedTx.txnId || selectedTx.id}</p>
+                      <button className="text-white/20 hover:text-fuchsia-400 transition-colors p-1">
+                        <Copy size={12} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="col-span-2 space-y-0.5">
+                    <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Description</p>
+                    <p className="text-xs font-medium text-white/70 leading-relaxed">
+                      {selectedTx.description || `Transaction for ${(selectedTx.category?.replace(/_/g, ' ') || '').toLowerCase()}`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

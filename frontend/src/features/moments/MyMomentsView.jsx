@@ -3,7 +3,7 @@ import {
   Trash2, Sparkles, ArrowUpRight, ChevronRight, Menu, LogOut, AlertTriangle, User, Settings,
   Wallet, CreditCard, Gift, MoreVertical, Plus
 } from 'lucide-react';
-import WishbitIcon from '../../components/icons/WishbitIcon';
+import AnimatedBalance from '../../components/ui/AnimatedBalance';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ViewContext } from '../../context/NavContext';
 import { templates } from '../../data/templates';
@@ -268,12 +268,12 @@ export default function MyMomentsView() {
             {currentUser && (
               <button 
                 onClick={() => navigateTo('wallet')}
-                className="flex items-center gap-0 py-1 transition-all select-none group active:scale-95"
+                className="active:scale-95 transition-transform"
               >
-                <WishbitIcon size={32} className="drop-shadow-none group-hover:scale-110 transition-transform" />
-                <span className="text-base md:text-lg font-black tracking-tighter text-white">
-                  {balance.toLocaleString()}
-                </span>
+                <AnimatedBalance 
+                  value={balance} 
+                  iconSize={32} 
+                />
               </button>
             )}
             <div className="relative">

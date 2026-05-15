@@ -50,8 +50,8 @@ function AppContent() {
     const params = new URLSearchParams(window.location.search)
     const path = window.location.pathname
     
-    // Referral Tracking Logic (Supports /ref/CODE and ?ref=CODE)
-    let refCode = params.get('ref');
+    // Referral Tracking Logic (Supports ?rh=CODE, ?ref=CODE, and /ref/CODE)
+    let refCode = params.get('rh') || params.get('ref');
     
     if (!refCode && path.includes('/ref/')) {
       refCode = path.split('/ref/')[1]?.split('/')[0]?.split('?')[0];
@@ -62,7 +62,7 @@ function AppContent() {
       localStorage.setItem('pending_referral', cleanRef);
       console.log('Referral Captured:', cleanRef);
       // Clean the URL
-      const newUrl = window.location.pathname === '/' || path.startsWith('/ref/') 
+      const newUrl = (window.location.pathname === '/' || path.startsWith('/ref/') || path.startsWith('/join') || path.startsWith('/welcome'))
         ? '/' 
         : window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);

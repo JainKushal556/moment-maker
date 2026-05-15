@@ -36,11 +36,14 @@ def _init_firebase():
 _init_firebase()
 
 
+import time
+
 async def get_current_user(authorization: Optional[str] = Header(None)) -> dict:
     """
     FastAPI dependency — validates the Bearer token from the Authorization header.
     Returns the decoded Firebase token payload (contains uid, email, name, etc.)
     Raises HTTP 401 if the token is missing or invalid.
+    Includes a retry logic for clock skew (Token used too early).
     """
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
@@ -51,7 +54,19 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> dict:
     id_token = authorization.split("Bearer ")[1]
 
     try:
-        decoded_token = auth.verify_id_token(id_token)
-        return decoded_token
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token.")
+        return auth.verify_id_token(id_token)
+    except Exception as e:
+        error_msg = str(e)
+        if "Token used too early" in error_msg:
+            # More aggressive wait for larger skews (common in local dev)
+            print(f"⚠️ Clock skew detected: {error_msg}")
+            print("💡 TIP: Sync your computer clock (Settings > Date & Time > Sync now) to fix this permanently.")
+            print("🔄 Retrying in 3s...")
+            time.sleep(3)
+            try:
+                return auth.verify_id_token(id_token)
+            except Exception as retry_e:
+                error_msg = str(retry_e)
+        
+        print(f"❌ Auth verification failed: {error_msg}")
+        raise HTTPException(status_code=401, detail=f"Invalid or expired token: {error_msg}")
