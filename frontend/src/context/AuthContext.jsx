@@ -120,18 +120,8 @@ export const AuthProvider = ({ children }) => {
                     }
                     // Note: If no pendingRef, /users/me in WalletContext will auto-initialize
 
-                    const userRef = doc(db, 'users', user.uid)
-                    let docSnap = await getDoc(userRef)
-                    
-                    let profileData;
-                    if (!docSnap.exists()) {
-                        profileData = await createUserDoc(user)
-                    } else {
-                        profileData = docSnap.data()
-                    }
-
-                    // 3. Update with full merged data
-                    setCurrentUser(mapUserObject(user, profileData))
+                    // 3. Update with full merged data from Auth directly
+                    setCurrentUser(mapUserObject(user))
 
                     // 4. Fetch favorites
                     const res = await getFavorites()

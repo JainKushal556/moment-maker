@@ -23,8 +23,9 @@ export default function TemplatePreview() {
     const [isMobileFullPreview, setIsMobileFullPreview] = useState(false)
     const [refreshKey, setRefreshKey] = useState(0)
     const autoExitDone = useRef(false)
-    const { balance, unlockedTemplates, templatePrices, unlock } = useWallet()
-    const price = templatePrices[selectedTemplate?.id] ?? 100
+    const { balance, unlockedTemplates, templatePrices, unlock, loading: walletLoading } = useWallet()
+    const price = templatePrices[selectedTemplate?.id] ?? null
+    const isPriceLoading = walletLoading || price === null
     const isUnlockedGlobal = unlockedTemplates?.includes(selectedTemplate?.id)
     const [isUnlocking, setIsUnlocking] = useState(false)
     const [checkoutTarget, setCheckoutTarget] = useState(null)
@@ -34,6 +35,7 @@ export default function TemplatePreview() {
             openAuthModal()
             return
         }
+        if (isPriceLoading) return
         setCheckoutTarget({
             ...selectedTemplate,
             price: price
@@ -373,7 +375,7 @@ export default function TemplatePreview() {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:-translate-x-1 transition-transform">
                             <polyline points="15 18 9 12 15 6" />
                         </svg>
-                        <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">Back to Gallery</span>
+                        <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">Gallery</span>
                     </button>
 
                     {/* Mobile & Desktop Actions */}
@@ -510,11 +512,13 @@ export default function TemplatePreview() {
                         <button
                             className={`tp-pill-btn tp-pill-primary ${(!isUnlockedGlobal || !hasSeenPreview) ? 'tp-btn-locked' : ''}`}
                             onClick={!isUnlockedGlobal ? handleGlobalUnlock : handleCustomize}
-                            disabled={isUnlocking}
+                            disabled={isUnlocking || (!isUnlockedGlobal && isPriceLoading)}
                         >
                             <span>
                                 {!isUnlockedGlobal 
-                                    ? (price === 0 ? 'Claim for 0' : `Unlock for ${price}`)
+                                    ? isPriceLoading
+                                        ? 'Loading...'
+                                        : (price === 0 ? 'Claim for Free' : `Unlock for ${price}`)
                                     : (hasSeenPreview ? 'Customize View' : 'Explore to Unlock')}
                             </span>
                             <div className="tp-pill-arrow">

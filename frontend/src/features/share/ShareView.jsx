@@ -155,7 +155,7 @@ export default function ShareView() {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <polyline points="15 18 9 12 15 6" />
                         </svg>
-                        <span>Back to Editor</span>
+                        <span>Editor</span>
                     </button>
 
                     <button className="share-nav-btn share-nav-btn-secondary" onClick={() => navigateTo('moments')}>

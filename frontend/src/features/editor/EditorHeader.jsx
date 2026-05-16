@@ -16,7 +16,7 @@ export default function EditorHeader({ onBack, onRefresh, onFullScreen, isMobile
             <polyline points="15 18 9 12 15 6" />
           </svg>
           <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">
-            {onBack ? 'Back to Intro' : 'Back to My Moments'}
+            {onBack ? 'Back to Intro' : 'My Moments'}
           </span>
         </button>
       </div>

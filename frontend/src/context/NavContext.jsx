@@ -35,9 +35,23 @@ export const NavProvider = ({ children }) => {
 
     useEffect(() => {
         const isAuth = auth.currentUser && auth.currentUser.emailVerified
+        
+        // 1. Kick out unauthenticated users from protected views
         if (PROTECTED_VIEWS.includes(currentView) && !isAuth && !loading) {
             setCurrentView('landing')
             window.history.replaceState({ view: 'landing' }, '', '')
+        }
+
+        // 2. Auto-redirect logged-in users to 'My Moments' on initial site visit
+        if (isAuth && currentView === 'landing' && !sessionStorage.getItem('initialAuthRedirectDone')) {
+            sessionStorage.setItem('initialAuthRedirectDone', 'true')
+            const saved = sessionStorage.getItem('currentView')
+            
+            // If they didn't have a specific saved view (or their saved view was landing), send to moments
+            if (!saved || saved === 'landing') {
+                setCurrentView('moments')
+                window.history.replaceState({ view: 'moments' }, '', '')
+            }
         }
     }, [currentUser, currentView, loading])
 

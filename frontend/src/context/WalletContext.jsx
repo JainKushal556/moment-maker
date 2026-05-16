@@ -2,6 +2,10 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { getUserProfile, unlockTemplate, getAllTemplateStats, claimDailyReward, claimOneTimeReward, claimReferralReward, getTransactionHistory } from '../services/api';
 import { useAuth } from './AuthContext';
 
+let cachedStats = null;
+let lastStatsFetchTime = 0;
+const STATS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 const WalletContext = createContext();
 
 export const useWallet = () => {
@@ -23,25 +27,34 @@ export const WalletProvider = ({ children }) => {
     const [hasMoreTransactions, setHasMoreTransactions] = useState(false);
     const [unlockedTemplates, setUnlockedTemplates] = useState([]);
     const [templatePrices, setTemplatePrices] = useState({});
-    const [streakInfo, setStreakInfo] = useState({ count: 0, claimedDays: [], pending: 0, lastClaim: null, dailyBonus: 5 });
+    const [templateStats, setTemplateStats] = useState({});
+    const [streakInfo, setStreakInfo] = useState({ count: 0, claimedDays: [], pending: 0, lastClaim: null, dailyBonus: 0 });
     const [claimedOneTime, setClaimedOneTime] = useState([]);
     const [isReferred, setIsReferred] = useState(false);
     const [hasSharedTemplate, setHasSharedTemplate] = useState(false);
-    const [bonusAmounts, setBonusAmounts] = useState({ welcome: 10, refSignup: 20, referral: 50 });
-    const [loading, setLoading] = useState(false);
+    const [bonusAmounts, setBonusAmounts] = useState({ welcome: 0, refSignup: 0, referral: 0 });
+    const [walletLoading, setWalletLoading] = useState(true);
+    const loading = isInitializing || walletLoading;
     const [claiming, setClaiming] = useState({});
     const lastClaimTime = useRef(0);
 
     const refreshWallet = useCallback(async () => {
-        setLoading(true);
+        setWalletLoading(true);
         try {
-            // 1. Fetch public template prices (FOR EVERYONE)
-            const stats = await getAllTemplateStats();
+            // 1. Fetch public template prices and stats (FOR EVERYONE) with Cache
+            let stats = cachedStats;
+            if (!stats || Date.now() - lastStatsFetchTime > STATS_CACHE_TTL) {
+                stats = await getAllTemplateStats();
+                cachedStats = stats;
+                lastStatsFetchTime = Date.now();
+            }
+
             const prices = {};
             Object.keys(stats).forEach(id => {
                 prices[id] = stats[id].price ?? 100;
             });
             setTemplatePrices(prices);
+            setTemplateStats(stats);
 
             // 2. If logged in, fetch private profile data
             if (currentUser) {
@@ -58,7 +71,7 @@ export const WalletProvider = ({ children }) => {
                         claimedDays: profile.claimedDays || [],
                         pending: profile.pendingRewards || 0,
                         lastClaim: profile.lastClaimDate,
-                        dailyBonus: profile.dailyBonus || 5
+                        dailyBonus: profile.dailyBonus ?? 0
                     });
                     setClaimedOneTime(profile.claimedOneTime || []);
                     setReferrals(profile.referrals || []);
@@ -76,15 +89,15 @@ export const WalletProvider = ({ children }) => {
                 setIsReferred(profile.isReferred || false);
                 setHasSharedTemplate(profile.hasSharedTemplate || false);
                 setBonusAmounts({
-                    welcome: profile.welcomeBonus || 10,
-                    refSignup: profile.refSignupBonus || 20,
-                    referral: profile.referralBonus || 50
+                    welcome: profile.welcomeBonus ?? 0,
+                    refSignup: profile.refSignupBonus ?? 0,
+                    referral: profile.referralBonus ?? 0
                 });
             }
         } catch (error) {
             console.error("Failed to fetch wallet/template data:", error);
         } finally {
-            setLoading(false);
+            setWalletLoading(false);
         }
     }, [currentUser]);
 
@@ -102,6 +115,7 @@ export const WalletProvider = ({ children }) => {
                 setBalance(result.new_balance);
             }
             setUnlockedTemplates(prev => [...prev, templateId]);
+            refreshTransactions();
             return true;
         } catch (error) {
             console.error("Unlock failed:", error);
@@ -133,6 +147,7 @@ export const WalletProvider = ({ children }) => {
             if (result && result.new_balance !== undefined) {
                 setBalance(result.new_balance);
             }
+            refreshTransactions();
             return { success: true };
         } catch (error) {
             setReferrals(prevReferrals);
@@ -170,6 +185,7 @@ export const WalletProvider = ({ children }) => {
                 count: result.streak,
                 claimedDays: result.claimedDays
             }));
+            refreshTransactions();
         } catch (error) {
             setBalance(prevBalance);
             setStreakInfo(prevStreak);
@@ -199,6 +215,7 @@ export const WalletProvider = ({ children }) => {
             const result = await claimOneTimeReward(type);
             setBalance(result.new_balance);
             setClaimedOneTime(result.claimedOneTime);
+            refreshTransactions();
             return { success: true };
         } catch (error) {
             setClaimedOneTime(prevClaimed);
@@ -207,6 +224,18 @@ export const WalletProvider = ({ children }) => {
             return { success: false, message: error.message };
         } finally {
             setClaiming(prev => ({ ...prev, [type]: false }));
+        }
+    };
+
+    const refreshTransactions = async () => {
+        try {
+            const res = await getTransactionHistory(5);
+            if (res && res.transactions) {
+                setTransactions(res.transactions);
+                setHasMoreTransactions(res.hasMore);
+            }
+        } catch (error) {
+            console.error("Failed to refresh transactions:", error);
         }
     };
 
@@ -233,6 +262,7 @@ export const WalletProvider = ({ children }) => {
         transactions,
         unlockedTemplates,
         templatePrices,
+        templateStats,
         claimedTotal,
         pendingTotal,
         streakInfo,

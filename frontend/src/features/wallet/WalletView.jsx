@@ -38,7 +38,7 @@ export default function WalletView() {
   
   useEffect(() => {
     refreshWallet();
-  }, [refreshWallet, activeSection]);
+  }, [refreshWallet]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -108,6 +108,7 @@ export default function WalletView() {
                 value={balance} 
                 iconSize={36} 
                 textClassName="text-base md:text-xl"
+                loading={loading}
               />
             </div>
 
@@ -400,6 +401,7 @@ export default function WalletView() {
                                   value={balance} 
                                   iconSize={48} 
                                   textClassName="text-3xl md:text-6xl"
+                                  loading={loading}
                                 />
                             </div>
                             <div className="flex justify-end md:justify-start shrink-0">
@@ -539,6 +541,10 @@ export default function WalletView() {
                                     7-Day Login Streak
                                 </h3>
                                 <p className="text-[9px] md:text-[11px] text-white/40 font-medium mt-1">Don't miss a day to get the 2x Day 7 bonus!</p>
+                                <p className="text-[8px] md:text-[10px] text-fuchsia-400/50 font-bold mt-1 uppercase tracking-wider flex flex-wrap items-center gap-1 md:gap-1.5">
+                                    <Sparkles size={10} className="shrink-0 md:w-3 md:h-3" />
+                                    <span>Even days unlock on next login!</span>
+                                </p>
                             </div>
                             <div className="bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl p-2.5 md:px-6 md:py-4 backdrop-blur-sm">
                                 <div className="flex flex-col items-end md:items-start gap-0.5 md:gap-1">
@@ -599,9 +605,10 @@ export default function WalletView() {
                                     <div 
                                         key={day}
                                         className={`relative p-3 md:p-5 rounded-2xl border transition-all duration-500 flex flex-col items-center justify-center gap-2 md:gap-3 group overflow-hidden shrink-0 w-28 md:w-auto ${
+                                            day === 7 ? 'shadow-[0_0_30px_rgba(255,215,0,0.2)]' : ''
+                                        } ${
                                             isCompleted ? 'bg-emerald-500/5 border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.1)]' :
-                                            isCurrent && canClaimToday ? 'bg-white/10 border-fuchsia-500/50 shadow-[0_0_40px_rgba(217,70,239,0.15)]' :
-                                            isCurrent && !canClaimToday ? 'bg-orange-500/5 border-orange-500/30' :
+                                            isCurrent ? 'bg-white/10 border-fuchsia-500/50 shadow-[0_0_40px_rgba(217,70,239,0.15)]' :
                                             `bg-white/[0.03] ${dayBorderColors[day]}`
                                         }`}
                                     >
@@ -611,69 +618,68 @@ export default function WalletView() {
                                         {isCompleted && (
                                             <div className="absolute inset-0 bg-radial from-emerald-500/10 to-transparent opacity-60" />
                                         )}
-                                        {isCurrent && canClaimToday && (
+                                        {isCurrent && (
                                             <div className="absolute inset-0 bg-radial from-fuchsia-500/20 to-transparent animate-pulse opacity-60" />
-                                        )}
-                                        {isCurrent && !canClaimToday && (
-                                            <div className="absolute inset-0 bg-radial from-orange-500/10 to-transparent opacity-40" />
                                         )}
 
                                         <span className={`text-[8px] md:text-[9px] font-black uppercase tracking-widest relative z-10 ${
                                             isCompleted ? 'text-emerald-400' :
-                                            isCurrent && canClaimToday ? 'text-fuchsia-400 animate-pulse' : 
-                                            isCurrent && !canClaimToday ? 'text-orange-400' :
+                                            isCurrent ? 'text-fuchsia-400 animate-pulse' : 
                                             'text-white/30'
                                         }`}>Day {day}</span>
                                         
                                         <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-500 relative z-10 ${
                                             isCompleted ? 'text-emerald-400 bg-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.3)]' :
-                                            isCurrent && canClaimToday ? 'text-fuchsia-400 bg-fuchsia-500/20 shadow-[0_0_20px_rgba(217,70,239,0.4)]' :
-                                            isCurrent && !canClaimToday ? 'text-orange-400 bg-orange-500/10' :
+                                            isCurrent ? 'text-fuchsia-400 bg-fuchsia-500/20 shadow-[0_0_20px_rgba(217,70,239,0.4)]' :
                                             'text-white/5 bg-white/5 border border-white/5'
-                                        } ${isCurrent && canClaimToday ? 'scale-110' : ''}`}>
+                                        } ${isCurrent ? 'scale-110' : ''}`}>
                                             {isCompleted ? <Check size={20} className="md:w-6 md:h-6" strokeWidth={3} /> :
                                              isCurrent && !canClaimToday ? <Lock size={18} className="animate-pulse" /> :
-                                             isBonusDay ? <Crown size={20} className={isCurrent && canClaimToday ? 'text-sun-gold animate-bounce' : 'text-sun-gold/20'} /> :
-                                             <WishbitIcon size={24} className={isCurrent && canClaimToday ? 'drop-shadow-[0_0_15px_rgba(217,70,239,0.6)]' : 'opacity-[0.15]'} />}
+                                             isBonusDay ? <Crown size={20} className={isCurrent ? 'text-sun-gold animate-bounce' : 'text-sun-gold/20'} /> :
+                                             <WishbitIcon size={24} className={isCurrent ? 'drop-shadow-[0_0_15px_rgba(217,70,239,0.6)]' : 'opacity-[0.15]'} />}
                                         </div>
 
                                         <div className="flex items-center gap-1.5 md:gap-2 relative z-10">
                                             <span className={`text-sm md:text-base font-black tracking-tighter ${
                                                 isCompleted ? 'text-emerald-400' :
-                                                isCurrent && canClaimToday ? 'text-white' : 
+                                                isCurrent ? 'text-white' : 
                                                 'text-white/20'
                                             }`}>
                                                 {isBonusDay ? (streakInfo.dailyBonus * 2) : streakInfo.dailyBonus}
                                             </span>
-                                            <WishbitIcon size={14} className={isCompleted ? 'drop-shadow-[0_0_5px_rgba(52,211,153,0.5)]' : isCurrent && canClaimToday ? 'drop-shadow-[0_0_8px_rgba(217,70,239,0.5)]' : 'opacity-[0.2]'} />
+                                            <WishbitIcon size={14} className={isCompleted ? 'drop-shadow-[0_0_5px_rgba(52,211,153,0.5)]' : isCurrent ? 'drop-shadow-[0_0_8px_rgba(217,70,239,0.5)]' : 'opacity-[0.2]'} />
                                         </div>
 
                                         {isCurrent && (
-                                            <motion.button
-                                                whileHover={{ scale: canClaimToday && !claiming[`daily-${day}`] ? 1.05 : 1 }}
-                                                whileTap={{ scale: canClaimToday && !claiming[`daily-${day}`] ? 0.95 : 1 }}
-                                                onClick={() => canClaimToday && !claiming[`daily-${day}`] && claimDaily(day)}
-                                                disabled={!canClaimToday || claiming[`daily-${day}`]}
-                                                className={`w-full py-2 md:py-2.5 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all relative z-10 ${
-                                                    !canClaimToday 
-                                                    ? 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5' 
-                                                    : claiming[`daily-${day}`]
-                                                    ? 'bg-white/10 text-white/40 cursor-wait'
-                                                    : 'bg-white text-black hover:bg-fuchsia-500 hover:text-white shadow-xl shadow-fuchsia-500/20'
-                                                }`}
-                                            >
-                                                {claiming[`daily-${day}`] ? (
-                                                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="flex justify-center">
-                                                        <Loader2 size={12} />
-                                                    </motion.div>
-                                                ) : !canClaimToday ? 'Pending' : 'Claim'}
-                                            </motion.button>
-                                        )}
-
-                                        {isCurrent && !canClaimToday && (
-                                            <p className="absolute bottom-1.5 md:bottom-2 left-0 right-0 text-center text-[7px] font-black text-fuchsia-400/60 uppercase tracking-[0.1em] z-10">
-                                                Locked
-                                            </p>
+                                            <div className="relative w-full z-10">
+                                                <motion.button
+                                                    whileHover={{ scale: canClaimToday && !claiming[`daily-${day}`] ? 1.05 : 1 }}
+                                                    whileTap={{ scale: canClaimToday && !claiming[`daily-${day}`] ? 0.95 : 1 }}
+                                                    onClick={() => canClaimToday && !claiming[`daily-${day}`] && claimDaily(day)}
+                                                    disabled={!canClaimToday || claiming[`daily-${day}`]}
+                                                    className={`w-full py-2 md:py-2.5 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest transition-all ${
+                                                        !canClaimToday 
+                                                        ? 'bg-white/5 text-white/5 cursor-not-allowed border border-white/5 blur-[1px]' 
+                                                        : claiming[`daily-${day}`]
+                                                        ? 'bg-white/10 text-white/40 cursor-wait'
+                                                        : 'bg-white text-black hover:bg-fuchsia-500 hover:text-white shadow-xl shadow-fuchsia-500/20'
+                                                    }`}
+                                                >
+                                                    {claiming[`daily-${day}`] ? (
+                                                        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="flex justify-center">
+                                                            <Loader2 size={12} />
+                                                        </motion.div>
+                                                    ) : !canClaimToday ? 'Pending' : 'Claim'}
+                                                </motion.button>
+                                                
+                                                {!canClaimToday && (
+                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                        <span className="text-[7px] font-black text-fuchsia-400 bg-black/40 backdrop-blur-md px-2 py-0.5 rounded border border-fuchsia-500/30 uppercase tracking-[0.2em] shadow-lg">
+                                                            Locked
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 );

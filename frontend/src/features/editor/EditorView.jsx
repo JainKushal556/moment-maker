@@ -95,6 +95,7 @@ export default function EditorView() {
       setSharedMomentId(editingMomentId)
       setCurrentMomentStatus('shared')
       setSaveStatus('saved')
+      sessionStorage.setItem('forceMomentsRefetch', 'true')
       navigateTo('share')
     } catch (error) {
       console.error("Failed to share moment:", error)
@@ -177,6 +178,7 @@ export default function EditorView() {
       }
       setCustomization(filteredCustomization)
       setSaveStatus('saved')
+      sessionStorage.setItem('forceMomentsRefetch', 'true')
 
       // Force a re-render of the LivePreviewer
       setRefreshKey(prev => prev + 1)

@@ -5,7 +5,6 @@ import { templates } from '../../data/templates'
 import { ViewContext } from '../../context/NavContext'
 import Footer from '../../layout/Footer'
 import MomentMagicCard from '../moments/MomentMagicCard'
-import { getAllTemplateStats } from '../../services/api'
 import { ChevronDown, Filter, Sparkles, LayoutGrid, TrendingUp } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useWallet } from '../../context/WalletContext'
@@ -170,11 +169,10 @@ const categories = [
 
 const CategoriesExplorer = () => {
     const [, navigateTo, , setSelectedTemplate, , setTemplateCustomization, , , , , setEditingMomentId] = useContext(ViewContext)
-    const { balance, unlockedTemplates, templatePrices, unlock } = useWallet()
+    const { balance, unlockedTemplates, templatePrices, templateStats, unlock, loading } = useWallet()
     const { currentUser } = useAuth()
     const [activeSection, setActiveSection] = useState('categories')
     const [popularFilter, setPopularFilter] = useState('all')
-    const [templateStats, setTemplateStats] = useState({})
     const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false)
     const [checkoutTarget, setCheckoutTarget] = useState(null)
     const [isUnlocking, setIsUnlocking] = useState(false)
@@ -203,10 +201,6 @@ const CategoriesExplorer = () => {
             setActiveSection(initialSection)
             sessionStorage.removeItem('explorerInitialSection')
         }
-
-        getAllTemplateStats()
-            .then(stats => setTemplateStats(stats || {}))
-            .catch(err => console.error("Failed to fetch template stats:", err))
     }, [])
 
     const containerRef = useRef(null)
@@ -322,11 +316,11 @@ const CategoriesExplorer = () => {
                         <polyline points="15 18 9 12 15 6" />
                     </svg>
                     <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">
-                        RETURN HOME
+                        HOME
                     </span>
                 </button>
 
-                <div className="flex items-center gap-4 pr-30 md:pr-48">
+                <div className="flex items-center gap-4 pr-12 md:pr-40">
                     {currentUser && (
                         <button 
                             onClick={() => navigateTo('wallet')}
@@ -335,6 +329,7 @@ const CategoriesExplorer = () => {
                             <AnimatedBalance 
                                 value={balance} 
                                 iconSize={32} 
+                                loading={loading}
                             />
                         </button>
                     )}

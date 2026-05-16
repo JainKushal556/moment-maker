@@ -15,17 +15,19 @@ import MomentMagicCard from './MomentMagicCard';
 import { useAuth } from '../../context/AuthContext';
 import { useWallet } from '../../context/WalletContext';
 import CheckoutModal from '../../components/ui/CheckoutModal';
-import { getMoments, getAllTemplateStats } from '../../services/api';
+import { getMoments } from '../../services/api';
+
+let cachedMoments = null;
+let cachedUid = null;
 
 export default function MyMomentsView() {
   const [currentView, navigateTo, , setSelectedTemplate, , setTemplateCustomization, transitionRef, sharedMomentId, setSharedMomentId, editingMomentId, setEditingMomentId, , setSelectedIntroId] = useContext(ViewContext);
   const { currentUser, logout, openAuthModal, loading, favorites } = useAuth();
-  const { balance, unlockedTemplates, templatePrices, unlock, refreshWallet } = useWallet();
+  const { balance, unlockedTemplates, templatePrices, templateStats, unlock, refreshWallet, loading: walletLoading } = useWallet();
   const [moments, setMoments] = useState([]);
   const [filter, setFilter] = useState('all');
   const [deleteTarget, setDeleteTarget] = useState(null); // State for confirmation modal
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [templateStats, setTemplateStats] = useState({});
   const [unavailableTemplateName, setUnavailableTemplateName] = useState(null);
   const [checkoutTarget, setCheckoutTarget] = useState(null);
   const [isUnlocking, setIsUnlocking] = useState(false);
@@ -33,6 +35,12 @@ export default function MyMomentsView() {
 
   useEffect(() => {
     if (currentUser) {
+      const forceRefetch = sessionStorage.getItem('forceMomentsRefetch') === 'true';
+      if (!forceRefetch && cachedMoments && cachedUid === currentUser.uid) {
+        setMoments(cachedMoments);
+        return;
+      }
+
       getMoments()
         .then(data => {
           if (data && Array.isArray(data)) {
@@ -86,14 +94,16 @@ export default function MyMomentsView() {
                 };
               }
             });
+            cachedMoments = enriched;
+            cachedUid = currentUser.uid;
+            sessionStorage.removeItem('forceMomentsRefetch');
             setMoments(enriched);
           }
         })
         .catch(err => console.error("Error fetching moments:", err));
-        
-      getAllTemplateStats()
-        .then(stats => setTemplateStats(stats || {}))
-        .catch(err => console.error("Failed to fetch template stats:", err));
+    } else {
+        cachedMoments = null;
+        cachedUid = null;
     }
   }, [currentUser]);
 
@@ -141,7 +151,11 @@ export default function MyMomentsView() {
       setDeleteTarget(null);
 
       // Optimistic delete
-      setMoments(m => m.filter(x => x.id !== idToDelete));
+      setMoments(m => {
+          const newM = m.filter(x => x.id !== idToDelete);
+          cachedMoments = newM;
+          return newM;
+      });
       // Real delete
       const moment = moments.find(m => m.id === idToDelete);
       if (moment) {
@@ -160,7 +174,11 @@ export default function MyMomentsView() {
         }
       }
       import('../../services/api').then(api => api.reactivateMoment(id)).then((updatedMoment) => {
-        setMoments(m => m.map(x => x.id === id ? { ...x, ...updatedMoment } : x));
+        setMoments(m => {
+            const newM = m.map(x => x.id === id ? { ...x, ...updatedMoment } : x);
+            cachedMoments = newM;
+            return newM;
+        });
       }).catch(console.error);
     }
 
@@ -232,7 +250,7 @@ export default function MyMomentsView() {
 
   useEffect(() => {
     refreshWallet();
-  }, [refreshWallet, filter]);
+  }, [refreshWallet]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -282,7 +300,7 @@ export default function MyMomentsView() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:-translate-x-1 transition-transform">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              <span className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold whitespace-nowrap">BACK TO MOMENTS</span>
+              <span className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold whitespace-nowrap">MOMENTS</span>
             </button>
           </div>
 
@@ -295,6 +313,7 @@ export default function MyMomentsView() {
                 <AnimatedBalance 
                   value={balance} 
                   iconSize={32} 
+                  loading={walletLoading}
                 />
               </button>
             )}

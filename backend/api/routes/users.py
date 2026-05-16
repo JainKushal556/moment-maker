@@ -55,6 +55,7 @@ async def initialize_user(payload: InitPayload, user: dict = Depends(get_current
     uid = user["uid"]
     email = user.get("email")
     display_name = user.get("name")
+    photo_url = user.get("picture")
     
     user_ref = db.collection("users").document(uid)
     
@@ -76,7 +77,7 @@ async def initialize_user(payload: InitPayload, user: dict = Depends(get_current
     referral_reward = config.get("referral_reward", 300)
 
     @firestore.transactional
-    def process_initialization(transaction, user_ref, payload, uid, email, display_name, welcome_bonus, ref_signup_bonus, referral_reward):
+    def process_initialization(transaction, user_ref, payload, uid, email, display_name, photo_url, welcome_bonus, ref_signup_bonus, referral_reward):
         # 1. Default setup (Normal signup)
         actual_signup_bonus = welcome_bonus
         referred_by = None
@@ -119,6 +120,7 @@ async def initialize_user(payload: InitPayload, user: dict = Depends(get_current
             "uid": uid,
             "email": email,
             "displayName": display_name,
+            "photoURL": photo_url,
             "wishbits": 0, # Starts at 0
             "unlockedTemplates": [],
             "referredBy": referred_by,
@@ -144,7 +146,7 @@ async def initialize_user(payload: InitPayload, user: dict = Depends(get_current
 
     try:
         # 1. Process main initialization (Signup bonus, referral link)
-        data = process_initialization(db.transaction(), user_ref, payload, uid, email, display_name, welcome_bonus, ref_signup_bonus, referral_reward)
+        data = process_initialization(db.transaction(), user_ref, payload, uid, email, display_name, photo_url, welcome_bonus, ref_signup_bonus, referral_reward)
         
         # 2. Generate/Get unique referral code for the new user
         my_code = get_or_create_referral_code(db.transaction(), uid)

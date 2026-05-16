@@ -206,7 +206,7 @@ export default function SettingsView() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:-translate-x-1 transition-transform">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              <span className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold whitespace-nowrap">BACK TO MY MOMENTS</span>
+              <span className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold whitespace-nowrap">MY MOMENTS</span>
             </button>
           </div>
 

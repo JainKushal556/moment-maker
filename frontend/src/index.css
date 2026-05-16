@@ -45,19 +45,7 @@
     opacity: 1;
 }
 
-.link:hover .moveX {
-    animation-name: moveAnimation;
-    animation-duration: 10s;
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
-}
 
-.link.mobile-active .moveX {
-    animation-name: moveAnimation;
-    animation-duration: 10s;
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
-}
 
 /* Hide scrollbar on specific elements */
 .no-scrollbar::-webkit-scrollbar {

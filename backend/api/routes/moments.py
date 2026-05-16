@@ -5,6 +5,31 @@ from pydantic import BaseModel
 from typing import Any
 import firebase_admin
 from firebase_admin import firestore
+from time import time
+
+_cache = {
+    "app_config": None,
+    "app_config_time": 0,
+    "templates_info": None,
+    "templates_info_time": 0,
+    "CACHE_TTL": 3600 # 1 hour
+}
+
+def get_app_config(db):
+    now = time()
+    if not _cache["app_config"] or (now - _cache["app_config_time"]) > _cache["CACHE_TTL"]:
+        config_ref = db.collection("app_config").document("wishbit_settings")
+        _cache["app_config"] = config_ref.get().to_dict() or {}
+        _cache["app_config_time"] = now
+    return _cache["app_config"]
+
+def get_templates_info(db):
+    now = time()
+    if not _cache["templates_info"] or (now - _cache["templates_info_time"]) > _cache["CACHE_TTL"]:
+        docs = db.collection("templates_info").stream()
+        _cache["templates_info"] = {doc.id: doc.to_dict() for doc in docs}
+        _cache["templates_info_time"] = now
+    return _cache["templates_info"]
 
 from core.security import get_current_user
 from api.routes.upload import delete_cloudinary_image
@@ -107,18 +132,13 @@ async def save_moment(payload: MomentPayload, user: dict = Depends(get_current_u
     if user_doc.exists:
         unlocked = user_doc.to_dict().get("unlockedTemplates", [])
         # Check if template price is 0 (free) or explicitly unlocked
-        # Fetch default price from config
-        config_ref = db.collection("app_config").document("wishbit_settings")
-        config = config_ref.get().to_dict() or {}
+        
+        config = get_app_config(db)
         default_price = config.get("default_template_price", 100)
         
-        template_ref = db.collection("templates_info").document(payload.templateId)
-        t_doc = template_ref.get()
-        
-        if not t_doc.exists:
-            price = default_price
-        else:
-            price = t_doc.to_dict().get("price", default_price)
+        info_dict = get_templates_info(db)
+        t_info = info_dict.get(payload.templateId, {})
+        price = t_info.get("price", default_price)
         
         if price > 0 and payload.templateId not in unlocked:
             raise HTTPException(status_code=403, detail="Template is locked. Please unlock it using Wishbits first.")
@@ -278,19 +298,17 @@ async def get_all_template_stats():
     for doc in stats_docs:
         data[doc.id] = doc.to_dict()
     
-    # 2. Fetch Prices & Config (Publicly available)
-    config_ref = db.collection("app_config").document("wishbit_settings")
-    config = config_ref.get().to_dict() or {}
+    # 2. Fetch Prices & Config with Cache
+    config = get_app_config(db)
     default_price = config.get("default_template_price", 100)
 
-    info_docs = db.collection("templates_info").stream()
-    for doc in info_docs:
-        info = doc.to_dict()
+    info_dict = get_templates_info(db)
+    for t_id, info in info_dict.items():
         price = info.get("price", default_price)
-        if doc.id in data:
-            data[doc.id]["price"] = price
+        if t_id in data:
+            data[t_id]["price"] = price
         else:
-            data[doc.id] = {"price": price}
+            data[t_id] = {"price": price}
             
     return data
 

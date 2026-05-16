@@ -12,7 +12,7 @@ import Footer from '../../layout/Footer';
 export default function ReferalView() {
   const [currentView, navigateTo] = useContext(ViewContext);
   const { currentUser, logout } = useAuth();
-  const { balance, referrals, claimWishbits: claimWishbitsGlobal, claimedTotal, pendingTotal, referralCode, bonusAmounts, claiming, refreshWallet: refreshWalletGlobal } = useWallet();
+  const { balance, referrals, claimWishbits: claimWishbitsGlobal, claimedTotal, pendingTotal, referralCode, bonusAmounts, claiming, refreshWallet: refreshWalletGlobal, loading } = useWallet();
   
   const [activeTab, setActiveTab] = useState('refer');
   const [copied, setCopied] = useState(false);
@@ -22,9 +22,6 @@ export default function ReferalView() {
 
   const menuRef = useRef(null);
 
-  useEffect(() => {
-    refreshWalletGlobal();
-  }, [refreshWalletGlobal, activeTab]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -93,6 +90,7 @@ export default function ReferalView() {
                 <AnimatedBalance 
                   value={balance} 
                   iconSize={32} 
+                  loading={loading}
                 />
               </button>
             )}
@@ -208,7 +206,7 @@ export default function ReferalView() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-[9px] md:text-[10px] font-bold text-white/40 uppercase tracking-widest truncate">You get</p>
-                  <p className="text-xs md:text-base font-black text-fuchsia-400 truncate">{bonusAmounts?.referral || 50} wishbits</p>
+                  <p className="text-xs md:text-base font-black text-fuchsia-400 truncate">{bonusAmounts?.referral ?? 0} wishbits</p>
                 </div>
               </div>
 
@@ -218,7 +216,7 @@ export default function ReferalView() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-[9px] md:text-[10px] font-bold text-white/40 uppercase tracking-widest truncate">They get</p>
-                  <p className="text-xs md:text-base font-black text-pink-400 truncate">{bonusAmounts?.refSignup || 30} wishbits</p>
+                  <p className="text-xs md:text-base font-black text-pink-400 truncate">{bonusAmounts?.refSignup ?? 0} wishbits</p>
                 </div>
               </div>
             </div>

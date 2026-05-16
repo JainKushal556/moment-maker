@@ -43,7 +43,7 @@ const Navbar = () => {
                         className='group h-full relative cursor-pointer flex items-center justify-center transition-all duration-300 ease-out'
                     >
                         <div className='relative flex items-center justify-center gap-5 pointer-events-none'>
-                            <span className="text-white font-inter leading-none tracking-[0.25em] uppercase text-sm lg:text-base font-bold opacity-90 group-hover:opacity-100 transition-opacity">
+                            <span className={`text-white font-inter leading-none tracking-[0.25em] uppercase text-sm lg:text-base font-bold opacity-90 group-hover:opacity-100 transition-opacity ${currentView === 'categories' ? 'hidden md:block' : ''}`}>
                                 Menu
                             </span>
 

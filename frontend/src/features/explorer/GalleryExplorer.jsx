@@ -9,7 +9,6 @@ import AnimatedBalance from '../../components/ui/AnimatedBalance'
 import CheckoutModal from '../../components/ui/CheckoutModal'
 import { useAuth } from '../../context/AuthContext'
 import { useWallet } from '../../context/WalletContext'
-import { getAllTemplateStats } from '../../services/api'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User, Settings, LogOut, Wallet, Gift, LayoutGrid } from 'lucide-react'
 
@@ -22,7 +21,7 @@ const GalleryExplorer = () => {
     const [selectedCategory] = useState(getInitialCategory())
     const [, navigateTo, , setSelectedTemplate, , setTemplateCustomization, , , , , setEditingMomentId] = useContext(ViewContext)
     const { currentUser, logout, openAuthModal } = useAuth()
-    const { balance, unlockedTemplates, templatePrices, unlock } = useWallet()
+    const { balance, unlockedTemplates, templatePrices, templateStats, unlock, loading } = useWallet()
     const containerRef = useRef(null)
     const headerRef = useRef(null)
     const gridRef = useRef(null)
@@ -30,7 +29,6 @@ const GalleryExplorer = () => {
     
     const [searchQuery, setSearchQuery] = useState('')
     const [isSearchOpen, setIsSearchOpen] = useState(false)
-    const [templateStats, setTemplateStats] = useState({})
     const [showProfileMenu, setShowProfileMenu] = useState(false)
     const [checkoutTarget, setCheckoutTarget] = useState(null)
     const [isUnlocking, setIsUnlocking] = useState(false)
@@ -67,12 +65,6 @@ const GalleryExplorer = () => {
         if (containerRef.current) {
             gsap.fromTo(containerRef.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: 'power1.out' })
         }
-    }, [])
-
-    useEffect(() => {
-        getAllTemplateStats()
-            .then(stats => setTemplateStats(stats || {}))
-            .catch(err => console.error("Failed to fetch template stats:", err))
     }, [])
 
     const filteredTemplates = useMemo(() => {
@@ -150,7 +142,7 @@ const GalleryExplorer = () => {
                         <polyline points="15 18 9 12 15 6" />
                     </svg>
                     <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">
-                        BACK TO MOMENTS
+                        MOMENTS
                     </span>
                 </button>
 
@@ -163,6 +155,7 @@ const GalleryExplorer = () => {
                             <AnimatedBalance 
                                 value={balance} 
                                 iconSize={32} 
+                                loading={loading}
                             />
                         </button>
                     )}

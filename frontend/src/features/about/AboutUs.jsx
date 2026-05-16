@@ -346,7 +346,7 @@ export default function AboutUs() {
             <polyline points="15 18 9 12 15 6" />
           </svg>
           <span className="text-[10px] font-mono uppercase tracking-[0.3em] font-bold">
-            Return Home
+            Home
           </span>
         </button>
       </div>

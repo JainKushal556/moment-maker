@@ -39,13 +39,47 @@ const CopyrightPage = lazy(() => import('./features/legal/CopyrightPage'))
 const ReferalView = lazy(() => import('./features/referral/ReferalView'))
 const WalletView = lazy(() => import('./features/wallet/WalletView'))
 import LandingMusic from './features/landing/LandingMusic'
+import DailyStreakModal from './components/ui/DailyStreakModal'
+import { useWallet } from './context/WalletContext'
 
 gsap.registerPlugin(ScrollTrigger, Observer)
 
 function AppContent() {
   const lenisRef = useRef(null)
   const [currentView, , , , , , transitionRef] = useContext(ViewContext)
-  const { authModalOpen, closeAuthModal, onAuthSuccess, openAuthModal } = useAuth()
+  const { authModalOpen, closeAuthModal, onAuthSuccess, openAuthModal, currentUser } = useAuth()
+  const { streakInfo, loading: walletLoading } = useWallet()
+  const [showStreakModal, setShowStreakModal] = useState(false)
+  const [modalDismissedThisSession, setModalDismissedThisSession] = useState(false)
+
+  // Auto-trigger Daily Streak Modal logic
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const isClaimedToday = streakInfo?.lastClaim === today;
+
+    // Show modal ONLY IF:
+    // 1. User is logged in & wallet loaded
+    // 2. Current view is 'My Moments' ('moments')
+    // 3. User hasn't already claimed today
+    // 4. User hasn't manually dismissed it in this browser session
+    if (
+      currentUser && 
+      !walletLoading && 
+      currentView === 'moments' && 
+      !isClaimedToday && 
+      !modalDismissedThisSession
+    ) {
+      setShowStreakModal(true)
+    } else if (currentView !== 'moments') {
+      // Hide if user navigates away before closing
+      setShowStreakModal(false)
+    }
+  }, [currentUser, walletLoading, currentView, streakInfo?.lastClaim, modalDismissedThisSession])
+
+  const handleCloseStreakModal = () => {
+    setShowStreakModal(false)
+    setModalDismissedThisSession(true) // Prevent showing again until full page refresh
+  }
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -320,6 +354,11 @@ function AppContent() {
 
       {/* SVG Stroke Transition Overlay — always mounted */}
       <SvgTransition ref={transitionRef} />
+
+      <DailyStreakModal 
+        isOpen={showStreakModal} 
+        onClose={handleCloseStreakModal} 
+      />
     </>
   )
 }

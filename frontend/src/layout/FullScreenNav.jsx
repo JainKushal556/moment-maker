@@ -37,7 +37,7 @@ const FullScreenNav = ({ requireAuth }) => {
 
             gsap.to(ribbonRef.current, {
                 top: `${hoveredIndex * 25}%`,
-                duration: 0.35,
+                duration: !isDesktop ? 0 : 0.35,
                 ease: "expo.out",
                 opacity: isOutOfBound ? 0 : 1,
                 overwrite: "auto"
@@ -46,7 +46,7 @@ const FullScreenNav = ({ requireAuth }) => {
             if (!isOutOfBound) {
                 gsap.to(ribbonContentRef.current, {
                     yPercent: -hoveredIndex * 100,
-                    duration: 0.35,
+                    duration: !isDesktop ? 0 : 0.35,
                     ease: "expo.out",
                     overwrite: "auto"
                 })
@@ -54,11 +54,11 @@ const FullScreenNav = ({ requireAuth }) => {
         } else if (ribbonRef.current) {
             gsap.to(ribbonRef.current, {
                 opacity: 0,
-                duration: 0.35,
+                duration: !isDesktop ? 0 : 0.35,
                 overwrite: "auto"
             })
         }
-    }, [hoveredIndex])
+    }, [hoveredIndex, isDesktop])
 
     const [navOpen, setNavOpen] = useContext(NavbarContext)
     const [currentView, navigateTo, , , , , , , , , , , , setCurrentView] = useContext(ViewContext)
@@ -168,10 +168,7 @@ const FullScreenNav = ({ requireAuth }) => {
             action()
             return
         }
-
-        setHoveredIndex(id)
         setActiveMobileItem(id)
-
         if (mobileNavActionTimeoutRef.current) clearTimeout(mobileNavActionTimeoutRef.current)
         mobileNavActionTimeoutRef.current = setTimeout(() => {
             action()
@@ -286,7 +283,7 @@ const FullScreenNav = ({ requireAuth }) => {
 
                 {/* Row 1: Empty Top Row */}
                 <div 
-                    onMouseEnter={() => setHoveredIndex(-1)}
+                    onMouseEnter={() => { if (isDesktop) setHoveredIndex(-1) }}
                     className='link opacity-0 h-[13.8vw] lg:h-[16.66%] border-b border-white/50 relative'
                 >
                 </div>
@@ -307,7 +304,12 @@ const FullScreenNav = ({ requireAuth }) => {
                         <div ref={ribbonContentRef} className='h-full w-full'>
                         {navItems.map((item, idx) => (
                             <div key={idx} className='h-full w-full flex items-center overflow-hidden'>
-                                <div className='moveX flex items-center h-full shrink-0' style={{ animation: 'moveAnimation 30s linear infinite' }}>
+                                <div 
+                                    className='moveX flex items-center h-full shrink-0' 
+                                    style={{ 
+                                        animation: !isDesktop ? 'none' : 'moveAnimation 30s linear infinite'
+                                    }}
+                                >
                                     {/* Double the items and animate to -50% for a truly seamless loop */}
                                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((_, i) => (
                                          <div key={i} className='flex items-center h-full shrink-0'>
@@ -332,7 +334,7 @@ const FullScreenNav = ({ requireAuth }) => {
                 {navItems.map((item, id, arr) => (
                     <div
                         key={id}
-                        onMouseEnter={() => setHoveredIndex(id)}
+                        onMouseEnter={() => { if (isDesktop) setHoveredIndex(id) }}
                         onClick={() => triggerNavAction(item.action, id)}
                         className={`link opacity-0 transform-[rotateX(90deg)] origin-top relative border-b border-white/50 group cursor-pointer hover:bg-white/2 transition-colors h-[13.8vw] lg:h-[16.66%] flex items-center justify-center shrink-0 ${activeMobileItem === id ? 'mobile-active' : ''}`}
                     >
@@ -344,7 +346,7 @@ const FullScreenNav = ({ requireAuth }) => {
 
                 {/* Row 6: Empty Bottom Row */}
                 <div 
-                    onMouseEnter={() => setHoveredIndex(4)}
+                    onMouseEnter={() => { if (isDesktop) setHoveredIndex(4) }}
                     className='link opacity-0 h-[13.8vw] lg:h-[16.66%] flex flex-col justify-center'
                 >
                 </div>
