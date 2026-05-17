@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { getUserProfile, unlockTemplate, getAllTemplateStats, claimDailyReward, claimOneTimeReward, claimReferralReward, getTransactionHistory } from '../services/api';
+import { getUserProfile, unlockTemplate, getAllTemplateStats, claimDailyReward, claimOneTimeReward, claimReferralReward, claimMilestoneReward, getTransactionHistory } from '../services/api';
 import { useAuth } from './AuthContext';
 
 let cachedStats = null;
@@ -33,6 +33,8 @@ export const WalletProvider = ({ children }) => {
     const [isReferred, setIsReferred] = useState(false);
     const [hasSharedTemplate, setHasSharedTemplate] = useState(false);
     const [bonusAmounts, setBonusAmounts] = useState({ welcome: 0, refSignup: 0, referral: 0 });
+    const [milestoneUnitReward, setMilestoneUnitReward] = useState(50);
+    const [claimedMilestones, setClaimedMilestones] = useState([]);
     const [walletLoading, setWalletLoading] = useState(true);
     const loading = isInitializing || walletLoading;
     const [claiming, setClaiming] = useState({});
@@ -88,11 +90,13 @@ export const WalletProvider = ({ children }) => {
                 setHasMoreTransactions(profile.transactions?.length === 5);
                 setIsReferred(profile.isReferred || false);
                 setHasSharedTemplate(profile.hasSharedTemplate || false);
+                setClaimedMilestones(profile.claimedMilestones || []);
                 setBonusAmounts({
                     welcome: profile.welcomeBonus ?? 0,
                     refSignup: profile.refSignupBonus ?? 0,
                     referral: profile.referralBonus ?? 0
                 });
+                setMilestoneUnitReward(profile.milestoneUnitReward ?? 50);
             }
         } catch (error) {
             console.error("Failed to fetch wallet/template data:", error);
@@ -227,6 +231,36 @@ export const WalletProvider = ({ children }) => {
         }
     };
 
+    const claimMilestone = async (count) => {
+        const claimId = `milestone-${count}`;
+        if (claiming[claimId]) return;
+
+        lastClaimTime.current = Date.now();
+        const prevClaimed = [...claimedMilestones];
+        const prevBalance = balance;
+        
+        const rewardAmount = count * milestoneUnitReward;
+
+        setClaimedMilestones(prev => [...prev, count]);
+        setBalance(prev => prev + rewardAmount);
+        setClaiming(prev => ({ ...prev, [claimId]: true }));
+
+        try {
+            const result = await claimMilestoneReward(count);
+            setBalance(result.new_balance);
+            setClaimedMilestones(result.claimedMilestones);
+            refreshTransactions();
+            return { success: true };
+        } catch (error) {
+            setClaimedMilestones(prevClaimed);
+            setBalance(prevBalance);
+            console.error("Milestone claim failed:", error);
+            return { success: false, message: error.message };
+        } finally {
+            setClaiming(prev => ({ ...prev, [claimId]: false }));
+        }
+    };
+
     const refreshTransactions = async () => {
         try {
             const res = await getTransactionHistory(5);
@@ -267,13 +301,16 @@ export const WalletProvider = ({ children }) => {
         pendingTotal,
         streakInfo,
         claimedOneTime,
+        claimedMilestones,
         claiming,
         isReferred,
         hasSharedTemplate,
         bonusAmounts,
+        milestoneUnitReward,
         claimWishbits,
         claimDaily,
         claimOneTime,
+        claimMilestone,
         refreshWallet,
         unlock,
         loading,

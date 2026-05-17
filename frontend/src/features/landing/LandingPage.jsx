@@ -624,8 +624,19 @@ const LandingPage = () => {
     return (
         <>
             {/* Prominent Fixed Logo on Landing Page */}
-            <div className='z-[101] fixed left-2 lg:left-4 top-3 lg:top-4 h-14 lg:h-24 flex items-center pointer-events-auto'>
-                <a href="/" className="flex items-center h-full group">
+            <div className='z-[101] absolute left-2 lg:left-4 top-3 lg:top-4 h-14 lg:h-24 flex items-center pointer-events-auto'>
+                <a 
+                    href="/" 
+                    onClick={(e) => {
+                        e.preventDefault();
+                        if (window.lenis) {
+                            window.lenis.scrollTo(0, { duration: 1.2 });
+                        } else {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    }} 
+                    className="flex items-center h-full group"
+                >
                     <div className="relative h-full aspect-square rounded-full overflow-hidden p-[1.5px] group-hover:scale-105 transition-transform duration-500">
                         {/* Rotating Gradient Layer */}
                         <div className="absolute inset-[-100%] bg-gradient-to-br from-[#d946ef] via-[#f472b6] to-[#fb923c] animate-spin-slow"></div>

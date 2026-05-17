@@ -148,7 +148,7 @@
     text-decoration: none; 
     transition: opacity 0.2s; 
 }
-.footer-logo-link:hover { opacity: 0.8; }
+a.footer-logo-link:hover { opacity: 0.8; }
 .footer-logo-svg { width: 180px; height: auto; display: block; }
 .fpo-tagline {
     font-family: 'Inter', sans-serif;

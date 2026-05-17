@@ -84,12 +84,12 @@ const categories = [
         desc: "Bonded for life."
     },
     {
-        id: "special",
-        title: "SPECIAL",
+        id: "compliment",
+        title: "COMPLIMENT",
         subtitle: "SCENE [03] // UNIQUE",
         size: "small",
         icon: <StarIcon size={22} />,
-        img: "/cards/special.png",
+        img: "/cards/compliment.png",
         tag: "ONLY YOU",
         desc: "Simply the best."
     },
@@ -114,54 +114,34 @@ const categories = [
         desc: "Waiting for you."
     },
     {
-        id: "romantic",
-        title: "ROMANTIC",
+        id: "anniversary",
+        title: "ANNIVERSARY",
         subtitle: "SCENE [06] // LOVE",
         size: "medium",
         icon: <HeartIcon size={24} />,
-        img: "/cards/romantic.png",
-        tag: "FOREVER",
-        desc: "Pure love shared."
+        img: "/cards/anniversary.png",
+        tag: "YEARS TOGETHER",
+        desc: "Years of beautiful love."
     },
     {
-        id: "thank-you",
-        title: "THANK YOU",
-        subtitle: "SCENE [07] // GRATITUDE",
-        size: "small",
-        icon: <HeartIcon size={22} />,
-        img: "/cards/thank-you.png",
-        tag: "HEARTFELT",
-        desc: "Deeply grateful always."
-    },
-    {
-        id: "sorry",
-        title: "SORRY",
-        subtitle: "SCENE [08] // MENDING",
-        size: "medium",
-        icon: <HeartIcon size={24} />,
-        img: "/cards/sorry.png",
-        tag: "SINCERE",
-        desc: "Sincere apologies sent."
-    },
-    {
-        id: "celebration",
-        title: "CELEBRATION",
-        subtitle: "SCENE [09] // MAGIC",
+        id: "festivals",
+        title: "FESTIVALS",
+        subtitle: "SCENE [07] // CULTURE",
         size: "small",
         icon: <SparkleIcon size={22} />,
-        img: "/cards/celebration.png",
-        tag: "BLISS",
-        desc: "Magic in moments."
+        img: "/cards/festivals.png",
+        tag: "FESTIVE",
+        desc: "Joyous seasonal greetings."
     },
     {
-        id: "confession",
-        title: "CONFESSION",
-        subtitle: "SCENE [10] // TRUTH",
+        id: "others",
+        title: "OTHERS",
+        subtitle: "SCENE [08] // EXTRA",
         size: "small",
-        icon: <SparkleIcon size={22} />,
-        img: "/cards/confession.png",
-        tag: "SECRET",
-        desc: "My honest truth."
+        icon: <StarIcon size={22} />,
+        img: "/cards/others.png",
+        tag: "SURPRISE",
+        desc: "Just a little magic."
     }
 ]
 

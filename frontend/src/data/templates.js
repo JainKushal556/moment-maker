@@ -49,12 +49,12 @@ export const templates = [
         }
     },
     { 
-        id: 'chic-complement', 
-        title: "Chic Complement", 
-        category: "special", 
-        img: "/assets/templates-thumbnails/chic-complement.png", 
+        id: 'chic-compliment', 
+        title: "Chic Compliment", 
+        category: "compliment", 
+        img: "/assets/templates-thumbnails/chic-compliment.png", 
         desc: "A beautiful, premium template for someone special.", 
-        url: "/templates/special/chic-complement/index.html",
+        url: "/templates/compliment/chic-compliment/index.html",
         features: [
             { emoji: "🌸", text: "Elegant and soft aesthetic design" },
             { emoji: "💌", text: "Personalized letter for someone special" },
@@ -100,10 +100,10 @@ export const templates = [
             letterHeader: 'To My Cutest Girl,',
             letterBody: "I just want to say this… you look really beautiful 💖 Your smile is honestly my favorite thing 😊 There’s something so cute and soft about you that I can’t explain 🌸 The way you smile, the way you look… it just stays in my mind ✨ You make everything feel a little better just by being you 💫 I don’t say this enough, but you’re really special to me ❤️",
             images: [
-                '/templates/special/chic-complement/images/gifts/gift1.jpg',
-                '/templates/special/chic-complement/images/gifts/gift2.jpg',
-                '/templates/special/chic-complement/images/gifts/gift3.jpg',
-                '/templates/special/chic-complement/images/gifts/gift4.jpg'
+                '/templates/compliment/chic-compliment/images/gifts/gift1.jpg',
+                '/templates/compliment/chic-compliment/images/gifts/gift2.jpg',
+                '/templates/compliment/chic-compliment/images/gifts/gift3.jpg',
+                '/templates/compliment/chic-compliment/images/gifts/gift4.jpg'
             ]
         }
     },
@@ -225,6 +225,94 @@ export const templates = [
                 '/templates/proposal/charming-proposal/images/memory2.png',
                 '/templates/proposal/charming-proposal/images/memory3.png',
                 '/templates/proposal/charming-proposal/images/memory4.png'
+            ]
+        }
+    },
+    { 
+        id: 'cherry-blossom-proposal', 
+        title: "Cherry Blossom Proposal", 
+        category: "proposal", 
+        img: "/assets/templates-thumbnails/cherry-blossom-proposal.png", 
+        desc: "A breathtaking, interactive cherry blossom proposal featuring emotional transitions and a personalized cinematic letter.", 
+        url: "/templates/proposal/cherry-blossom-proposal/index.html",
+        features: [
+            { emoji: "🌸", text: "Interactive cherry blossom romance theme" },
+            { emoji: "📖", text: "Fully customizable transitions and letter" },
+            { emoji: "📸", text: "Floating memory polaroids with captions" }
+        ],
+        schema: [
+            {
+                id: 'font_set',
+                type: 'select',
+                label: 'Font Theme',
+                options: [
+                    { label: 'Cinematic Premium (Cormorant & Allura)', value: 'set1' },
+                    { label: 'Dreamy Luxury (Playfair & Great Vibes)', value: 'set2' },
+                    { label: 'Soft Ghibli (DM Serif & Parisienne)', value: 'set3' }
+                ],
+                stateKey: 'selectedFontSet'
+            },
+            {
+                id: 'transition_texts',
+                type: 'text-list',
+                label: 'Transition Texts',
+                description: 'Customize the 5 romantic buildup lines before the letter.',
+                count: 5,
+                stateKey: 'transitionTexts'
+            },
+            {
+                id: 'letter_header',
+                type: 'text',
+                label: 'Letter Header',
+                placeholder: 'e.g. FROM YASH✨',
+                stateKey: 'letterHeader'
+            },
+            {
+                id: 'letter_body',
+                type: 'textarea',
+                label: 'Letter Body',
+                placeholder: 'Type your romantic message...',
+                stateKey: 'letterBody'
+            },
+            {
+                id: 'proposal_photos',
+                type: 'image-gallery',
+                label: 'Memory Photos',
+                description: 'Upload 4 photos for the memory gallery.',
+                maxCount: 4,
+                stateKey: 'images'
+            },
+            {
+                id: 'photo_captions',
+                type: 'text-list',
+                label: 'Photo Captions',
+                description: 'Add a beautiful caption for each of the 4 photos.',
+                count: 4,
+                stateKey: 'captions'
+            }
+        ],
+        defaults: {
+            selectedFontSet: 'set1',
+            transitionTexts: [
+                "I never meant to fall this hard.",
+                "you became my favorite thought.",
+                "you’ve been living in my mind rent free.",
+                "my heart already chose you. 💞",
+                "there’s something I need to tell you. 🌸"
+            ],
+            letterHeader: "FROM YASH✨",
+            letterBody: "Somewhere between our random conversations,\nthe little shared smiles, and the moments\nI kept replaying in my head...\n\nYou quietly became my favorite person.\nI didn't plan for it, but I’m so glad it happened.\nEvery day with you feels like a beautiful dream\nI never want to wake up from.\n\nI've kept these words inside for so long,\nwaiting for the right moment to tell you.\nBut then I realized, there's no perfect time—\nonly the time we have right now.",
+            images: [
+                '/templates/proposal/cherry-blossom-proposal/memory1.png',
+                '/templates/proposal/cherry-blossom-proposal/memory2.png',
+                '/templates/proposal/cherry-blossom-proposal/memory3.png',
+                '/templates/proposal/cherry-blossom-proposal/memory4.png'
+            ],
+            captions: [
+                "this smile >>> 🌸",
+                "fav moment. 💞",
+                "blurry but i love it ✨",
+                "my comfort person 💖"
             ]
         }
     },
@@ -411,6 +499,142 @@ export const templates = [
             outroLine2: "I want to see you soon.",
             outroFinal: "I love you so much.",
             senderName: "— Yours forever"
+        }
+    },
+    { 
+        id: 'heartfelt-remembrance', 
+        title: "Heartfelt Remembrance", 
+        category: "anniversary", 
+        img: "/assets/templates-thumbnails/heartfelt-remembrance.png", 
+        desc: "A beautiful, cinematic anniversary memory website crafted with love.", 
+        url: "/templates/anniversary/heartfelt-remembrance/index.html",
+        features: [
+            { emoji: "💖", text: "Cinematic romantic memory timeline" },
+            { emoji: "🎡", text: "Interactive Spin-the-Wheel activity picker" },
+            { emoji: "💌", text: "Heartfelt typing letters and memories" }
+        ],
+        schema: [
+            {
+                id: 'font_set',
+                type: 'select',
+                label: 'Font Theme',
+                options: [
+                    { label: 'Romantic & Playful (Cormorant & Dancing)', value: 'set1' },
+                    { label: 'Luxury & Romance (Playfair & Great Vibes)', value: 'set2' },
+                    { label: 'Soft & Whimsical (EB Garamond & Alex Brush)', value: 'set3' },
+                    { label: 'Vintage Poet (Baskerville & Petit Script)', value: 'set4' }
+                ],
+                stateKey: 'selectedFontSet'
+            },
+            {
+                id: 'partner_name',
+                type: 'text',
+                label: 'Partner Name',
+                placeholder: 'e.g. My Love',
+                stateKey: 'partnerName'
+            },
+            {
+                id: 'anniversary_date',
+                type: 'text',
+                label: 'Anniversary Date',
+                placeholder: 'e.g. May 14, 2025',
+                stateKey: 'anniversaryDate'
+            },
+            {
+                id: 'moments_count',
+                type: 'text',
+                label: 'Total Moments Count',
+                placeholder: 'e.g. 1432',
+                stateKey: 'moments'
+            },
+            {
+                id: 'timeline_photos',
+                type: 'image-gallery',
+                label: 'Timeline Photos',
+                description: 'Upload 3 photos for the memory timeline.',
+                maxCount: 3,
+                stateKey: 'timelineImages'
+            },
+            {
+                id: 'mem_dates',
+                type: 'text-list',
+                label: 'Memory Dates',
+                description: 'Enter dates for the 3 memories.',
+                count: 3,
+                stateKey: 'memDates'
+            },
+            {
+                id: 'mem_headlines',
+                type: 'text-list',
+                label: 'Memory Headlines',
+                description: 'Enter headlines for the 3 memories.',
+                count: 3,
+                stateKey: 'memHeadlines'
+            },
+            {
+                id: 'mem_subtexts',
+                type: 'text-list',
+                label: 'Memory Subtexts',
+                description: 'Enter subtexts for the 3 memories.',
+                count: 3,
+                stateKey: 'memSubtexts'
+            },
+            {
+                id: 'mem_bottom_texts',
+                type: 'text-list',
+                label: 'Memory Bottom Texts',
+                description: 'Enter bottom texts for the 3 memories.',
+                count: 3,
+                stateKey: 'memBottomTexts'
+            },
+            {
+                id: 'final_letter',
+                type: 'text-list',
+                label: 'Final Typing Letter',
+                description: 'Enter the 7 typing lines.',
+                count: 7,
+                stateKey: 'finalLetter'
+            }
+        ],
+        defaults: {
+            selectedFontSet: 'set1',
+            partnerName: 'My Love',
+            anniversaryDate: 'May 14, 2025',
+            moments: '1432',
+            timelineImages: [
+                '/templates/anniversary/heartfelt-remembrance/memory1.png',
+                '/templates/anniversary/heartfelt-remembrance/memory2.png',
+                '/templates/anniversary/heartfelt-remembrance/memory3.png'
+            ],
+            memDates: [
+                '17 JULY 2024',
+                '15 AUGUST 2024',
+                '23 SEPTEMBER 2024'
+            ],
+            memHeadlines: [
+                'We were strangers here.',
+                'A beautiful moment.',
+                'You laughed.'
+            ],
+            memSubtexts: [
+                'Neither of us knew\nthis would become home.',
+                'Time stood still when we\nwere together.',
+                'And suddenly,\neverything felt lighter.'
+            ],
+            memBottomTexts: [
+                'Little did we know,\nit was the beginning of everything 🤍',
+                'A day to remember forever 🤍',
+                'The beginning of my favorite place.'
+            ],
+            finalLetter: [
+                'Thank you',
+                'for turning ordinary time',
+                'into something I never wanted to lose.',
+                'For every small moment.',
+                'For every difficult one too.',
+                "I'd choose this story again.",
+                'Every single time.'
+            ]
         }
     }
 ];

@@ -58,19 +58,17 @@ const BentoCard = ({ category, templateCount, onClick }) => {
         })
     }
 
-    // Strict mobile layout mapping from user diagram (only for screens < 768px)
+    // Strict mobile layout mapping (only for screens < 768px)
     const getMobileSpans = (id) => {
         switch (id) {
-            case 'birthday': return 'col-span-2 row-span-1'; // Pos 1: Wide Full (Top)
-            case 'friendship': return 'col-span-1 row-span-1'; // Pos 2: Small Left
-            case 'special': return 'col-span-1 row-span-1'; // Pos 3: Small Right
+            case 'birthday': return 'col-span-2 row-span-1'; // Pos 1: Wide Full
+            case 'friendship': return 'col-span-1 row-span-1'; // Pos 2: Half
+            case 'compliment': return 'col-span-1 row-span-1'; // Pos 3: Half
             case 'proposal': return 'col-span-2 row-span-1'; // Pos 4: Wide Full
-            case 'miss-you': return 'col-span-1 row-span-1'; // Pos 5: Small Left
-            case 'romantic': return 'col-span-1 row-span-1'; // Pos 6: Small Right
-            case 'thank-you': return 'col-span-2 row-span-1'; // Pos 7: Wide Full
-            case 'sorry': return 'col-span-1 row-span-1'; // Pos 8: Small Left
-            case 'celebration': return 'col-span-1 row-span-1'; // Pos 9: Small Right
-            case 'confession': return 'col-span-1 row-span-1'; // Pos 10: Small
+            case 'miss-you': return 'col-span-1 row-span-1'; // Pos 5: Half
+            case 'anniversary': return 'col-span-1 row-span-1'; // Pos 6: Half
+            case 'festivals': return 'col-span-1 row-span-1'; // Pos 7: Half
+            case 'others': return 'col-span-1 row-span-1'; // Pos 8: Half
             default: return 'col-span-1 row-span-1';
         }
     }

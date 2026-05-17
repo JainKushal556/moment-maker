@@ -134,11 +134,17 @@ export const getFavorites = () => apiFetch('/moments/favorites')
 export const toggleFavorite = (templateId) => 
     apiFetch(`/moments/favorites/${templateId}`, { method: 'POST' })
 
-/** Claim a specific referral reward from the referrals list */
 export const claimReferralReward = (friendUid) =>
     apiFetch('/users/claim-referral', {
         method: 'POST',
         body: JSON.stringify({ friend_uid: friendUid })
+    })
+
+/** Claim a milestone reward */
+export const claimMilestoneReward = (count) =>
+    apiFetch('/users/claim-milestone', {
+        method: 'POST',
+        body: JSON.stringify({ count })
     })
 
 export const getTransactionHistory = (limit = 5, lastId = null) => {

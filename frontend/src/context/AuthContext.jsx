@@ -14,6 +14,8 @@ import {
     reauthenticateWithCredential,
     updatePassword,
     unlink,
+    signInWithCredential,
+    GoogleAuthProvider,
 } from 'firebase/auth'
 import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
@@ -144,6 +146,12 @@ export const AuthProvider = ({ children }) => {
 
     const signInWithGoogle = () => {
         return signInWithPopup(auth, googleProvider)
+    }
+
+    // Used by Google One Tap — takes the JWT id_token from the One Tap response
+    const signInWithGoogleCredential = (idToken) => {
+        const credential = GoogleAuthProvider.credential(idToken)
+        return signInWithCredential(auth, credential)
     }
 
     const connectGoogle = async () => {
@@ -286,6 +294,7 @@ export const AuthProvider = ({ children }) => {
         closeAuthModal,
         onAuthSuccess,
         signInWithGoogle,
+        signInWithGoogleCredential,
         connectGoogle,
         disconnectGoogle,
         signInWithEmail,

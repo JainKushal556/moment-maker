@@ -38,16 +38,14 @@ gsap.registerPlugin(ScrollTrigger, Observer)
 
 const BLOCK_COUNT = 3
 const imageData = [
-  { title: "Thank You", sub: "Deeply grateful always", img: "/cards/thank-you.png" },
   { title: "Friendship", sub: "Bonded for life", img: "/cards/friendship.png" },
   { title: "Miss You", sub: "Waiting for you", img: "/cards/miss-you.png" },
   { title: "Proposal", sub: "Forever starts now", img: "/cards/proposal.png" },
-  { title: "Confession", sub: "My honest truth", img: "/cards/confession.png" },
   { title: "Birthday", sub: "Celebrate your day", img: "/cards/birthday.png" },
-  { title: "Celebration", sub: "Magic in moments", img: "/cards/celebration.png" },
-  { title: "Sorry", sub: "Sincere apologies sent", img: "/cards/sorry.png" },
-  { title: "Romantic", sub: "Pure love shared", img: "/cards/romantic.png" },
-  { title: "Special", sub: "Simply the best", img: "/cards/special.png" }
+  { title: "Compliment", sub: "Simply the best", img: "/cards/compliment.png" },
+  { title: "Anniversary", sub: "Years of beautiful love", img: "/cards/anniversary.png" },
+  { title: "Festivals", sub: "Joyous seasonal greetings", img: "/cards/festivals.png" },
+  { title: "Others", sub: "Just a little magic", img: "/cards/others.png" }
 ]
 
 // --- Effect functions ---
@@ -294,7 +292,7 @@ export default function CategoriesCarousel() {
 
       }
 
-      const TOTAL = 10; const ANGLE = 360 / TOTAL
+      const TOTAL = imageData.length; const ANGLE = 360 / TOTAL
       let radius = 450; let rotationValue = 0; let targetRotation = 0
       let isInteracting = false; let isFocused = false; let focusedCard = null; let sliderOutsideHandler = null
       let autoRotationSpeed = 0.18; let currentDirection = -1

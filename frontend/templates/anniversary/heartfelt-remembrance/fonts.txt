@@ -1,0 +1,47 @@
+/* 
+  Anniversary Website Font Pairings
+  ---------------------------------
+  Here are 3 additional font sets that match the emotional and cinematic aesthetic of your website.
+  To swap a set, copy the corresponding CSS Variables and update them in src/index.css.
+*/
+
+/* ============================================================
+   SET 1: LUXURY & ROMANCE (Modern High-End)
+   ============================================================
+   Link: https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Great+Vibes&family=Montserrat:wght@300;400;500&display=swap
+
+   CSS Variables:
+   --font-serif:  'Playfair Display', serif;
+   --font-script: 'Great Vibes', cursive;
+   --font-ui:     'Montserrat', sans-serif;
+*/
+
+/* ============================================================
+   SET 2: SOFT & WHIMSICAL (Delicate & Clean)
+   ============================================================
+   Link: https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Alex+Brush&family=Poppins:wght@300;400;500&display=swap
+
+   CSS Variables:
+   --font-serif:  'EB Garamond', serif;
+   --font-script: 'Alex Brush', cursive;
+   --font-ui:     'Poppins', sans-serif;
+*/
+
+/* ============================================================
+   SET 3: VINTAGE POET (Classic Storyteller)
+   ============================================================
+   Link: https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Petit+Formal+Script&family=Open+Sans:wght@300;400;600&display=swap
+
+   CSS Variables:
+   --font-serif:  'Libre Baskerville', serif;
+   --font-script: 'Petit Formal Script', cursive;
+   --font-ui:     'Open Sans', sans-serif;
+*/
+
+/* ============================================================
+   CURRENT ACTIVE SET (For Reference)
+   ============================================================
+   --font-serif:  'Cormorant Garamond', serif;
+   --font-script: 'Dancing Script', cursive;
+   --font-ui:     'Outfit', sans-serif;
+*/

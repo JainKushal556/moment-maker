@@ -40,6 +40,7 @@ const ReferalView = lazy(() => import('./features/referral/ReferalView'))
 const WalletView = lazy(() => import('./features/wallet/WalletView'))
 import LandingMusic from './features/landing/LandingMusic'
 import DailyStreakModal from './components/ui/DailyStreakModal'
+import GoogleOneTap from './components/ui/GoogleOneTap'
 import { useWallet } from './context/WalletContext'
 
 gsap.registerPlugin(ScrollTrigger, Observer)
@@ -81,32 +82,46 @@ function AppContent() {
     setModalDismissedThisSession(true) // Prevent showing again until full page refresh
   }
 
+  // Auto-trigger AuthModal for new referred users
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const path = window.location.pathname
-    
-    // Referral Tracking Logic (Supports ?rh=CODE, ?ref=CODE, and /ref/CODE)
+    const params = new URLSearchParams(window.location.search);
+    const path = window.location.pathname;
+
+    // Step 1: Capture the referral code from URL into localStorage
     let refCode = params.get('rh') || params.get('ref');
-    
     if (!refCode && path.includes('/ref/')) {
       refCode = path.split('/ref/')[1]?.split('/')[0]?.split('?')[0];
     }
-
     if (refCode) {
       const cleanRef = refCode.trim().toUpperCase();
       localStorage.setItem('pending_referral', cleanRef);
       console.log('Referral Captured:', cleanRef);
       // Clean the URL
       const newUrl = (window.location.pathname === '/' || path.startsWith('/ref/') || path.startsWith('/join') || path.startsWith('/welcome'))
-        ? '/' 
+        ? '/'
         : window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }
 
     if (params.get('action') === 'login') {
-      openAuthModal()
-      window.history.replaceState({}, document.title, window.location.pathname)
+      openAuthModal();
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
+
+    // Step 2: After capture, check if we should auto-open AuthModal for referral visitors
+    const hasPendingRef = localStorage.getItem('pending_referral');
+    const modalShown = sessionStorage.getItem('referral_modal_shown');
+
+    if (hasPendingRef && !currentUser && !modalShown && !authModalOpen) {
+      const timer = setTimeout(() => {
+        openAuthModal();
+        sessionStorage.setItem('referral_modal_shown', 'true');
+      }, 2500); // 2.5s delay so the preloader transition looks smooth and landing page mounts completely
+      return () => clearTimeout(timer);
+    }
+  }, [currentUser, openAuthModal, authModalOpen]);
+
+  useEffect(() => {
 
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual'
@@ -359,6 +374,11 @@ function AppContent() {
         isOpen={showStreakModal} 
         onClose={handleCloseStreakModal} 
       />
+
+      {/* Google One Tap — all pages, only for logged-out users, only when AuthModal is closed */}
+      {!currentUser && !authModalOpen && (
+        <GoogleOneTap />
+      )}
     </>
   )
 }

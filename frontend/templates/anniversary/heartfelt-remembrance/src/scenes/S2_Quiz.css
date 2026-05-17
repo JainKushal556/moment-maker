@@ -1,0 +1,292 @@
+.s2-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Image card */
+.s2-card {
+  position: relative;
+  z-index: 10;
+  background: url('/templates/anniversary/heartfelt-remembrance/quiz-bg.png') center/contain no-repeat;
+  background-color: transparent;
+  padding: 40px 20px;
+  max-width: 8890px;
+  width: 100%;
+  min-height: 680px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: none;
+  border-radius: 0;
+  text-align: center;
+  transition: transform 0.3s var(--ease);
+}
+.s2-card::before {
+  display: none;
+}
+
+.s2-card.shake {
+  animation: cardShake 0.5s var(--ease);
+}
+@keyframes cardShake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-8px) rotate(-1deg); }
+  40%     { transform: translateX(8px) rotate(1deg); }
+  60%     { transform: translateX(-5px); }
+  80%     { transform: translateX(5px); }
+}
+
+.s2-card.correct {
+  box-shadow:
+    0 2px 0 rgba(0,0,0,0.1),
+    0 8px 60px rgba(196,103,122,0.25),
+    0 0 100px rgba(201,164,108,0.2);
+}
+
+/* Top ornament */
+.s2-top-ornament {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.s2-label {
+  font-family: var(--font-ui);
+  font-size: 0.65rem;
+  letter-spacing: 0.4em;
+  color: var(--rose);
+  text-transform: lowercase;
+}
+
+/* Question */
+.s2-question {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  font-size: 1.8rem;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 32px;
+}
+
+/* Options grid */
+.s2-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 400px; /* Ensures buttons don't get too wide */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.s2-option {
+  padding: 12px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(224,122,144,0.3);
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(4px);
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+  letter-spacing: 0.02em;
+}
+.s2-option:hover {
+  background: rgba(255,255,255,0.9);
+  border-color: var(--rose);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(224,122,144,0.15);
+}
+.s2-option.wrong {
+  background: rgba(224,122,144,0.15);
+  border-color: rgba(224,122,144,0.5);
+  color: #8b3042;
+}
+.s2-option.right {
+  background: rgba(255,255,255,0.95);
+  border-color: var(--rose);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: 0 0 20px rgba(224,122,144,0.3);
+}
+
+/* Feedback messages */
+.s2-feedback {
+  font-family: var(--font-script);
+  font-size: 1.3rem;
+  min-height: 28px;
+  transition: opacity 0.4s;
+}
+.wrong-msg { color: #8b3042; }
+.right-msg  { color: var(--ink); font-weight: 600; }
+
+/* ─── MOBILE RESPONSIVENESS ─── */
+@media (max-width: 768px) {
+  .s2-card {
+    min-height: 750px; /* Increased height so the card has more room */
+    padding: 30px 15px;
+    background-image: url('/templates/anniversary/heartfelt-remembrance/quiz-bg-mobile.png'); 
+    background-size: cover; /* Scales nicely without looking squished */
+    background-position: top center; /* Ensures the top of the image is never cut off */
+  }
+  .s2-question {
+    font-size: 1.4rem;
+    margin-bottom: 24px;
+  }
+  .s2-options {
+    grid-template-columns: 1fr; /* Single column for better tap targets on phone */
+    gap: 8px;
+    max-width: 200px; /* Reduced width to make buttons narrower on phone */
+  }
+  .s2-option {
+    padding: 6px 10px; /* Reduced padding to make buttons slimmer on phone */
+    font-size: 0.95rem;
+  }
+  .s2-top-ornament {
+    margin-top: 60px; /* Pushes the entire question block downwards */
+    margin-bottom: 16px;
+  }
+  .s2-feedback {
+    font-size: 1.1rem;
+  }
+}
+
+/* ─── WRONG ANSWER OVERLAY ─── */
+.s2-wrong-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 4, 8, 0.95); /* Deep dark background */
+  z-index: 2000; /* Above everything */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  animation: s2-overlay-fade 0.4s forwards;
+}
+
+.s2-wrong-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.s2-wrong-gif {
+  width: min(350px, 80vw);
+  height: auto;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  animation: s2-gif-grow 2s cubic-bezier(0.17, 0.67, 0.12, 1) forwards;
+}
+
+.s2-wrong-text {
+  margin-top: 30px;
+  font-family: var(--font-ui);
+  color: #fff;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  letter-spacing: 0.05em;
+  opacity: 0;
+  animation: s2-text-fade 0.6s 1.5s forwards; /* Shows up after gif grows */
+}
+
+.s2-try-again-btn {
+  display: inline-block;
+  font-family: var(--font-script);
+  font-size: 1.8rem;
+  color: #fff;
+  background: var(--rose);
+  border: none;
+  padding: 8px 32px;
+  border-radius: 40px;
+  margin-top: 20px;
+  cursor: pointer;
+  box-shadow: 0 5px 20px rgba(224,122,144,0.4);
+  transition: all 0.3s var(--ease);
+}
+
+.s2-try-again-btn:hover {
+  transform: scale(1.05);
+  background: #c97e8a;
+  box-shadow: 0 8px 25px rgba(224,122,144,0.6);
+}
+
+@keyframes s2-overlay-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes s2-gif-grow {
+  0% { transform: scale(0.2); opacity: 0; }
+  100% { transform: scale(1); width: min(400px, 80vw); opacity: 1; }
+}
+
+@keyframes s2-text-fade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Correct Answer Overlay - Transparent version */
+.s2-correct-overlay {
+  position: fixed; inset: 0;
+  background: transparent; /* No background as requested */
+  z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; /* Let popper be visible but don't block everything if needed */
+}
+.s2-correct-content {
+  display: flex; flex-direction: column; align-items: center;
+}
+.s2-correct-gif {
+  width: min(500px, 90vw); /* Larger as requested */
+  height: auto;
+  border-radius: 0; /* Remove rounded corners */
+  filter: none; /* Remove shadow */
+  animation: s2-gif-grow 0.8s cubic-bezier(0.17, 0.67, 0.12, 1) both;
+}
+.s2-correct-text {
+  display: none; /* Remove text as requested */
+}
+
+@keyframes s2-gif-grow {
+  from { opacity: 0; transform: scale(0.5) rotate(-5deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@media (max-width: 768px) {
+  .s2-correct-gif { width: 95vw; }
+}
+
+/* Integrated Correct Answer BG */
+.s2-correct-bg {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 50;
+  background: rgba(255, 248, 249, 0.3);
+  animation: s2-fade-in 0.8s ease-out forwards;
+}
+.s2-correct-img {
+  width: min(420px, 85vw);
+  height: auto;
+  border-radius: 24px;
+  box-shadow: 0 30px 80px rgba(224,122,144,0.35);
+  animation: s2-img-pop 1.2s cubic-bezier(0.17, 0.67, 0.12, 1);
+}
+.s2-card.fade-out {
+  opacity: 0;
+  transform: scale(0.9) translateY(20px);
+  pointer-events: none;
+  transition: all 0.8s var(--ease);
+}
+@keyframes s2-img-pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}

@@ -1,0 +1,55 @@
+# 🌸 PROPOSAL WEBSITE FONT SETS 🌸
+
+---
+
+## SET 1 — BEST OVERALL (Recommended & ACTIVE)
+**Vibe:** Cinematic + Premium + Soft Romance
+
+### Fonts:
+1. **Heading / Emotional Text:** Cormorant Garamond
+   - Link: https://fonts.google.com/specimen/Cormorant+Garamond
+   - Usage: Titles, basically everything emotional, proposal text, letter heading.
+2. **Main UI / Paragraphs / Buttons:** Poppins
+   - Link: https://fonts.google.com/specimen/Poppins
+   - Usage: Buttons, letter body, captions, questions, small text.
+3. **Signature Only:** Allura
+   - Link: https://fonts.google.com/specimen/Allura
+   - Usage: ONLY for "— Kushal 💞" signature.
+
+---
+
+## SET 2 — Dreamy Luxury Romance
+**Vibe:** Elegant Luxury Romance
+
+### Fonts:
+1. **Heading:** Playfair Display
+   - Link: https://fonts.google.com/specimen/Playfair+Display
+   - Usage: Poetic/luxury editorial lines, proposal lines.
+2. **Main Font:** Inter
+   - Link: https://fonts.google.com/specimen/Inter
+   - Usage: Very clean modern balance, polished feel.
+3. **Accent Script:** Great Vibes
+   - Link: https://fonts.google.com/specimen/Great+Vibes
+   - Usage: Tiny usage, small romantic highlights.
+
+---
+
+## SET 3 — Soft Korean Drama / Ghibli Vibe
+**Vibe:** Dreamy Cozy Romance
+
+### Fonts:
+1. **Heading:** DM Serif Display
+   - Link: https://fonts.google.com/specimen/DM+Serif+Display
+   - Usage: Emotional, soft, artistic, storybook-like (Letter + Gallery).
+2. **Main Font:** Nunito
+   - Link: https://fonts.google.com/specimen/Nunito
+   - Usage: Warm, cute, friendly, soft (Interactive questions).
+3. **Accent Handwriting:** Parisienne
+   - Link: https://fonts.google.com/specimen/Parisienne
+   - Usage: Use minimally.
+
+---
+
+### HOW TO SWITCH:
+1. Copy the Google Font @import link into `App.css` or `index.html`.
+2. Update the CSS variables in `:root` inside `App.css`.

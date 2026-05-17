@@ -1,4 +1,4 @@
-import { useEffect, useRef, useContext } from 'react'
+import { useEffect, useRef, useContext, useState } from 'react'
 import { ViewContext } from '../context/NavContext'
 import logo from '../assets/logo.png'
 import Matter from 'matter-js'
@@ -42,6 +42,8 @@ const FloatingHearts = () => {
 export default function Footer() {
   const playgroundRef = useRef(null)
   const [currentView, navigateTo] = useContext(ViewContext)
+  const [email, setEmail] = useState('')
+  const [subStatus, setSubStatus] = useState('idle') // idle, loading, success, error
 
   const handleLandingShortcut = (event, targetId) => {
     event.preventDefault()
@@ -82,6 +84,45 @@ export default function Footer() {
     }
 
     navigateTo('about')
+  }
+  
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault()
+    if (!email || !email.includes('@')) return
+
+    const GOOGLE_FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScMFhv4m56BpS2GM5pF71IoB42QxJu2dRM-elsjNYZxluaUaQ/formResponse';
+    const GOOGLE_FORM_EMAIL_ENTRY_ID = 'entry.1783343694';
+
+    // Create a hidden iframe to receive the form response (bypasses CORS)
+    const iframeName = 'hidden-google-form-iframe';
+    let iframe = document.getElementById(iframeName);
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.setAttribute('id', iframeName);
+      iframe.setAttribute('name', iframeName);
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+
+    // Create a hidden form and submit it to the iframe
+    const form = document.createElement('form');
+    form.setAttribute('method', 'POST');
+    form.setAttribute('action', GOOGLE_FORM_ACTION_URL);
+    form.setAttribute('target', iframeName);
+
+    const input = document.createElement('input');
+    input.setAttribute('type', 'hidden');
+    input.setAttribute('name', GOOGLE_FORM_EMAIL_ENTRY_ID);
+    input.setAttribute('value', email.trim().toLowerCase());
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+
+    setSubStatus('success');
+    setEmail('');
+    setTimeout(() => setSubStatus('idle'), 5000);
   }
 
   useEffect(() => {
@@ -331,7 +372,7 @@ export default function Footer() {
             {/* Brand + Newsletter */}
             <div className="fpo-brand">
                 <div className="fpo-logo-tagline flex flex-row items-center gap-3 lg:gap-6 text-left">
-                  <a href="#landing-hero" className="footer-logo-link flex flex-row items-center gap-3 lg:gap-4" aria-label="Moment Crafter Home" onClick={(e) => handleLandingShortcut(e, 'landing-hero')}>
+                  <div className="footer-logo-link flex flex-row items-center gap-3 lg:gap-4">
                     {/* Rotating Logo for Footer */}
                     <div className="relative h-16 w-16 lg:h-20 lg:w-20 rounded-full overflow-hidden p-[1.5px] shadow-[0_0_15px_rgba(217,70,239,0.2)]">
                         {/* Rotating Gradient Layer */}
@@ -358,7 +399,7 @@ export default function Footer() {
                         }}
                       >CRAFTER</span>
                     </div>
-                  </a>
+                  </div>
                   
                   <div className="flex flex-col items-start leading-[0.9] border-l border-white/10 pl-3 lg:pl-10">
                     <p className="fpo-tagline text-white/40 text-[10px] lg:text-base m-0 text-left">Craft memories,</p>
@@ -372,13 +413,50 @@ export default function Footer() {
                   <div className="newsletter-icon"><i className="fas fa-envelope"></i></div>
                   <div className="newsletter-info">
                     <span className="newsletter-title">Stay in the loop</span>
-                    <span className="newsletter-sub">Get ideas & updates in your inbox.</span>
+                    <div className="relative">
+                      <span className={`newsletter-sub transition-opacity duration-300 ${subStatus !== 'idle' ? 'opacity-0' : 'opacity-100'}`}>
+                        Get ideas & updates in your inbox.
+                      </span>
+                      {subStatus === 'success' && (
+                        <span className="absolute left-0 top-0 text-[10.5px] text-emerald-400 font-medium animate-in fade-in slide-in-from-bottom-1">
+                          You're in the loop! ✨
+                        </span>
+                      )}
+                      {subStatus === 'error' && (
+                        <span className="absolute left-0 top-0 text-[10.5px] text-red-400 font-medium animate-in fade-in slide-in-from-bottom-1">
+                          Something went wrong.
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
-                  <input type="email" placeholder="Enter your email" className="newsletter-input" />
-                  <button type="submit" className="newsletter-btn" aria-label="Subscribe"><i className="fas fa-arrow-right"></i></button>
-                </form>
+                <div className="relative">
+                  <form className="newsletter-form" onSubmit={handleNewsletterSubmit}>
+                    <input 
+                      type="email" 
+                      placeholder={subStatus === 'success' ? "Subscribed!" : "Enter your email"} 
+                      className={`newsletter-input ${subStatus === 'error' ? 'border-red-500' : ''}`}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={subStatus === 'loading' || subStatus === 'success'}
+                      required
+                    />
+                    <button 
+                      type="submit" 
+                      className="newsletter-btn" 
+                      aria-label="Subscribe"
+                      disabled={subStatus === 'loading' || subStatus === 'success'}
+                    >
+                      {subStatus === 'loading' ? (
+                        <i className="fas fa-spinner animate-spin"></i>
+                      ) : subStatus === 'success' ? (
+                        <i className="fas fa-check"></i>
+                      ) : (
+                        <i className="fas fa-arrow-right"></i>
+                      )}
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
 

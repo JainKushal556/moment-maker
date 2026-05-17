@@ -1,0 +1,177 @@
+.s8-scene {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.s8-letter-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
+}
+
+/* Torn pink paper background */
+.s8-torn-paper {
+  position: absolute;
+  top: -15px; left: -15px;
+  width: calc(100% + 30px);
+  height: calc(100% + 30px);
+  background: #e4929d; /* Warm pink */
+  opacity: 0.9;
+  clip-path: polygon(
+    2% 2%, 98% 1%, 99% 98%, 1% 99%,
+    2% 50%, 0% 20%
+  ); /* Simple torn effect */
+  transform: rotate(-1.5deg);
+  z-index: 1;
+}
+
+/* Main white card */
+.s8-paper {
+  position: relative;
+  z-index: 5;
+  background: #faf4f5;
+  padding: 60px 45px 45px;
+  max-width: 440px; width: 90vw;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  border-radius: 2px;
+}
+
+/* Bottom right corner curl */
+.s8-paper::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 40px; height: 40px;
+  background: linear-gradient(-45deg, transparent 50%, rgba(0,0,0,0.05) 50%, #fff 100%);
+  box-shadow: -2px -2px 5px rgba(0,0,0,0.02);
+}
+
+.s8-tape-top {
+  position: absolute;
+  top: -12px; left: 50%;
+  transform: translateX(-50%);
+  width: 70px; height: 22px;
+  background: rgba(224,122,144,0.3);
+  clip-path: polygon(2% 0%, 98% 2%, 96% 100%, 4% 96%);
+  z-index: 10;
+}
+
+/* Flower taped on the left */
+.s8-flower-dec {
+  position: absolute;
+  left: -40px;
+  top: 55%;
+  transform: translateY(-50%) rotate(-10deg);
+  z-index: 20;
+}
+.s8-flower-img {
+  width: 510px;
+  margin-left: -210px;
+  margin-top: 5px;
+  height: auto;
+  filter: drop-shadow(2px 5px 15px rgba(0,0,0,0.08));
+}
+.s8-flower-tape {
+  position: absolute;
+  bottom: 20px; left: 60%;
+  transform: translateX(-50%) rotate(15deg);
+  width: 45px; height: 18px;
+  background: rgba(224,122,144,0.4);
+  clip-path: polygon(4% 2%, 96% 0%, 98% 98%, 2% 96%);
+}
+
+.s8-paper-inner {
+  position: relative;
+  z-index: 5;
+}
+
+.s8-paper-top {
+  text-align: center;
+  margin-bottom: 35px;
+}
+.s8-heart { color: var(--rose); font-style: normal; font-size: 0.9rem; }
+
+.s8-letter-body {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.s8-line {
+  font-family: var(--font-ui);
+  font-size: 1.05rem;
+  color: var(--ink);
+  line-height: 1.8;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 1.5s var(--ease), transform 1.5s var(--ease);
+  text-align: left;
+}
+.s8-line.in { opacity: 1; transform: translateY(0); }
+.s8-line.spacer { height: 12px; }
+
+.s8-sig-text {
+  margin-top: 45px;
+  font-family: var(--font-script);
+  font-size: 1.25rem;
+  color: rgba(42,21,32,0.4);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 1.5s var(--ease) 1s;
+}
+.s8-sig-text.in { opacity: 1; }
+
+/* Next button wrap - positioned on the pink part */
+.s8-next-wrap {
+  position: absolute;
+  bottom: -25px; /* Positioned on the pink decorative part */
+  z-index: 20;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 1.5s var(--ease), transform 1.5s var(--ease);
+}
+.s8-next-wrap.in { opacity: 1; transform: translateY(0); }
+
+.s8-next-btn {
+  width: 55px; height: 55px;
+  border-radius: 50%;
+  border: 1px solid rgba(224,122,144,0.2);
+  background: #faf4f5;
+  color: var(--rose);
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s var(--ease);
+  box-shadow: 0 5px 15px rgba(224,122,144,0.1);
+}
+.s8-next-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(224,122,144,0.2);
+  background: white;
+}
+
+@media (max-width: 768px) {
+  .s8-paper { padding: 40px 10px; width: 92vw; }
+  .s8-flower-dec { 
+    left: -45px !important; 
+    top: 50% !important;
+    transform: translateY(-50%) rotate(-10deg) !important;
+    z-index: 1 !important; /* Send to back */
+  }
+  .s8-flower-img { 
+    width: 380px !important; 
+    margin-left: -60px !important; 
+    margin-top: 0 !important;
+    opacity: 0.8 !important; /* Slightly fade so text is clearer */
+  }
+  .s8-line { 
+    font-size: 0.9rem; 
+    line-height: 1.6; 
+    padding-left: 75px !important; /* Pushing text more to the right */
+  }
+  .s8-next-wrap { bottom: -20px; }
+  .s8-sig-text { font-size: 1rem; margin-top: 30px; }
+}

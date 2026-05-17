@@ -127,6 +127,7 @@ async def initialize_user(payload: InitPayload, user: dict = Depends(get_current
             "initialized": True,
             "isReferred": is_referred, # Store for claiming logic
             "claimedOneTime": [], # List of claimed IDs
+            "claimedMilestones": [], # List of claimed milestone counts
             "createdAt": firestore.SERVER_TIMESTAMP
         }
         
@@ -141,6 +142,7 @@ async def initialize_user(payload: InitPayload, user: dict = Depends(get_current
             "claimedDays": [],
             "unlockedTemplates": [],
             "claimedOneTime": [],
+            "claimedMilestones": [],
             "isReferred": is_referred
         }
 
@@ -508,6 +510,78 @@ async def claim_referral_reward(friend_uid: str = Body(..., embed=True), user: d
         raise HTTPException(status_code=500, detail="Failed to claim referral reward")
 
 
+@router.post("/claim-milestone")
+async def claim_milestone_reward(count: int = Body(..., embed=True), user: dict = Depends(get_current_user)):
+    """
+    Claim a milestone reward.
+    """
+    uid = user["uid"]
+    user_ref = db.collection("users").document(uid)
+    config_ref = db.collection("app_config").document("wishbit_settings")
+    
+    @firestore.transactional
+    def process_milestone_claim(transaction, user_ref, config_ref, count):
+        u_doc = user_ref.get(transaction=transaction)
+        if not u_doc.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+            
+        u_data = u_doc.to_dict()
+        claimed = u_data.get("claimedMilestones", [])
+        
+        if count in claimed:
+            raise HTTPException(status_code=400, detail="Milestone already claimed.")
+            
+        # Count actual referrals
+        referrals_docs = user_ref.collection("referrals").stream(transaction=transaction)
+        actual_referrals = len(list(referrals_docs))
+        
+        if actual_referrals < count:
+            raise HTTPException(status_code=400, detail="Milestone not reached yet.")
+            
+        config = config_ref.get(transaction=transaction).to_dict() or {}
+        unit_reward = config.get("milestone_unit_reward", 50)
+        
+        reward_amount = count * unit_reward
+        current_bits = u_data.get("wishbits", 0)
+        new_bits = current_bits + reward_amount
+        claimed.append(count)
+        
+        transaction.update(user_ref, {
+            "wishbits": new_bits,
+            "claimedMilestones": claimed
+        })
+        
+        # Log Transaction
+        tx_ref = user_ref.collection("transactions").document()
+        transaction.set(tx_ref, {
+            "txnId": tx_ref.id,
+            "type": "CREDIT",
+            "category": "REFERRAL_MILESTONE_REWARD",
+            "amount": reward_amount,
+            "paymentId": None,
+            "description": f"Claimed {count} friends referral milestone reward",
+            "status": "COMPLETED",
+            "metadata": {
+                "milestoneCount": count
+            },
+            "timestamp": firestore.SERVER_TIMESTAMP
+        })
+        
+        return {"new_balance": new_bits, "claimedMilestones": claimed}
+
+    try:
+        result = process_milestone_claim(db.transaction(), user_ref, config_ref, count)
+        return {
+            "success": True,
+            "message": "Milestone claimed successfully",
+            "data": result
+        }
+    except Exception as e:
+        if isinstance(e, HTTPException): raise e
+        print(f"Milestone claim error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to claim milestone reward")
+
+
 @router.get("/me")
 async def get_my_profile(user: dict = Depends(get_current_user)):
     """
@@ -575,6 +649,7 @@ async def get_my_profile(user: dict = Depends(get_current_user)):
     welcome_bonus = config.get("welcome_bonus", 500)
     ref_signup_bonus = config.get("ref_signup_bonus", 200)
     referral_reward = config.get("referral_reward", 300)
+    milestone_unit_reward = config.get("milestone_unit_reward", 50)
 
     # 4. Fetch referrals list efficiently
     referrals_docs = user_ref.collection("referrals").order_by("timestamp", direction=firestore.Query.ASCENDING).stream()
@@ -657,11 +732,13 @@ async def get_my_profile(user: dict = Depends(get_current_user)):
             "welcomeBonus": welcome_bonus,
             "refSignupBonus": ref_signup_bonus,
             "referralBonus": referral_reward,
+            "milestoneUnitReward": milestone_unit_reward,
             "referralCode": user_data.get("referralCode", ""),
             "unlockedTemplates": user_data.get("unlockedTemplates", []),
             "referredBy": user_data.get("referredBy"),
             "isReferred": user_data.get("isReferred", False),
             "claimedOneTime": user_data.get("claimedOneTime", []),
+            "claimedMilestones": user_data.get("claimedMilestones", []),
             "hasSharedTemplate": db.collection("moments").where(filter=firestore.FieldFilter("uid", "==", uid)).where(filter=firestore.FieldFilter("status", "==", "shared")).limit(1).get() != [],
             "referrals": referrals_list,
             "transactions": tx_list,

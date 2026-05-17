@@ -567,7 +567,7 @@ export default function WalletView() {
                                 const today = new Date().toISOString().split('T')[0];
                                 const isClaimedToday = streakInfo.lastClaim === today;
                                 
-                                // Color Map for each day
+                                // Color Maps for each day (Exact match of DailyStreakModal.jsx)
                                 const dayColors = {
                                     1: 'from-blue-500/20',
                                     2: 'from-indigo-500/20',
@@ -575,19 +575,29 @@ export default function WalletView() {
                                     4: 'from-pink-500/20',
                                     5: 'from-rose-500/20',
                                     6: 'from-orange-500/20',
-                                    7: 'from-sun-gold/20'
+                                    7: 'from-sun-gold/30'
                                 };
-
+ 
                                 const dayBorderColors = {
-                                    1: 'border-blue-500/20',
-                                    2: 'border-indigo-500/20',
-                                    3: 'border-fuchsia-500/20',
-                                    4: 'border-pink-500/20',
-                                    5: 'border-rose-500/20',
-                                    6: 'border-orange-500/20',
-                                    7: 'border-sun-gold/30'
+                                    1: 'border-blue-500/40',
+                                    2: 'border-indigo-500/40',
+                                    3: 'border-fuchsia-500/40',
+                                    4: 'border-pink-500/40',
+                                    5: 'border-rose-500/40',
+                                    6: 'border-orange-500/40',
+                                    7: 'border-sun-gold/50'
                                 };
 
+                                const dayTextColors = {
+                                    1: 'text-blue-400',
+                                    2: 'text-indigo-400',
+                                    3: 'text-fuchsia-400',
+                                    4: 'text-pink-400',
+                                    5: 'text-rose-400',
+                                    6: 'text-orange-400',
+                                    7: 'text-sun-gold'
+                                };
+ 
                                 const isClaimed = streakInfo.claimedDays.includes(day);
                                 const isReached = day <= streakInfo.count;
                                 
@@ -600,20 +610,27 @@ export default function WalletView() {
                                 const isDeferred = [2, 5].includes(day);
                                 const isBonusDay = day === 7;
                                 const canClaimToday = !isDeferred || streakInfo.count > day;
-
+ 
                                 return (
                                     <div 
                                         key={day}
-                                        className={`relative p-3 md:p-5 rounded-2xl border transition-all duration-500 flex flex-col items-center justify-center gap-2 md:gap-3 group overflow-hidden shrink-0 w-28 md:w-auto ${
-                                            day === 7 ? 'shadow-[0_0_30px_rgba(255,215,0,0.2)]' : ''
-                                        } ${
-                                            isCompleted ? 'bg-emerald-500/5 border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.1)]' :
-                                            isCurrent ? 'bg-white/10 border-fuchsia-500/50 shadow-[0_0_40px_rgba(217,70,239,0.15)]' :
-                                            `bg-white/[0.03] ${dayBorderColors[day]}`
-                                        }`}
+                                        className={`relative p-3 md:p-5 rounded-2xl border transition-all duration-500 flex flex-col items-center justify-center gap-2 md:gap-3 group overflow-hidden shrink-0 w-28 md:w-auto 
+                                            ${day === 7 
+                                              ? 'shadow-[0_0_50px_rgba(255,215,0,0.35)] border-sun-gold/50 bg-sun-gold/5 hover:shadow-[0_0_70px_rgba(255,215,0,0.5)]' 
+                                              : ''
+                                            } 
+                                            ${isCompleted ? 'bg-emerald-500/5 border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.1)]' :
+                                              isCurrent ? 'bg-white/10 border-fuchsia-500/50 shadow-[0_0_40px_rgba(217,70,239,0.15)]' :
+                                              day === 7 ? 'bg-sun-gold/5 border-sun-gold/40 shadow-[0_0_40px_rgba(255,215,0,0.25)]' :
+                                              `bg-white/[0.03] ${dayBorderColors[day]}`
+                                            }`}
                                     >
                                         {/* Background Aura Effects */}
-                                        <div className={`absolute inset-0 bg-radial ${dayColors[day]} to-transparent opacity-30`} />
+                                        <div className={`absolute inset-0 bg-gradient-to-br ${dayColors[day]} to-transparent ${day === 7 ? 'opacity-50' : 'opacity-35'}`} />
+                                        
+                                        {day === 7 && (
+                                          <div className="absolute inset-0 bg-radial from-sun-gold/25 via-transparent to-transparent animate-pulse opacity-80" />
+                                        )}
                                         
                                         {isCompleted && (
                                             <div className="absolute inset-0 bg-radial from-emerald-500/10 to-transparent opacity-60" />
@@ -621,35 +638,37 @@ export default function WalletView() {
                                         {isCurrent && (
                                             <div className="absolute inset-0 bg-radial from-fuchsia-500/20 to-transparent animate-pulse opacity-60" />
                                         )}
-
+ 
                                         <span className={`text-[8px] md:text-[9px] font-black uppercase tracking-widest relative z-10 ${
                                             isCompleted ? 'text-emerald-400' :
-                                            isCurrent ? 'text-fuchsia-400 animate-pulse' : 
-                                            'text-white/30'
+                                            isCurrent ? 'text-fuchsia-400 animate-pulse md:-translate-y-2.5' : 
+                                            dayTextColors[day]
                                         }`}>Day {day}</span>
                                         
-                                        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-500 relative z-10 ${
-                                            isCompleted ? 'text-emerald-400 bg-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.3)]' :
-                                            isCurrent ? 'text-fuchsia-400 bg-fuchsia-500/20 shadow-[0_0_20px_rgba(217,70,239,0.4)]' :
-                                            'text-white/5 bg-white/5 border border-white/5'
-                                        } ${isCurrent ? 'scale-110' : ''}`}>
+                                        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-500 relative z-10 border ${
+                                            isCompleted ? 'text-emerald-400 bg-emerald-500/20 border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.3)]' :
+                                            isCurrent ? 'text-fuchsia-400 bg-fuchsia-500/20 border-fuchsia-500/40 shadow-[0_0_20px_rgba(217,70,239,0.4)] scale-110' :
+                                            day === 7 ? 'text-sun-gold bg-sun-gold/20 border-sun-gold/40 shadow-[0_0_25px_rgba(255,215,0,0.35)]' :
+                                            `bg-white/5 ${dayBorderColors[day]} ${dayTextColors[day]}`
+                                        }`}>
                                             {isCompleted ? <Check size={20} className="md:w-6 md:h-6" strokeWidth={3} /> :
                                              isCurrent && !canClaimToday ? <Lock size={18} className="animate-pulse" /> :
-                                             isBonusDay ? <Crown size={20} className={isCurrent ? 'text-sun-gold animate-bounce' : 'text-sun-gold/20'} /> :
-                                             <WishbitIcon size={24} className={isCurrent ? 'drop-shadow-[0_0_15px_rgba(217,70,239,0.6)]' : 'opacity-[0.15]'} />}
+                                             isBonusDay ? <Crown size={20} className={`text-sun-gold ${isCurrent ? 'animate-bounce' : 'animate-pulse scale-105'}`} /> :
+                                             <WishbitIcon size={24} className={`${dayTextColors[day]} opacity-90`} />}
                                         </div>
-
+ 
                                         <div className="flex items-center gap-1.5 md:gap-2 relative z-10">
                                             <span className={`text-sm md:text-base font-black tracking-tighter ${
                                                 isCompleted ? 'text-emerald-400' :
-                                                isCurrent ? 'text-white' : 
-                                                'text-white/20'
+                                                isCurrent ? 'text-white font-extrabold' : 
+                                                day === 7 ? 'text-sun-gold font-black' :
+                                                'text-white/80'
                                             }`}>
                                                 {isBonusDay ? (streakInfo.dailyBonus * 2) : streakInfo.dailyBonus}
                                             </span>
-                                            <WishbitIcon size={14} className={isCompleted ? 'drop-shadow-[0_0_5px_rgba(52,211,153,0.5)]' : isCurrent ? 'drop-shadow-[0_0_8px_rgba(217,70,239,0.5)]' : 'opacity-[0.2]'} />
+                                            <WishbitIcon size={14} className={isCompleted ? 'drop-shadow-[0_0_5px_rgba(52,211,153,0.5)]' : isCurrent ? 'drop-shadow-[0_0_8px_rgba(217,70,239,0.5)]' : day === 7 ? 'drop-shadow-[0_0_8px_rgba(255,215,0,0.5)]' : 'opacity-80'} />
                                         </div>
-
+ 
                                         {isCurrent && (
                                             <div className="relative w-full z-10">
                                                 <motion.button

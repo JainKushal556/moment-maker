@@ -18,10 +18,11 @@ def seed_data():
     # 1. Global Settings
     config_ref = db.collection("app_config").document("wishbit_settings")
     config_data = {
-        "welcome_bonus": 10,
-        "ref_signup_bonus": 20,
+        "welcome_bonus": 500,
+        "ref_signup_bonus": 200,
         "referral_reward": 300,
-        "daily_bonus": 5,
+        "daily_bonus": 50,
+        "milestone_unit_reward": 50,
         "default_template_price": 0
     }
     config_ref.set(config_data)
@@ -30,11 +31,13 @@ def seed_data():
     # 2. Template Info (Prices)
     templates = [
         {"id": "birthday-mosaic", "price": 0},
-        {"id": "chic-complement", "price": 0},
-        {"id": "pearl-glow-birthday", "price": 0},
-        {"id": "charming-proposal", "price": 0},
+        {"id": "chic-compliment", "price": 499},
+        {"id": "pearl-glow-birthday", "price": 1499},
+        {"id": "charming-proposal", "price": 499},
         {"id": "imperial-friendship", "price": 0},
-        {"id": "missing-motif", "price": 0}
+        {"id": "missing-motif", "price": 499},
+        {"id": "cherry-blossom-proposal", "price": 0},
+        {"id": "heartfelt-remembrance", "price": 0}
     ]
 
     for t in templates:
